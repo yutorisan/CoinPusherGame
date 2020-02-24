@@ -22,16 +22,34 @@ namespace MedalPusher.Slot
 
 		private ISlot m_slot;
 
-		private Subject<Unit> m_StockExpendStream = new Subject<Unit>();
-		private ReactiveProperty<int> m_stockCount = new ReactiveProperty<int>();
+		private int m_stockCount;
 
+        public void AddStock()
+        {
+            //ストックが溜まっていなかった場合はスロットを回転させる
+			if (++StockCount == 1)
+			{
+				m_slot.Roll();
+			};
+        }
 
-		public void AddStock() => ++m_stockCount.Value;
+        public int StockCount
+        {
+			get => m_stockCount;
+            set
+            {
+				m_stockCount = value;
+				m_StockText.text = m_stockCount.ToString();
+            }
+        }
 
 		// Start is called before the first frame update
 		void Start()
 		{
-			m_stockCount.Subscribe(n => m_StockText.text = "ストック：" + n);
+			m_slot = GameObject.Find("Slot").GetComponent<ISlot>();
+			m_slot.ObservableSlotStatus.Where(s => s == SlotStatus.Idol)
+									   .Where(_ => StockCount > 0)
+									   .Subscribe(_ => m_slot.Roll());
 		}
 	}
 

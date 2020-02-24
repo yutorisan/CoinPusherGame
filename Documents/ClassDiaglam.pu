@@ -50,6 +50,7 @@ namespace Slot{
 
     interface ISlot{
         void Roll();
+        IObservable<SlotStatus> ObservableSlotStatus{get;}
     }
     class Slot
 
