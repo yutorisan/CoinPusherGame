@@ -5,7 +5,7 @@ using UnityEngine;
 using UniRx;
 using MedalPusher.Slot;
 
-namespace MedalPusher
+namespace MedalPusher.Medal
 {
 	public interface IObservableMedalManager
 	{
@@ -27,30 +27,30 @@ namespace MedalPusher
 		/// <summary>
 		/// 投入したメダル枚数
 		/// </summary>
-		private ReactiveProperty<int> mPutInMedalCount = new ReactiveProperty<int>();
+		private ReactiveProperty<int> m_PutInMedalCount = new ReactiveProperty<int>();
 		/// <summary>
 		/// 獲得したメダル枚数
 		/// </summary>
-		private ReactiveProperty<int> mGetMedalCount = new ReactiveProperty<int>();
+		private ReactiveProperty<int> m_GetMedalCount = new ReactiveProperty<int>();
 		/// <summary>
 		/// 獲得できず回収されたメダル枚数
 		/// </summary>
-		private ReactiveProperty<int> mFailedMedalCount = new ReactiveProperty<int>();
+		private ReactiveProperty<int> m_FailedMedalCount = new ReactiveProperty<int>();
 
-		private ReactiveCollection<IMedal> mMedals = new ReactiveCollection<IMedal>();
-		private Medal mMedalResource;
+		private ReactiveCollection<IMedal> m_Medals = new ReactiveCollection<IMedal>();
+		private Medal m_MedalResource;
 
 		private void Start() {
 			//メダルの3Dモデル
-			mMedalResource = (Resources.Load("Medal") as GameObject).GetComponent<Medal>();
+			m_MedalResource = (Resources.Load("Medal") as GameObject).GetComponent<Medal>();
 			ISlotController slotController = GameObject.Find("SlotController").GetComponent<ISlotController>();
 
 			//メダルが追加されたら、そのメダルの行方を購読
-			mMedals.ObserveAdd().Subscribe(addMedal =>
+			m_Medals.ObserveAdd().Subscribe(addMedal =>
 			{
-				++mPutInMedalCount.Value;
-				addMedal.Value.ObservableCheckerPassed.Subscribe(_ => ++mGetMedalCount.Value).AddTo(this);
-				addMedal.Value.ObservableFailedCheckerPassed.Subscribe(_ => ++mFailedMedalCount.Value).AddTo(this);
+				++m_PutInMedalCount.Value;
+				addMedal.Value.ObservableCheckerPassed.Subscribe(_ => ++m_GetMedalCount.Value).AddTo(this);
+				addMedal.Value.ObservableFailedCheckerPassed.Subscribe(_ => ++m_FailedMedalCount.Value).AddTo(this);
 				addMedal.Value.ObservableSlotCheckerPassed.Subscribe(_ => slotController.AddStock()).AddTo(this);
 			});
 
@@ -73,8 +73,8 @@ namespace MedalPusher
 
 		private void GenerateMedal()
 		{
-			IMedal medal = Instantiate(mMedalResource, new Vector3(-0.125f, 2f, UnityEngine.Random.Range(-0.4f, 0.4f)), Quaternion.identity);
-			mMedals.Add(medal);
+			IMedal medal = Instantiate(m_MedalResource, new Vector3(-0.125f, 2f, UnityEngine.Random.Range(-0.4f, 0.4f)), Quaternion.identity);
+			m_Medals.Add(medal);
 		}
 		private void GenerateMedal(int count, int interval)
 		{
@@ -84,11 +84,11 @@ namespace MedalPusher
 					  .AddTo(this);
 		}
 
-		public IObservable<int> ObservableGetMedalCount => mGetMedalCount;
+		public IObservable<int> ObservableGetMedalCount => m_GetMedalCount;
 
-		public IObservable<int> ObservableFailedMedalCount => mFailedMedalCount;
+		public IObservable<int> ObservableFailedMedalCount => m_FailedMedalCount;
 
-		public IObservable<int> ObservablePutInMedalCount => mPutInMedalCount;
+		public IObservable<int> ObservablePutInMedalCount => m_PutInMedalCount;
 	}
 
 }

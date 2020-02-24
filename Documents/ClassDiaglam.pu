@@ -1,0 +1,80 @@
+@startuml MedalPusherGameClassDiaglam
+
+namespace Pusher{
+
+    class PusherManager
+    note left:PusherManager
+
+    interface IPusherMove{
+        void StartMove();
+        void StopMove();
+        float MoveCycle {get; set;}
+        float MoveLength {get; set;}
+    }
+    class PusherMove
+    note left : PusherPlate
+
+    IPusherMove <|.. PusherMove
+    PusherManager o-- IPusherMove
+}
+
+namespace Medal{
+    interface IMedal{
+		IObservable<Unit> ObservableCheckerPassed { get; }
+		IObservable<Unit> ObservableFailedCheckerPassed { get; }
+		IObservable<Unit> ObservableSlotCheckerPassed { get; }
+    }
+    class Medal
+    note left : Medal
+
+    IMedal <|.. Medal
+
+    interface IObservableMedalManager{
+        IObservable<int> ObservablePutInMedalCount { get; }
+		IObservable<int> ObservableFailedMedalCount { get; }
+		IObservable<int> ObservableGetMedalCount { get; }
+    }
+    class MedalManager
+    note left : MedalManager
+
+    IObservableMedalManager <|.. MedalManager
+
+    MedalManager *-- IMedal
+}
+
+namespace GUI{
+    class GUIController
+}
+
+namespace Slot{
+    interface ISlotController{
+        void AddStock();
+    }
+    class SlotController
+
+    ISlotController <|.. SlotController    
+
+    interface ISlot{
+        void Roll();
+    }
+    class Slot
+
+    ISlot <|.. Slot
+
+    interface IStockManager{
+        void AddStock();
+        IObservable<Unit> ObservableStockExpend{get;}
+    }
+    class StockManager
+
+    IStockManager <|.. StockManager
+
+    SlotController o-- IStockManager
+    SlotController o-- ISlot
+}
+
+GUI.GUIController o-- Medal.IObservableMedalManager
+
+Medal.MedalManager o-- Slot.ISlotController
+
+@enduml

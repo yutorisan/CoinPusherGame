@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UniRx;
 
-namespace MedalPusher {
+namespace MedalPusher.Pusher {
 
 	public class PusherManager : MonoBehaviour {
 		private void Awake() { 

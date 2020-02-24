@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UniRx;
+using MedalPusher.Medal;
 
-namespace MedalPusher
+namespace MedalPusher.GUI
 {
 	public class GUIController : MonoBehaviour
 	{
