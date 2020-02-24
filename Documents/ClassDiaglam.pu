@@ -47,12 +47,6 @@ namespace GUI{
 }
 
 namespace Slot{
-    interface ISlotController{
-        void AddStock();
-    }
-    class SlotController
-
-    ISlotController <|.. SlotController    
 
     interface ISlot{
         void Roll();
@@ -63,18 +57,16 @@ namespace Slot{
 
     interface IStockManager{
         void AddStock();
-        IObservable<Unit> ObservableStockExpend{get;}
     }
     class StockManager
 
     IStockManager <|.. StockManager
 
-    SlotController o-- IStockManager
-    SlotController o-- ISlot
+    StockManager o-- ISlot
 }
 
 GUI.GUIController o-- Medal.IObservableMedalManager
 
-Medal.MedalManager o-- Slot.ISlotController
+Medal.MedalManager o-- Slot.IStockManager
 
 @enduml

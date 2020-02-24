@@ -9,6 +9,7 @@ namespace MedalPusher.Slot
 	public interface ISlot
 	{
 		void Roll();
+		IObservable<SlotStatus> ObservableSlotStatus { get; }
 	}
 
 	public class Slot : MonoBehaviour, ISlot
@@ -33,7 +34,7 @@ namespace MedalPusher.Slot
 			ObservableRollIndex.Take(50).Subscribe(i => m_s3.Value = rollItems[i]);
 		}
 
-		public IObservable<SlotStatus> ObservableStatus => m_Status;
+		public IObservable<SlotStatus> ObservableSlotStatus => m_Status;
 
 		// Start is called before the first frame update
 		void Start()

@@ -43,7 +43,8 @@ namespace MedalPusher.Medal
 		private void Start() {
 			//メダルの3Dモデル
 			m_MedalResource = (Resources.Load("Medal") as GameObject).GetComponent<Medal>();
-			ISlotController slotController = GameObject.Find("SlotController").GetComponent<ISlotController>();
+
+			IStockManager slotController = GameObject.Find("StockManager").GetComponent<IStockManager>();
 
 			//メダルが追加されたら、そのメダルの行方を購読
 			m_Medals.ObserveAdd().Subscribe(addMedal =>

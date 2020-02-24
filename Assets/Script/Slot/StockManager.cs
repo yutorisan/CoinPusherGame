@@ -13,10 +13,6 @@ namespace MedalPusher.Slot
 		/// ストックを追加する
 		/// </summary>
 		void AddStock();
-		/// <summary>
-		/// ストックを消費した通知を購読する
-		/// </summary>
-		IObservable<Unit> ObservableStockExpend { get; }
 	}
 
 	public class StockManager : MonoBehaviour, IStockManager
@@ -24,27 +20,18 @@ namespace MedalPusher.Slot
 		[SerializeField]
 		private Text m_StockText;
 
+		private ISlot m_slot;
+
 		private Subject<Unit> m_StockExpendStream = new Subject<Unit>();
 		private ReactiveProperty<int> m_stockCount = new ReactiveProperty<int>();
 
 
 		public void AddStock() => ++m_stockCount.Value;
 
-		public IObservable<Unit> ObservableStockExpend => m_StockExpendStream;
-
 		// Start is called before the first frame update
 		void Start()
 		{
 			m_stockCount.Subscribe(n => m_StockText.text = "ストック：" + n);
-		}
-
-		// Update is called once per frame
-		void Update()
-		{
-			if(m_stockCount.Value > 0)
-			{
-				m_StockExpendStream.OnNext(Unit.Default);
-			}
 		}
 	}
 
