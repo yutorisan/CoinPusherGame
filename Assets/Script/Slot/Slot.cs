@@ -38,8 +38,8 @@ namespace MedalPusher.Slot
 		// Start is called before the first frame update
 		void Start()
 		{
-			m_s1.Subscribe(_ => UpdateSlotText());
-			m_s2.Subscribe(_ => UpdateSlotText());
+            m_s1.Subscribe(_ => UpdateSlotText());
+            m_s2.Subscribe(_ => UpdateSlotText());
 			m_s3.Subscribe(_ => UpdateSlotText());
 		}
 
