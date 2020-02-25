@@ -53,6 +53,7 @@ namespace Slot{
         IObservable<SlotStatus> ObservableSlotStatus{get;}
     }
     class Slot
+    Slot -() TextMesh
 
     ISlot <|.. Slot
 

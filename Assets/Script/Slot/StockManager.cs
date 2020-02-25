@@ -29,7 +29,7 @@ namespace MedalPusher.Slot
             //ストックが溜まっていなかった場合はスロットを回転させる
 			if (++StockCount == 1)
 			{
-				m_slot.Roll();
+				TryRolling();
 			};
         }
 
@@ -39,7 +39,7 @@ namespace MedalPusher.Slot
             set
             {
 				m_stockCount = value;
-				m_StockText.text = m_stockCount.ToString();
+				m_StockText.text = "ストック：" + m_stockCount;
             }
         }
 
@@ -47,10 +47,18 @@ namespace MedalPusher.Slot
 		void Start()
 		{
 			m_slot = GameObject.Find("Slot").GetComponent<ISlot>();
-			m_slot.ObservableSlotStatus.Where(s => s == SlotStatus.Idol)
-									   .Where(_ => StockCount > 0)
-									   .Subscribe(_ => m_slot.Roll());
+			m_slot.Status.Where(s => s == SlotStatus.Idol)
+					     .Where(_ => StockCount > 0)
+				   	     .Subscribe(_ => TryRolling());
 		}
+
+        private void TryRolling()
+        {
+            if (m_slot.TryRoll() == TryRollReturn.Accept)
+            {
+                --StockCount;
+            }
+        }
 	}
 
 }
