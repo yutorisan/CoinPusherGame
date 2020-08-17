@@ -11,9 +11,8 @@ namespace MedalPusher.Slot
         /// <summary>
         /// スロットを回転しようとします。
         /// </summary>
-        /// <returns>回せたかどうか</returns>
-		TryRollReturn TryRoll();
-        IReadOnlyReactiveProperty<SlotStatus> Status { get; }
+		void Roll();
+        IReadOnlyReactiveProperty<SlotStatus> ObservableStatus { get; }
 	}
 
 	public class Slot : MonoBehaviour, ISlot
@@ -31,19 +30,15 @@ namespace MedalPusher.Slot
 		private static IObservable<int> ObservableRollIndex = Observable.Interval(TimeSpan.FromMilliseconds(100))
 																		.Select(_ => UnityEngine.Random.Range(0, rollItems.Length));
 
-		public TryRollReturn TryRoll()
+		public void Roll()
 		{
-            //アイドル状態じゃなければRollしない
-			if (m_Status.Value != SlotStatus.Idol) return TryRollReturn.Reject;
-
 			ObservableRollIndex.Take(5).Subscribe(i => m_s1.Value = rollItems[i], () => m_Status.Value = SlotStatus.Idol);
 			ObservableRollIndex.Take(5).Subscribe(i => m_s2.Value = rollItems[i]);
 			ObservableRollIndex.Take(5).Subscribe(i => m_s3.Value = rollItems[i]);
 			m_Status.Value = SlotStatus.Rolling; 
-			return TryRollReturn.Accept;
 		}
 
-		public IReadOnlyReactiveProperty<SlotStatus> Status => m_Status.ToReadOnlyReactiveProperty();
+		public IReadOnlyReactiveProperty<SlotStatus> ObservableStatus => m_Status;
 
 
 		// Start is called before the first frame update
@@ -65,11 +60,6 @@ namespace MedalPusher.Slot
 	{
 		Idol, Rolling
 	}
-
-    public enum TryRollReturn
-    {
-        Accept, Reject
-    }
 
 
 }

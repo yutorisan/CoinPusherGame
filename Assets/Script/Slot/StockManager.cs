@@ -14,51 +14,46 @@ namespace MedalPusher.Slot
 		/// </summary>
 		void AddStock();
 	}
-
-	public class StockManager : MonoBehaviour, IStockManager
+	public interface IObservableStockCount
 	{
-		[SerializeField]
-		private Text m_StockText;
+		/// <summary>
+		/// スロットストック数を購読します。
+		/// </summary>
+		/// <value></value>
+		IObservable<int> ObservableStockCount{ get; }
+    }
 
-		private ISlot m_slot;
+	public class StockManager : MonoBehaviour, IStockManager, IObservableStockCount
+	{
+		/// <summary>
+		/// ストック残量をチェックする間隔
+		/// </summary>
+        private static readonly TimeSpan StockCheckInterval = TimeSpan.FromMilliseconds(500);
 
-		private int m_stockCount;
+		/// <summary>
+		/// ストック数
+		/// </summary>
+        private ReactiveProperty<int> m_stockCount = new ReactiveProperty<int>();
 
-        public void AddStock()
-        {
-            //ストックが溜まっていなかった場合はスロットを回転させる
-			if (++StockCount == 1)
-			{
-				TryRolling();
-			};
-        }
+        public bool HasStock => m_stockCount.Value > 0;
+        public IObservable<int> ObservableStockCount => m_stockCount.AsObservable();
 
-        public int StockCount
-        {
-			get => m_stockCount;
-            set
-            {
-				m_stockCount = value;
-				m_StockText.text = "ストック：" + m_stockCount;
-            }
-        }
+        public void AddStock() => ++m_stockCount.Value;
 
 		// Start is called before the first frame update
 		void Start()
 		{
-			m_slot = GameObject.Find("Slot").GetComponent<ISlot>();
-			m_slot.Status.Where(s => s == SlotStatus.Idol)
-					     .Where(_ => StockCount > 0)
-				   	     .Subscribe(_ => TryRolling());
-		}
+			var slot = GameObject.Find("Slot").GetComponent<ISlot>();
 
-        private void TryRolling()
-        {
-            if (m_slot.TryRoll() == TryRollReturn.Accept)
-            {
-                --StockCount;
-            }
-        }
+			//スロットがアイドル状態、かつストックがある状態ならスロットを回してストックを減らす
+            Observable.Interval(StockCheckInterval)
+                      .Where(_ => slot.ObservableStatus.Value == SlotStatus.Idol && HasStock)
+                      .Subscribe(_ => 
+					  {
+                          --m_stockCount.Value;
+                          slot.Roll();
+                      });
+		}
 	}
 
 }

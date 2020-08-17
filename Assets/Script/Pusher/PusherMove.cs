@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityUnility;
 
 namespace MedalPusher {
 	public interface IPusherMove {
@@ -41,7 +42,7 @@ namespace MedalPusher {
 				float elapsedTime = m_stopTime + (Time.time - m_startTIme); //ストップ後に同じ位置から再開するため、ストップした時の値を保持
 				double degree = 360 * (elapsedTime % MoveCycle) / MoveCycle;
 				m_nowPositionX = MoveLength * Mathf.Sin((float)degree.ToRadian());
-
+				
 				m_rigidbody.MovePosition(new Vector3(m_nowPositionX ,
 												   transform.position.y,
 												   transform.position.z));

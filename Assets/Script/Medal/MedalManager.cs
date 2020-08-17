@@ -21,7 +21,7 @@ namespace MedalPusher.Medal
 		/// 投入したメダル枚数を購読します。
 		/// </summary>
 		IObservable<int> ObservablePutInMedalCount { get; }
-	}
+    }
 	public class MedalManager : MonoBehaviour, IObservableMedalManager
 	{
 		/// <summary>

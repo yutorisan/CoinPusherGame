@@ -7,6 +7,7 @@ TagManager:
   - FailedMedalChecker
   - GetMedalChecker
   - SlotChecker
+  - Medal
   layers:
   - Default
   - TransparentFX
