@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityUnility;
+using UnityUtility;
 
 namespace MedalPusher {
 	public interface IPusherMove {

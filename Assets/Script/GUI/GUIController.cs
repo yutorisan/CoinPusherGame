@@ -4,34 +4,28 @@ using UnityEngine;
 using UnityEngine.UI;
 using UniRx;
 using MedalPusher.Medal;
+using UnityUtility;
+using System;
 
 namespace MedalPusher.GUI
 {
 	public class GUIController : MonoBehaviour
 	{
 		[SerializeField]
-		private MedalManager m_MedalMagaer;
+		private SerializableIMedalCounter m_medalCounter;
 		[SerializeField]
-		private Text m_PutInText, m_GetText, m_FailedText;
+		private Text m_inputMedalText, m_winMedalText, m_failedMedalText;
 
-		private IObservableMedalManager m_RefMedalManager;
 		// Start is called before the first frame update
 		void Start()
 		{
-			m_RefMedalManager = m_MedalMagaer;
-			m_RefMedalManager.ObservablePutInMedalCount
-							 .Subscribe(c => m_PutInText.text = "投入枚数：" + c + "枚");
-			m_RefMedalManager.ObservableGetMedalCount
-							 .Subscribe(c => m_GetText.text = "獲得枚数：" + c + "枚");
-			m_RefMedalManager.ObservableFailedMedalCount
-							 .Subscribe(c => m_FailedText.text = "回収枚数：" + c + "枚");
+			m_medalCounter.Interface.ObservableInputMedalCount.SubscribeToText(m_inputMedalText, c => $"投入枚数：{c}枚");
+			m_medalCounter.Interface.ObservableWonMedalCount.SubscribeToText(m_winMedalText, c => $"獲得枚数：{c}枚");
+			m_medalCounter.Interface.ObservableFailedMedalCount.SubscribeToText(m_failedMedalText, c => $"回収枚数：{c}枚");
 		}
 
-		// Update is called once per frame
-		void Update()
-		{
-        
-		}
+		[Serializable]
+		private class SerializableIMedalCounter : SerializeInterface<IObservableMedalCounter> { }
 	}
 }
 
