@@ -25,12 +25,21 @@ namespace MedalPusher {
 
 	public class PusherMove : MonoBehaviour, IPusherMove
 	{
+		private Vector3 m_initPosition;
+
+		private float m_startTIme;
+		private float m_stopTime;
+
+		private Rigidbody m_rigidbody;
+
 		#region MonoBehaviour
 		// Start is called before the first frame update
 		void Start()
 		{
 			MoveCycle = 6.0f;
 			MoveLength = 0.2f;
+
+			m_initPosition = transform.position;
 
 			m_rigidbody = this.GetComponent<Rigidbody>();
 		}
@@ -41,11 +50,11 @@ namespace MedalPusher {
 			if(IsMoving) {
 				float elapsedTime = m_stopTime + (Time.time - m_startTIme); //ストップ後に同じ位置から再開するため、ストップした時の値を保持
 				double degree = 360 * (elapsedTime % MoveCycle) / MoveCycle;
-				m_nowPositionX = MoveLength * Mathf.Sin((float)degree.ToRadian());
+				var diffX = MoveLength * Mathf.Sin((float)degree.ToRadian());
 				
-				m_rigidbody.MovePosition(new Vector3(m_nowPositionX ,
-												   transform.position.y,
-												   transform.position.z));
+				m_rigidbody.MovePosition(new Vector3(m_initPosition.x + diffX,
+												     m_initPosition.y,
+												     m_initPosition.z));
 			}
 		}
 		#endregion
@@ -64,11 +73,6 @@ namespace MedalPusher {
 		public float MoveLength { get; set; }
 		public bool IsMoving { get; private set; }
 
-		private float m_nowPositionX;
-		private float m_startTIme;
-		private float m_stopTime;
-
-		private Rigidbody m_rigidbody;
 
 	}
 

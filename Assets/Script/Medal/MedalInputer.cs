@@ -25,19 +25,19 @@ namespace MedalPusher.Medal
 					  .Subscribe(_ => GenerateMedal());
 			Observable.EveryUpdate()
 					  .Where(_ => Input.GetKeyDown(KeyCode.Return))
-					  .Subscribe(_ => GenerateMedal(100, 10));
+					  .Subscribe(_ => GenerateMedal(10, 5));
 
 
-			//最初に1000枚投入
-			GenerateMedal(1000, 5);
+			////最初に1000枚投入
+			//GenerateMedal(1000, 5);
 		}
 
-		private void GenerateMedal()
+		public void GenerateMedal()
 		{
 			Instantiate(m_MedalResource, new Vector3(-0.125f, 2f, UnityEngine.Random.Range(-0.4f, 0.4f)), Quaternion.identity);
 			m_medalInputedSubject.OnNext(Unit.Default);
 		}
-		private void GenerateMedal(int count, int interval)
+		public void GenerateMedal(int count, int interval)
 		{
 			Observable.Interval(TimeSpan.FromMilliseconds(interval))
 					  .Take(count)

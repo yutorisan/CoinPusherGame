@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UniRx;
+using UnityUtility;
 
 namespace MedalPusher.Slot
 {
@@ -14,6 +15,8 @@ namespace MedalPusher.Slot
 		void Roll();
         IReadOnlyReactiveProperty<SlotStatus> ObservableStatus { get; }
 	}
+	[Serializable]
+	public class SerializableISlot : SerializeInterface<ISlot> { }
 
 	public class Slot : MonoBehaviour, ISlot
 	{

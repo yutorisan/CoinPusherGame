@@ -33,9 +33,9 @@ public interface IObservableMedalCounter
 public class MedalCounter : MonoBehaviour, IObservableMedalCounter
 {
     [SerializeField]
-    private SerializableIMedalChecker m_inputMedalChecker = new SerializableIMedalChecker();
+    private SerializableIMedalChecker m_inputMedalChecker;
     [SerializeField]
-    private SerializableIMedalChecker m_winMedalChecker = new SerializableIMedalChecker();
+    private SerializableIMedalChecker m_winMedalChecker;
     [SerializeField]
     private SerializableIMedalCheckerCollection m_failedMedalChecker;
 
@@ -77,9 +77,4 @@ public class MedalCounter : MonoBehaviour, IObservableMedalCounter
         print(m_inputMedalChecker.Interface.Equals(m_winMedalChecker.Interface));
 
     }
-
-    [Serializable]
-    private class SerializableIMedalChecker : SerializeInterface<IMedalChecker> { }
-    [Serializable]
-    private class SerializableIMedalCheckerCollection : SerializeInterfaceCollection<IMedalChecker> { }
 }

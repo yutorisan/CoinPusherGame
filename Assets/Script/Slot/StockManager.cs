@@ -4,16 +4,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using UniRx;
+using UnityEngine.Assertions.Must;
 
 namespace MedalPusher.Slot
 {
-	public interface IStockManager
-	{
-		/// <summary>
-		/// ストックを追加する
-		/// </summary>
-		void AddStock();
-	}
+
 	public interface IObservableStockCount
 	{
 		/// <summary>
@@ -23,8 +18,13 @@ namespace MedalPusher.Slot
 		IObservable<int> ObservableStockCount{ get; }
     }
 
-	public class StockManager : MonoBehaviour, IStockManager, IObservableStockCount
+	public class StockManager : MonoBehaviour, IObservableStockCount
 	{
+		[SerializeField]
+		private SerializableISlot m_slot;
+		[SerializeField]
+		private SerializableIMedalChecker m_medalChecker;
+
 		/// <summary>
 		/// ストック残量をチェックする間隔
 		/// </summary>
@@ -38,20 +38,19 @@ namespace MedalPusher.Slot
         public bool HasStock => m_stockCount.Value > 0;
         public IObservable<int> ObservableStockCount => m_stockCount.AsObservable();
 
-        public void AddStock() => ++m_stockCount.Value;
-
 		// Start is called before the first frame update
 		void Start()
 		{
-			var slot = GameObject.Find("Slot").GetComponent<ISlot>();
+			m_medalChecker.Interface.ObservableMedalChecked.Subscribe(_ => ++m_stockCount.Value);
 
+			ISlot slot = m_slot.Interface;
 			//スロットがアイドル状態、かつストックがある状態ならスロットを回してストックを減らす
             Observable.Interval(StockCheckInterval)
                       .Where(_ => slot.ObservableStatus.Value == SlotStatus.Idol && HasStock)
                       .Subscribe(_ => 
 					  {
                           --m_stockCount.Value;
-                          slot.Roll();
+					      slot.Roll();
                       });
 		}
 	}
