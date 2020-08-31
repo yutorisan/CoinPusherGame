@@ -34,7 +34,7 @@ namespace MedalPusher.Medal
 
 		public void GenerateMedal()
 		{
-			Instantiate(m_MedalResource, new Vector3(-0.125f, 2f, UnityEngine.Random.Range(-0.4f, 0.4f)), Quaternion.identity);
+			Instantiate(m_MedalResource, new Vector3(-0.125f, 2f, UnityEngine.Random.Range(-0.2f, 0.2f)), Quaternion.identity);
 			m_medalInputedSubject.OnNext(Unit.Default);
 		}
 		public void GenerateMedal(int count, int interval)

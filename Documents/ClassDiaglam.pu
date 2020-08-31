@@ -8,8 +8,12 @@ namespace Item{
     interface IReadOnlyFieldItem
     interface IFieldItem
     class FieldItem
+    interface IFieldItemEvent
+    class FieldItemEvent
     IReadOnlyFieldItem <|-- IFieldItem
     IFieldItem <|.. FieldItem
+    IFieldItemEvent <|.. FieldItemEvent
+    FieldItem *- IFieldItemEvent
 
     interface IReadOnlyMedal
     interface IMedal
@@ -51,6 +55,12 @@ namespace Item{
         class MedalPayouter
         MedalPayouter .|> IMedalPayoutOperator
         IObservableMedalPayouter <|.. MedalPayouter
+
+        interface IFieldItemPayoutOperator{
+            +void Payout(IFieldItem)
+        }
+        class FieldItemPayouter
+        IFieldItemPayoutOperator <|.. FieldItemPayouter
 
         class PayoutMedalView<<View>>
         PayoutMedalView --> IObservableMedalPayouter : 払い出しメダル数を監視
@@ -127,5 +137,17 @@ namespace Slot{
 
 }
 
+namespace PayoutPinball{
+    interface IPinballPocket
+    class PinballPocket
+    IPinballPocket <|.. PinballPocket
+
+    interface IPinballEvent
+    class PinballEvent
+    IPinballEvent <|.. PinballEvent
+
+    PinballPocket *- IPinballEvent
+    PinballPocket --> Item.Checker.IObservableFieldItemChecker
+}
 
 @enduml
