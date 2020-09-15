@@ -88,7 +88,7 @@ namespace Item{
 
         MedalInventory --(( IObservableMedalChecker
         FieldItemInventory --(( IObservableFieldItemChecker
-        Input.IInoutProvider <--- MedalInventory : 入力を監視
+        Input.IGameCommandProvider <--- MedalInventory : 入力を監視
 
         class FieldItemApplyer
         Item.Payout.IMedalPayoutOperator <-- FieldItemApplyer : メダル払い出しを要求
@@ -107,12 +107,20 @@ namespace Item{
 }
 
 namespace Input{
-    interface IInoutProvider
+    enum GameCommand
+    interface IGameCommandProvider{
+        +IObservable<GameCommand> InputedCommand { get; }
+    }
+    class GameCommandFormatter
+    GameCommand <- GameCommandFormatter
+    IGameCommandProvider <|.. GameCommandFormatter
+    GameCommandFormatter --> IInputProvider
+    interface IInputProvider
     class UserInputProvider
     class AutoInputProvider
     class Input<<static>>
-    IInoutProvider <|.. UserInputProvider
-    IInoutProvider <|.. AutoInputProvider
+    IInputProvider <|.. UserInputProvider
+    IInputProvider <|.. AutoInputProvider
     UserInputProvider --> Input
 }
 
