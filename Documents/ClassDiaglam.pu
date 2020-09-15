@@ -65,6 +65,8 @@ namespace Item{
         class PayoutMedalView<<View>>
         PayoutMedalView --> IObservableMedalPayouter : 払い出しメダル数を監視
 
+
+
     }
     
     namespace Inventory{
@@ -84,8 +86,8 @@ namespace Item{
         }
         IObservableFieldItemInventory <|.. FieldItemInventory
 
-        MedalInventory ---> Item.Checker.IObservableMedalChecker : 落ちたメダルを監視
-        FieldItemInventory ---> Item.Checker.IObservableFieldItemChecker : 落ちたアイテムを監視
+        MedalInventory --(( IObservableMedalChecker
+        FieldItemInventory --(( IObservableFieldItemChecker
         Input.IInoutProvider <--- MedalInventory : 入力を監視
 
         class FieldItemApplyer
@@ -117,7 +119,7 @@ namespace Input{
 namespace Slot{
     class StockManager
     IObservableStockCount <|.. StockManager
-    Item.Checker.IObservableMedalChecker <- StockManager : チェッカーを監視
+    IObservableMedalChecker ))-- StockManager
     class Slot
     enum SlotStatus{
         Idol
@@ -147,7 +149,8 @@ namespace PayoutPinball{
     IPinballEvent <|.. PinballEvent
 
     PinballPocket *- IPinballEvent
-    PinballPocket --> Item.Checker.IObservableFieldItemChecker
+    PinballPocket --(( IObservableMedalChecker
 }
+
 
 @enduml
