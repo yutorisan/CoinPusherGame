@@ -21,10 +21,10 @@ namespace MedalPusher.Medal
 
 			//スペースキー押下を購読してメダル投下
 			Observable.EveryUpdate()
-					  .Where(_ => Input.GetKeyDown(KeyCode.Space))
+					  .Where(_ => UnityEngine.Input.GetKeyDown(KeyCode.Space))
 					  .Subscribe(_ => GenerateMedal());
 			Observable.EveryUpdate()
-					  .Where(_ => Input.GetKeyDown(KeyCode.Return))
+					  .Where(_ => UnityEngine.Input.GetKeyDown(KeyCode.Return))
 					  .Subscribe(_ => GenerateMedal(10, 5));
 
 
@@ -34,7 +34,7 @@ namespace MedalPusher.Medal
 
 		public void GenerateMedal()
 		{
-			Instantiate(m_MedalResource, new Vector3(-0.125f, 2f, UnityEngine.Random.Range(-0.4f, 0.4f)), Quaternion.identity);
+			Instantiate(m_MedalResource, new Vector3(-0.125f, 2f, UnityEngine.Random.Range(-0.2f, 0.2f)), Quaternion.identity);
 			m_medalInputedSubject.OnNext(Unit.Default);
 		}
 		public void GenerateMedal(int count, int interval)

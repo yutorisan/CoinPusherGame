@@ -1,74 +1,164 @@
-@startuml MedalPusherGameClassDiaglam
+@startuml MedalPusher
 
-namespace Pusher{
-
-    class PusherManager
-    note left:PusherManager
-
-    interface IPusherMove{
-        void StartMove();
-        void StopMove();
-        float MoveCycle {get; set;}
-        float MoveLength {get; set;}
-    }
-    class PusherMove
-    note left : PusherPlate
-
-    IPusherMove <|.. PusherMove
-    PusherManager o-- IPusherMove
+namespace Case{
+    class PusherMover
 }
 
-namespace Medal{
-    interface IMedal{
-		IObservable<Unit> ObservableCheckerPassed { get; }
-		IObservable<Unit> ObservableFailedCheckerPassed { get; }
-		IObservable<Unit> ObservableSlotCheckerPassed { get; }
-    }
-    class Medal
-    note left : Medal
+namespace Item{
+    interface IReadOnlyFieldItem
+    interface IFieldItem
+    class FieldItem
+    interface IFieldItemEvent
+    class FieldItemEvent
+    IReadOnlyFieldItem <|-- IFieldItem
+    IFieldItem <|.. FieldItem
+    IFieldItemEvent <|.. FieldItemEvent
+    FieldItem *- IFieldItemEvent
 
+    interface IReadOnlyMedal
+    interface IMedal
+    class Medal
+    IReadOnlyMedal <|-- IMedal
     IMedal <|.. Medal
 
-    interface IObservableMedalManager{
-        IObservable<int> ObservablePutInMedalCount { get; }
-		IObservable<int> ObservableFailedMedalCount { get; }
-		IObservable<int> ObservableGetMedalCount { get; }
+    interface IFieldObject
+    IFieldObject <|-- IMedal
+    IFieldObject <|-- IFieldItem
+    
+    namespace Checker{
+        interface IObservableItemChecker<TItem>{
+            +IObservable<TItem>
+        }
+
+        interface IObservableMedalChecker{
+            +IObservable<IMedal>
+        }
+        class MedalChecker
+        IObservableItemChecker <|-- IObservableMedalChecker
+        IObservableMedalChecker <|.. MedalChecker
+
+        interface IObservableFieldItemChecker{
+            +IObservable<IFieldItem>
+        }
+        class FieldItemChecker
+        IObservableItemChecker <|-- IObservableFieldItemChecker
+        IObservableFieldItemChecker <|.. FieldItemChecker
     }
-    class MedalManager
-    note left : MedalManager
+    
+    namespace Payout{
+        interface IObservableMedalPayouter{
+            +IObservable<Unit> InputedMedalCount
+        }
+        interface IMedalPayoutOperator{
+            +void Payout(int);
+        }
+        class MedalPayouter
+        MedalPayouter .|> IMedalPayoutOperator
+        IObservableMedalPayouter <|.. MedalPayouter
 
-    IObservableMedalManager <|.. MedalManager
+        interface IFieldItemPayoutOperator{
+            +void Payout(IFieldItem)
+        }
+        class FieldItemPayouter
+        IFieldItemPayoutOperator <|.. FieldItemPayouter
 
-    MedalManager *-- IMedal
+        class PayoutMedalView<<View>>
+        PayoutMedalView --> IObservableMedalPayouter : 払い出しメダル数を監視
+
+
+
+    }
+    
+    namespace Inventory{
+        interface IObservableMedalInventory{
+            +IObservable<int> MedalInventoryCount
+        }
+        class MedalInventory{
+            -ReactiveProperty<int> m_medalCount
+        }
+        IObservableMedalInventory <|.. MedalInventory
+
+        interface IObservableFieldItemInventory{
+            +IObservable<IReadOnlyList<IFieldItem>> 
+        }
+        class FieldItemInventory{
+            -ReactiveCollection<IFieldItem> m_items
+        }
+        IObservableFieldItemInventory <|.. FieldItemInventory
+
+        MedalInventory --(( IObservableMedalChecker
+        FieldItemInventory --(( IObservableFieldItemChecker
+        Input.IGameCommandProvider <--- MedalInventory : 入力を監視
+
+        class FieldItemApplyer
+        Item.Payout.IMedalPayoutOperator <-- FieldItemApplyer : メダル払い出しを要求
+
+        class MedalInventoryView<<View>>
+        MedalInventoryView --> IObservableMedalInventory
+        class FieldItemInventoryView<<View>>
+        FieldItemInventoryView --> IObservableFieldItemInventory
+
+        FieldItemApplyer --> IObservableFieldItemInventory
+        MedalInventory --> Item.Payout.IMedalPayoutOperator : メダル払い出しを要求
+    }
+
+    ' Item.Inventory.IObservableMedalCounter <- PayoutMedalView : 落下メダル数を監視
+    ' Item.Payout.IObservableMedalPayouter <- PayoutMedalView : 投入メダル数を監視
 }
 
-namespace GUI{
-    class GUIController
+namespace Input{
+    enum GameCommand
+    interface IGameCommandProvider{
+        +IObservable<GameCommand> InputedCommand { get; }
+    }
+    class GameCommandFormatter
+    GameCommand <- GameCommandFormatter
+    IGameCommandProvider <|.. GameCommandFormatter
+    GameCommandFormatter --> IInputProvider
+    interface IInputProvider
+    class UserInputProvider
+    class AutoInputProvider
+    class Input<<static>>
+    IInputProvider <|.. UserInputProvider
+    IInputProvider <|.. AutoInputProvider
+    UserInputProvider --> Input
 }
 
 namespace Slot{
-
-    interface ISlot{
-        void Roll();
-        IObservable<SlotStatus> ObservableSlotStatus{get;}
-    }
-    class Slot
-    Slot -() TextMesh
-
-    ISlot <|.. Slot
-
-    interface IStockManager{
-        void AddStock();
-    }
     class StockManager
+    IObservableStockCount <|.. StockManager
+    IObservableMedalChecker ))-- StockManager
+    class Slot
+    enum SlotStatus{
+        Idol
+        Rolling
+    }
+    IObservableStockCount <-- Slot : ストック数を監視
 
-    IStockManager <|.. StockManager
+    ' ISlot <|.. Slot
+    SlotStatus <- Slot
 
-    StockManager o-- ISlot
+    interface IObservableStockCount{
+        +ObservableStockCount { get; }
+    }
+
+    class StockView<<View>>
+    IObservableStockCount <- StockView : ストックを監視
+
 }
 
-GUI.GUIController o-- Medal.IObservableMedalManager
+namespace PayoutPinball{
+    interface IPinballPocket
+    class PinballPocket
+    IPinballPocket <|.. PinballPocket
 
-Medal.MedalManager o-- Slot.IStockManager
+    interface IPinballEvent
+    class PinballEvent
+    IPinballEvent <|.. PinballEvent
+
+    PinballPocket *- IPinballEvent
+    PinballPocket --(( IObservableMedalChecker
+}
+
 
 @enduml
