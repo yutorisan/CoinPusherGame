@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using UniRx;
 using UnityEngine;
-using UnityUtility.Classes;
+using UnityUtility;
 
 namespace MedalPusher.Item.Payout
 {

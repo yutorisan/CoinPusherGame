@@ -21,10 +21,10 @@ namespace MedalPusher.Medal
 
 			//スペースキー押下を購読してメダル投下
 			Observable.EveryUpdate()
-					  .Where(_ => Input.GetKeyDown(KeyCode.Space))
+					  .Where(_ => UnityEngine.Input.GetKeyDown(KeyCode.Space))
 					  .Subscribe(_ => GenerateMedal());
 			Observable.EveryUpdate()
-					  .Where(_ => Input.GetKeyDown(KeyCode.Return))
+					  .Where(_ => UnityEngine.Input.GetKeyDown(KeyCode.Return))
 					  .Subscribe(_ => GenerateMedal(10, 5));
 
 
