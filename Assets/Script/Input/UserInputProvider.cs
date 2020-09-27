@@ -2,6 +2,7 @@
 using UnityEngine.EventSystems;
 using UniRx.Triggers;
 using UnityEngine;
+using UniRx;
 
 namespace MedalPusher.Input
 {
@@ -10,9 +11,9 @@ namespace MedalPusher.Input
         public UserInputProvider()
         {
             //InputObservable.FromKeyCode(KeyCode.Space)
-            //               .
+                           
         }
 
-        public IObservable<KeyCode> ObservableInput => throw new NotImplementedException();
+        public IObservable<KeyCode> ObservableInput => InputObservable.FromAnyKey().Share();
     }
 }

@@ -32,7 +32,7 @@ namespace MedalPusher.Item.Payout
 
         private void Start()
         {
-            _medalObject.Initialize(Resources.Load("Medal"));
+            _medalObject.Initialize(Resources.Load("Medal1"));
 
             m_payoutMedalStocks.Pairwise()
                                //Idol中のみ

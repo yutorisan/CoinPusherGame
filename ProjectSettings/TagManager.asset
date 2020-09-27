@@ -8,6 +8,7 @@ TagManager:
   - GetMedalChecker
   - SlotChecker
   - Medal
+  - View
   layers:
   - Default
   - TransparentFX
