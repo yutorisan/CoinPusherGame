@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using MedalPusher.Item.Pool;
 using UniRx;
 using UnityEngine;
 using UnityUtility;
+using Zenject;
 
 namespace MedalPusher.Item.Payout
 {
@@ -11,10 +13,12 @@ namespace MedalPusher.Item.Payout
     /// </summary>
     public class MedalPayouter : MonoBehaviour, IMedalPayoutOperator, IObservableMedalPayouter
     {
-        /// <summary>
-        /// メダルのモデル
-        /// </summary>
-        private UniReadOnly<UnityEngine.Object> _medalObject = new UniReadOnly<UnityEngine.Object>();
+        ///// <summary>
+        ///// メダルのモデル
+        ///// </summary>
+        //private UniReadOnly<UnityEngine.Object> _medalObject = new UniReadOnly<UnityEngine.Object>();
+        [Inject]
+        private IMedalPool m_medalPool;
         /// <summary>
         /// 払出し中のメダル数
         /// </summary>
@@ -32,7 +36,7 @@ namespace MedalPusher.Item.Payout
 
         private void Start()
         {
-            _medalObject.Initialize(Resources.Load("Medal1"));
+            //_medalObject.Initialize(Resources.Load("Medal1"));
 
             m_payoutMedalStocks.Pairwise()
                                //Idol中のみ
@@ -50,7 +54,8 @@ namespace MedalPusher.Item.Payout
                                //メダルを投入
                                .Subscribe(_ =>
                                {
-                                   Instantiate(_medalObject.Value, m_payoutPoint.position, Quaternion.identity);
+                                   m_medalPool.PickUp(MedalValue.Value1, m_payoutPoint.position, Quaternion.identity);
+                                   //Instantiate(_medalObject.Value, m_payoutPoint.position, Quaternion.identity);
                                    --m_payoutMedalStocks.Value;
                                });
         }

@@ -17,14 +17,14 @@ namespace MedalPusher.Item.Checker
         void Awake()
         {
             //TriggerしたもののtagがMedalだったら、そのIMedalコンポーネントを発行する
-            var triggerMedal = this.OnTriggerEnterAsObservable()
-                                   .Where(col => col.tag == "Medal")
-                                   .Share();
-            ItemChecked = triggerMedal.Select(col => col.GetComponent<IMedal>());
+            ItemChecked = this.OnTriggerEnterAsObservable()
+                              .Where(col => col.tag == "Medal")
+                              .Select(col => col.GetComponent<IMedal>())
+                              .Share();
 
 
             if (m_isDestroyOnChecked)
-                triggerMedal.Subscribe(m => Destroy(m));
+                ItemChecked.Subscribe(m => m.ReturnToPool());
         }
 
         public IObservable<IMedal> ItemChecked { get; private set; }

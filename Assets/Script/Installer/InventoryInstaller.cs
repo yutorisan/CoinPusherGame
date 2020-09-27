@@ -1,6 +1,7 @@
 using MedalPusher.Item;
 using MedalPusher.Item.Checker;
 using MedalPusher.Item.Payout;
+using MedalPusher.Item.Pool;
 using UnityEngine;
 using Zenject;
 
@@ -21,6 +22,10 @@ public class InventoryInstaller : MonoInstaller
          .AsTransient();
         Container.Bind<IMedalPayoutOperator>()
                  .To<MedalPayouter>()
+                 .FromComponentInHierarchy()
+                 .AsTransient();
+        Container.Bind<IMedalPool>()
+                 .To<MedalPool>()
                  .FromComponentInHierarchy()
                  .AsTransient();
 
