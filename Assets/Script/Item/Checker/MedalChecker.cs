@@ -18,7 +18,7 @@ namespace MedalPusher.Item.Checker
         {
             //TriggerしたもののtagがMedalだったら、そのIMedalコンポーネントを発行する
             ItemChecked = this.OnTriggerEnterAsObservable()
-                              .Where(col => col.tag == "Medal")
+                              .Where(col => col.CompareTag("Medal"))
                               .Select(col => col.GetComponent<IMedal>())
                               .Share();
 
