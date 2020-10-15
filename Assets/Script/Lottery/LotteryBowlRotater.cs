@@ -1,27 +1,43 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using UniRx;
 using UnityEngine;
 
-public class LotteryBowlRotater : MonoBehaviour
+namespace MedalPusher.Lottery
 {
-    [SerializeField]
-    private float m_rotateSpeed = 1f;
-
-    private Rigidbody _rigidbody;
-    private float _rotateAngle = 0; 
-
-    // Start is called before the first frame update
-    void Start()
+    /// <summary>
+    /// 抽選台の回転状況の購読を提供する
+    /// </summary>
+    public interface IObservableLotteryRotater
     {
-        _rigidbody = GetComponent<Rigidbody>();
-        //_rigidbody.centerOfMass = new Vector3(0, 0, 1000);
-        
+        /// <summary>
+        /// 抽選台の回転角度
+        /// </summary>
+        IObservable<float> ObservableRotate { get; }
     }
 
-    // Update is called once per frame
-    void Update()
+    public class LotteryBowlRotater : MonoBehaviour, IObservableLotteryRotater
     {
-        _rigidbody.MoveRotation(Quaternion.Euler(0, _rotateAngle += m_rotateSpeed, 0));
-        //_rigidbody.rotation = Quaternion.Euler(0, ++_rotateAngle, 0);
+        [SerializeField]
+        private float m_rotateSpeed = 1f;
+
+        private Rigidbody _rigidbody;
+        private ReactiveProperty<float> _rotateAngle = new ReactiveProperty<float>(0f);
+
+        // Start is called before the first frame update
+        void Start()
+        {
+            _rigidbody = GetComponent<Rigidbody>();
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+            _rigidbody.MoveRotation(Quaternion.Euler(0, _rotateAngle.Value += m_rotateSpeed, 0));
+        }
+
+        public IObservable<float> ObservableRotate => _rotateAngle.AsObservable();
+
     }
 }

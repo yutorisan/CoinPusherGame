@@ -12,7 +12,7 @@ public class InterfaceInstaller : MonoInstaller
         Container.Bind<IObservableMedalPayouter>()
                  .To<MedalPayouter>()
                  .FromComponentInHierarchy()
-                 .AsSingle();
+                 .AsCached();
 
         
     }

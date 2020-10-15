@@ -3,12 +3,8 @@ using UnityEngine;
 
 namespace MedalPusher.Item
 {
-    public interface IReadOnlyFieldItem
-    {
 
-    }
-
-    public interface IFieldItem : IReadOnlyFieldItem, IFieldObject
+    public interface IFieldItem : IFieldObject
     {
 
     }

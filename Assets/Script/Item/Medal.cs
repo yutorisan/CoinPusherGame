@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace MedalPusher.Item
 {
-    public interface IReadOnlyMedal
+    public interface IMedal : IFieldObject, IPoolObject
     {
         /// <summary>
         /// メダルの価値（枚数）
@@ -13,10 +13,6 @@ namespace MedalPusher.Item
         /// メダル価値の種類
         /// </summary>
         MedalValue ValueType { get; }
-    }
-    public interface IMedal : IReadOnlyMedal, IPoolObject, IFieldObject
-    {
-
     }
     public class Medal : MonoBehaviour, IMedal
     {

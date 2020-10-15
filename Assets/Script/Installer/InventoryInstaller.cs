@@ -15,19 +15,19 @@ public class InventoryInstaller : MonoInstaller
         Container.Bind<IObservableItemChecker<IMedal>>()
                  .To<MedalPusher.Item.Checker.MedalChecker>()
                  .FromComponentOn(m_winMedalChecker)
-                 .AsTransient();
+                 .AsCached();
         Container.Bind<IObservableMedalInventory>()
-         .To<MedalInventory>()
-         .FromComponentInHierarchy()
-         .AsTransient();
+                 .To<MedalInventory>()
+                 .FromComponentInHierarchy()
+                 .AsCached();
         Container.Bind<IMedalPayoutOperator>()
                  .To<MedalPayouter>()
                  .FromComponentInHierarchy()
-                 .AsTransient();
+                 .AsCached();
         Container.Bind<IMedalPool>()
                  .To<MedalPool>()
                  .FromComponentInHierarchy()
-                 .AsTransient();
+                 .AsCached();
 
         //NotMonoInstaller.Install(Container);
 

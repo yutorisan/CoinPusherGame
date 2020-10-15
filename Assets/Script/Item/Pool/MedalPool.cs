@@ -15,25 +15,6 @@ namespace MedalPusher.Item.Pool
 
     public class MedalPool : MonoBehaviour, IMedalPool
     {
-        //[SerializeField]
-        //private readonly Medal m_medal1Prefab;
-        //[SerializeField]
-        //private readonly int m_medal1InitializeCount;
-
-        //[SerializeField]
-        //private readonly Medal m_medal3Prefab;
-        //[SerializeField]
-        //private readonly int m_medal3InitializeCount;
-
-        //[SerializeField]
-        //private readonly Medal m_medal10Prefab;
-        //[SerializeField]
-        //private readonly int m_medal10InitializeCount;
-
-        //private UniReadOnly<List<IMedal>> m_medal1Pool = new UniReadOnly<List<IMedal>>();
-        //private UniReadOnly<List<IMedal>> m_medal3Pool = new UniReadOnly<List<IMedal>>();
-        //private UniReadOnly<List<IMedal>> m_medal10Pool = new UniReadOnly<List<IMedal>>();
-
         private Dictionary<MedalValue, IList<Medal>> m_medalPool = new Dictionary<MedalValue, IList<Medal>>();
 
         [SerializeField]
@@ -52,17 +33,6 @@ namespace MedalPusher.Item.Pool
                     return medal;
                 }).ToList());
             }
-
-            //m_medal1Pool.Initialize(Enumerable.Range(1, m_medal1InitializeCount)
-            //                                  .Select(_ => (IMedal)Instantiate(m_medal1Prefab))
-            //                                  .ToList());
-            //m_medal3Pool.Initialize(Enumerable.Range(1, m_medal3InitializeCount)
-            //                                  .Select(_ => (IMedal)Instantiate(m_medal3Prefab))
-            //                                  .ToList());
-            //m_medal10Pool.Initialize(Enumerable.Range(1, m_medal10InitializeCount)
-            //                                  .Select(_ => (IMedal)Instantiate(m_medal10Prefab))
-            //                                  .ToList());
-
         }
 
 

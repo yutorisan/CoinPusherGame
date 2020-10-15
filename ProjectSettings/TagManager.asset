@@ -9,6 +9,7 @@ TagManager:
   - SlotChecker
   - Medal
   - View
+  - LotteryBall
   layers:
   - Default
   - TransparentFX
