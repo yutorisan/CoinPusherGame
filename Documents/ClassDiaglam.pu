@@ -178,8 +178,16 @@ namespace Lottery{
     class LotteryPrizeInfo{
         IFieldObject Prize { get; }
     }
+    interface ILotteryPocketPositionOperation
     class LotteryPocket
-    IObservableLotteryRotater <-- LotteryPocket
+    LotteryPocket ..|> ILotteryPocketPositionOperation
+
+    class LotteryPocketPositionOperator
+    LotteryPocketPositionOperator --> IObservableLotteryRotater 
+    ILotteryPocketPositionOperation "*" --o "1" LotteryPocketPositionOperator
+
+    class LotteryPrize3DView
+    LotteryPrize3DView -* LotteryPocket
 
     interface ILotteryPrizeInsertionSlot
     class LotteryPrizeCollector
