@@ -15,8 +15,8 @@ namespace MedalPusher.Lottery {
 
         [Inject]
         private ILotteryPrizeInsertionSlot _prizeInsertionSlot;
-        [Inject]
-        private IObservableLotteryRotater _observableLotteryRotater;
+        //[Inject]
+        //private IObservableLotteryRotater _observableLotteryRotater;
 
         // Start is called before the first frame update
         void Start()

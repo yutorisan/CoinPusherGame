@@ -68,6 +68,18 @@ namespace Item{
         class PayoutFieldItemView<<View>>
         PayoutMedalView --> IObservableMedalPayouter : 払い出しメダル数を監視
         PayoutFieldItemView --> IObservableFieldItemPayouter : 払出し待機アイテムを監視
+
+        namespace Pool{
+            interface IMedalPool{
+                +IMedal PickUp()
+            }
+            class MedalPool
+
+            IMedalPool <|.. MedalPool
+            Item.Payout.MedalPayouter --> IMedalPool
+        }
+
+        class PayoutInstaller<<Installer>>
     }
     
     namespace Inventory{
@@ -92,7 +104,7 @@ namespace Item{
         Input.IGameCommandProvider <--- MedalInventory : 入力を監視
 
         class FieldItemApplyer
-        Item.Payout.IMedalPayoutOperator <-- FieldItemApplyer : メダル払い出しを要求
+        Item.Payout.IMedalPayoutOperator <--- FieldItemApplyer : メダル払い出しを要求
 
         class MedalInventoryView<<View>>
         MedalInventoryView --> IObservableMedalInventory
@@ -101,17 +113,11 @@ namespace Item{
 
         FieldItemApplyer --> IObservableFieldItemInventory
         MedalInventory --> Item.Payout.IMedalPayoutOperator : メダル払い出しを要求
+
+        class InventoryInstaller<<Installer>>
     }
 
-    namespace Pool{
-        interface IMedalPool{
-            +IMedal PickUp()
-        }
-        class MedalPool
 
-        IMedalPool <|.. MedalPool
-        Item.Payout.MedalPayouter --> IMedalPool
-    }
 }
 
 namespace Input{
@@ -198,7 +204,10 @@ namespace Lottery{
 
     Item.Payout.IFieldItemPayoutOperator <-- LotteryPrizeCollector
     Item.Payout.IMedalPayoutOperator <-- LotteryPrizeCollector
+
+    class LotteryInstaller<<Installer>>
 }
 
+class SceneInstaller<<Installer>>
 
 @enduml

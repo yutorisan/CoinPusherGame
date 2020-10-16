@@ -6,7 +6,7 @@ using MedalPusher.Item;
 using UnityEngine;
 using UnityUtility;
 
-namespace MedalPusher.Item.Pool
+namespace MedalPusher.Item.Payout.Pool
 {
     public interface IMedalPool
     {

@@ -1,19 +1,18 @@
-using System.Linq;
 using MedalPusher.Item;
 using MedalPusher.Item.Checker;
 using MedalPusher.Item.Payout;
+using MedalPusher.Item.Payout.Pool;
 using UnityEngine;
 using Zenject;
 
-public class InterfaceInstaller : MonoInstaller
+public class InventoryInstaller : MonoInstaller
 {
     public override void InstallBindings()
     {
-        Container.Bind<IObservableMedalPayouter>()
-                 .To<MedalPayouter>()
+        Container.Bind<IObservableMedalInventory>()
+                 .To<MedalInventory>()
                  .FromComponentInHierarchy()
                  .AsCached();
 
-        
     }
 }
