@@ -12,11 +12,10 @@ namespace MedalPusher.Lottery {
     {
         [SerializeField, HideInInspector]
         private TextMesh _priseView;
+        private ParticleSystem _particle;
 
         [SerializeField]
         private LotteryPrizeInfo m_prizeInfo;
-
-        [SerializeField, HideInInspector]
 
         [Inject]
         private ILotteryPrizeInsertionSlot _prizeInsertionSlot;
@@ -26,13 +25,18 @@ namespace MedalPusher.Lottery {
         // Start is called before the first frame update
         void Start()
         {
-            //子オブジェクトの3DTextを取得する
+            //子オブジェクトのコンポーネントを取得する
             _priseView = GetComponentInChildren<TextMesh>();
+            _particle = GetComponentInChildren<ParticleSystem>();
 
             //自分のポケットにボールが入ったら、自身の持つ景品を投入する
             this.OnTriggerEnterAsObservable()
                 .Where(col => col.CompareTag("LotteryBall"))
-                .Subscribe(_ => _prizeInsertionSlot.InsertPrize(m_prizeInfo));
+                .Subscribe(_ =>
+                {
+                    _prizeInsertionSlot.InsertPrize(m_prizeInfo);
+                    _particle.Play();
+                });
         }
 
         private void OnValidate()
