@@ -16,11 +16,14 @@ namespace MedalPusher.Lottery {
 
         [SerializeField]
         private LotteryPrizeInfo m_prizeInfo;
+        [SerializeField]
+        private int m_fontSize = 80;
 
         [Inject]
         private ILotteryPrizeInsertionSlot _prizeInsertionSlot;
         //[Inject]
         //private IObservableLotteryRotater _observableLotteryRotater;
+
 
         // Start is called before the first frame update
         void Start()
@@ -43,6 +46,7 @@ namespace MedalPusher.Lottery {
         {
             _priseView = GetComponentInChildren<TextMesh>();
             _priseView.text = m_prizeInfo.PrizeMedals.ToString();
+            _priseView.fontSize = m_fontSize;
         }
 
 
