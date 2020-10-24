@@ -10,6 +10,7 @@ TagManager:
   - Medal
   - View
   - LotteryBall
+  - DebugUI
   layers:
   - Default
   - TransparentFX
