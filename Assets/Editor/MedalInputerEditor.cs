@@ -5,15 +5,15 @@ using MedalPusher.Medal;
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(MedalPayouter))]
+[CustomEditor(typeof(NormalMedalPayouter))]
 public class MedalInputerEditor : Editor
 {
     int clones = 1;
-    private MedalPayouter payouter;
+    private NormalMedalPayouter payouter;
 
     private void OnEnable()
     {
-        payouter = target as MedalPayouter;
+        payouter = target as NormalMedalPayouter;
     }
 
 
@@ -26,7 +26,7 @@ public class MedalInputerEditor : Editor
         clones = medals;
         if (GUILayout.Button("投入"))
         {
-            payouter.Payout(medals);
+            payouter.AddPayoutStock(medals);
         }
     }
 }

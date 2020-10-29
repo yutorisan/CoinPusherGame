@@ -21,7 +21,7 @@ namespace MedalPusher.Lottery
     public class LotteryPrizeCollector : MonoBehaviour, ILotteryPrizeInsertionSlot
     {
         [Inject]
-        private IMedalPayoutOperator _medalPayouter;
+        private IMedalPayoutOperation _medalPayouter;
         //[Inject]
         //private IFieldItemPayoutOperator _fieldItemPayouter;
 
@@ -34,7 +34,7 @@ namespace MedalPusher.Lottery
         public void InsertPrize(LotteryPrizeInfo prizeInfo)
         {
             //メダル払出し要求
-            _medalPayouter.Payout(prizeInfo.PrizeMedals);
+            _medalPayouter.PayoutRequest(prizeInfo.PrizeMedals);
         }
     }
 }

@@ -1,77 +1,69 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using UnityEngine;
+using System.Collections;
 using MedalPusher.Item.Payout.Pool;
 using UniRx;
-using UnityEngine;
-using UnityUtility;
 using Zenject;
+using System;
 
 namespace MedalPusher.Item.Payout
 {
-    /// <summary>
-    /// メダルを払い出す
-    /// </summary>
-    public class MedalPayouter : MonoBehaviour, IMedalPayoutOperator, IObservableMedalPayouter
+    public interface IMedalPayouter
     {
-        ///// <summary>
-        ///// メダルのモデル
-        ///// </summary>
-        //private UniReadOnly<UnityEngine.Object> _medalObject = new UniReadOnly<UnityEngine.Object>();
-        [Inject]
-        private IMedalPool m_medalPool;
+        /// <summary>
+        /// 払出しストックに追加する
+        /// </summary>
+        /// <param name="medals"></param>
+        void AddPayoutStock(int medals);
+        /// <summary>
+        /// 払出し待機中のメダル数
+        /// </summary>
+        IObservable<int> PayoutStock { get; }
+    }
+    public abstract class MedalPayouter : MonoBehaviour, IMedalPayouter
+    {
         /// <summary>
         /// 払出し中のメダル数
         /// </summary>
         private ReactiveProperty<int> m_payoutMedalStocks = new ReactiveProperty<int>(0);
+        [Inject]
+        private IMedalPool m_medalPool;
         /// <summary>
-        /// 払出しポイント
+        /// 払出しステータス
         /// </summary>
-        [SerializeField]
-        private Transform m_payoutPoint;
+        protected PayoutStatus m_status = PayoutStatus.Idol;
         /// <summary>
-        /// 払出しの間隔
+        /// フィールドにメダルを出現させる
         /// </summary>
-        private TimeSpan m_payoutInterval = TimeSpan.FromMilliseconds(100);
-        private PayoutStatus m_status = PayoutStatus.Idol;
-
-        private void Start()
+        protected void PayoutToField(Vector3 position)
         {
-            //_medalObject.Initialize(Resources.Load("Medal1"));
-
-            m_payoutMedalStocks.Pairwise()
-                               //Idol中のみ
-                               .Where(_ => m_status == PayoutStatus.Idol)
-                               //前より増えている
-                               .Where(pair => pair.Current > pair.Previous)
-                               //払出しを開始するのでステータスを変える
-                               .Do(_ => m_status = PayoutStatus.Payouting)
-                               //一定間隔で発行するIObservableを生成
-                               .SelectMany(_ => Observable.Interval(m_payoutInterval)
-                                                          //ストックが0になるまで
-                                                          .TakeUntil(m_payoutMedalStocks.Where(n => n == 0))
-                                                          //0になったらステータスをIdolにする
-                                                          .DoOnCompleted(() => m_status = PayoutStatus.Idol))
-                               //メダルを投入
-                               .Subscribe(_ =>
-                               {
-                                   m_medalPool.PickUp(MedalValue.Value1, m_payoutPoint.position, Quaternion.identity);
-                                   //Instantiate(_medalObject.Value, m_payoutPoint.position, Quaternion.identity);
-                                   --m_payoutMedalStocks.Value;
-                               });
+            m_medalPool.PickUp(MedalValue.Value1, position, Quaternion.identity);
+            --m_payoutMedalStocks.Value;
         }
+        /// <summary>
+        /// メダルの払出しを開始させるタイミング
+        /// </summary>
+        protected IObservable<Unit> PowerOnTiming =>
+            PayoutStock.Pairwise()
+                       //Idol中のみ
+                       .Where(_ => m_status == PayoutStatus.Idol)
+                       //前より増えている
+                       .Where(pair => pair.Current > pair.Previous)
+                       .AsUnitObservable()
+                       //払出しを開始するのでステータスを変える
+                       .Do(_ => m_status = PayoutStatus.Payouting);
 
 
-        public IObservable<int> PayoutStockMedals => m_payoutMedalStocks.AsObservable();
-
-        public void Payout(int medals)
+        public void AddPayoutStock(int medals)
         {
             m_payoutMedalStocks.Value += medals;
         }
 
-        private enum PayoutStatus
-        {
-            Idol,
-            Payouting
-        }
+        public IObservable<int> PayoutStock => m_payoutMedalStocks.AsObservable();
+    }
+
+    public enum PayoutStatus
+    {
+        Idol,
+        Payouting
     }
 }

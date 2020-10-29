@@ -28,7 +28,7 @@ public class MedalInventory : MonoBehaviour, IObservableMedalInventory
     /// メダル投入時に払出し司令を行う
     /// </summary>
     [Inject]
-    private IMedalPayoutOperator m_medalPayoutOperator;
+    private IMedalPayoutOperation m_medalPayoutOperator;
 
     /// <summary>
     /// インベントリ内のメダル枚数
@@ -44,7 +44,7 @@ public class MedalInventory : MonoBehaviour, IObservableMedalInventory
         //メダルが1枚以上あったら支払う
         if(m_inventoryMedalCount.Value > 0)
         {
-            m_medalPayoutOperator.Payout(1);
+            m_medalPayoutOperator.PayoutRequest(1);
             --m_inventoryMedalCount.Value;
         }
     }

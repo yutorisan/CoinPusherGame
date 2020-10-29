@@ -15,8 +15,8 @@ public class SceneInstaller : MonoInstaller
                  .To<MedalPusher.Item.Checker.MedalChecker>()
                  .FromComponentOn(m_winMedalChecker)
                  .AsCached();
-        Container.Bind<IMedalPayoutOperator>()
-                 .To<MedalPayouter>()
+        Container.Bind<IMedalPayoutOperation>()
+                 .To<MedalPayouterStorage>()
                  .FromComponentInHierarchy()
                  .AsCached();
 
