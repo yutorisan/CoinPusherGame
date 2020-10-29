@@ -45,15 +45,22 @@ namespace Item{
     }
     
     namespace Payout{
-        interface IObservableMedalPayouter{
-            +IObservable<Unit> InputedMedalCount
-        }
-        interface IMedalPayoutOperator{
-            +void Payout(int);
-        }
-        class MedalPayouter
-        MedalPayouter ..|> IMedalPayoutOperator
-        IObservableMedalPayouter <|.. MedalPayouter
+        interface IMedalPayoutOperation
+        interface IObservableMedalPayoutStock
+        class MedalPayouterStorage
+        MedalPayouterStorage ..|> IMedalPayoutOperation
+        IObservableMedalPayoutStock <|.. MedalPayouterStorage
+        IMedalPayouter ---* MedalPayouterStorage
+
+        interface IMedalPayouter
+        abstract MedalPayouter
+        class NormalMedalPayouter
+        class DeployMedalPayouter
+        IMedalPayouter <|.. MedalPayouter
+        MedalPayouter <|-- NormalMedalPayouter
+        MedalPayouter <|-- DeployMedalPayouter
+
+
 
         interface IObservableFieldItemPayouter{
         }
@@ -66,7 +73,7 @@ namespace Item{
 
         class PayoutMedalView<<View>>
         class PayoutFieldItemView<<View>>
-        PayoutMedalView --> IObservableMedalPayouter : 払い出しメダル数を監視
+        PayoutMedalView --> IObservableMedalPayoutStock : 払い出しメダル数を監視
         PayoutFieldItemView --> IObservableFieldItemPayouter : 払出し待機アイテムを監視
 
         namespace Pool{
@@ -104,7 +111,7 @@ namespace Item{
         Input.IGameCommandProvider <--- MedalInventory : 入力を監視
 
         class FieldItemApplyer
-        Item.Payout.IMedalPayoutOperator <--- FieldItemApplyer : メダル払い出しを要求
+        Item.Payout.IMedalPayoutOperation <--- FieldItemApplyer : メダル払い出しを要求
 
         class MedalInventoryView<<View>>
         MedalInventoryView --> IObservableMedalInventory
@@ -112,7 +119,7 @@ namespace Item{
         FieldItemInventoryView --> IObservableFieldItemInventory
 
         FieldItemApplyer --> IObservableFieldItemInventory
-        MedalInventory --> Item.Payout.IMedalPayoutOperator : メダル払い出しを要求
+        MedalInventory --> Item.Payout.IMedalPayoutOperation : メダル払い出しを要求
 
         class InventoryInstaller<<Installer>>
     }
@@ -203,7 +210,7 @@ namespace Lottery{
     LotteryPocket *- LotteryPrizeInfo
 
     Item.Payout.IFieldItemPayoutOperator <-- LotteryPrizeCollector
-    Item.Payout.IMedalPayoutOperator <-- LotteryPrizeCollector
+    Item.Payout.IMedalPayoutOperation <-- LotteryPrizeCollector
 
     class LotteryInstaller<<Installer>>
 }
