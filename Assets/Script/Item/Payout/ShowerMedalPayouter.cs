@@ -13,7 +13,7 @@ namespace MedalPusher.Item.Payout
         {
             var size = GetComponent<Collider>().bounds.size;
 
-            PowerOnTiming.SelectMany(_ => Observable.Interval(System.TimeSpan.FromMilliseconds(20))
+            PowerOnTiming.SelectMany(_ => Observable.Interval(System.TimeSpan.FromMilliseconds(10))
                                                     //ストックが0になるまで
                                                     .TakeUntil(PayoutStock.Where(n => n == 0))
                                                     //0になったらステータスをIdolにする
