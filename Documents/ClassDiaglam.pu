@@ -80,9 +80,11 @@ namespace Item{
             interface IMedalPool{
                 +IMedal PickUp()
             }
+            interface IObservableMedalPoolInfo
             class MedalPool
 
             IMedalPool <|.. MedalPool
+            IObservableMedalPoolInfo <|.. MedalPool
             Item.Payout.MedalPayouter --> IMedalPool
         }
 
@@ -213,6 +215,12 @@ namespace Lottery{
     Item.Payout.IMedalPayoutOperation <-- LotteryPrizeCollector
 
     class LotteryInstaller<<Installer>>
+}
+
+namespace Debug{
+    class MedalPoolLog
+
+    Item.Payout.Pool.IObservableMedalPoolInfo <-- MedalPoolLog
 }
 
 class SceneInstaller<<Installer>>
