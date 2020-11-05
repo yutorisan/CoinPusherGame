@@ -22,7 +22,13 @@ namespace MedalPusher.Item
         public int Value => (int)m_value;
         public MedalValue ValueType => m_value;
 
-        public void ReturnToPool() => this.gameObject.SetActive(false);
+        public event Action<MedalValue> OnReturnToPool;
+
+        public void ReturnToPool()
+        {
+            OnReturnToPool(m_value);
+            this.gameObject.SetActive(false);
+        }
     }
 
     public enum MedalValue

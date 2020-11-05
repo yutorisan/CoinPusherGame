@@ -1,6 +1,7 @@
 using MedalPusher.Item;
 using MedalPusher.Item.Checker;
 using MedalPusher.Item.Payout;
+using MedalPusher.Item.Payout.Pool;
 using UnityEngine;
 using Zenject;
 
@@ -19,7 +20,10 @@ public class SceneInstaller : MonoInstaller
                  .To<MedalPayouterStorage>()
                  .FromComponentInHierarchy()
                  .AsCached();
-
+        Container.Bind<IObservableMedalPoolInfo>()
+                 .To<MedalPool>()
+                 .FromComponentInHierarchy()
+                 .AsCached();
 
     }
 }
