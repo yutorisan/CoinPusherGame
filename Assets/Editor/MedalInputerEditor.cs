@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using MedalPusher.Item.Payout;
-using MedalPusher.Medal;
 using UnityEditor;
 using UnityEngine;
 
