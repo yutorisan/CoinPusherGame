@@ -6,11 +6,21 @@ using MedalPusher.Item;
 using UniRx;
 using UnityEngine;
 using UnityUtility;
+using UniRx.Diagnostics;
 
-namespace MedalPusher.Item.Payout.Pool
+namespace MedalPusher.Item.Pool
 {
     public interface IMedalPool
     {
+        /// <summary>
+        /// MedalPoolからメダルオブジェクトをアクティブ化して配置する
+        /// rotationはQuaternion.identity
+        /// </summary>
+        /// <param name="valueType"></param>
+        /// <param name="position"></param>
+        /// <param name="rotation"></param>
+        /// <returns></returns>
+        IMedal PickUp(MedalValue valueType, Vector3 position);
         /// <summary>
         /// MedalPoolからメダルオブジェクトをアクティブ化して配置する
         /// </summary>
@@ -25,7 +35,7 @@ namespace MedalPusher.Item.Payout.Pool
     /// </summary>
     public interface IObservableMedalPoolInfo
     {
-        IReadOnlyDictionary<MedalValue, ObservableMedalPoolInfo> MedalValueObservableInfoTable { get; }
+        IReadOnlyDictionary<MedalValue, ObservableMedalPoolInfo> ObservableCountInfo { get; }
     }
 
     public class MedalPool : MonoBehaviour, IMedalPool, IObservableMedalPoolInfo
@@ -33,64 +43,59 @@ namespace MedalPusher.Item.Payout.Pool
         /// <summary>
         /// メダルプール本体
         /// </summary>
-        private Dictionary<MedalValue, IReactiveCollection<Medal>> _medalPool = new Dictionary<MedalValue, IReactiveCollection<Medal>>();
+        private readonly Dictionary<MedalValue, IReactiveCollection<Medal>> _medalPool = new Dictionary<MedalValue, IReactiveCollection<Medal>>();
         /// <summary>
-        /// メダル種別のアクティベートされた（フィールド上に存在する）メダル数
+        /// メダルのカウント情報を管理するモジュール
         /// </summary>
-        private Dictionary<MedalValue, IReactiveProperty<int>> _activatedMedalCountTable = new Dictionary<MedalValue, IReactiveProperty<int>>();
-
+        private readonly MedalPoolCounter _couter = new MedalPoolCounter();
 
         [SerializeField]
         private List<TypePrefabInitCapaSet> m_poolList;
 
-        public IReadOnlyDictionary<MedalValue, ObservableMedalPoolInfo> MedalValueObservableInfoTable =>
-            _medalPool.Zip(_activatedMedalCountTable, (pool, activated) => (pool.Key, new ObservableMedalPoolInfo(pool.Value.ObserveCountChanged(), activated.Value)))
-                      .ToDictionary(x => x.Key, x => x.Item2);
+        /// <summary>
+        /// メダルプールのカウント情報を取得する
+        /// </summary>
+        public IReadOnlyDictionary<MedalValue, ObservableMedalPoolInfo> ObservableCountInfo => _couter.GetObservableInfo();
 
         private void Awake()
         {
             //SerializeFieldで設定された数だけメダルオブジェクトを生成する
             foreach (var set in m_poolList)
             {
-                _medalPool.Add(set.ValueType, new ReactiveCollection<Medal>(Enumerable.Range(1, set.Capacity).Select(_ => //ReactiveCollectionの初期値を発行したいよぉ
-                {
-                    var medal = Instantiate(set.Prefab);
-                    medal.gameObject.SetActive(false);
-                    medal.OnReturnToPool += Returned;
-                    return medal;
-                }).ToList()));
-
-                _activatedMedalCountTable.Add(set.ValueType, new ReactiveProperty<int>(0));
+                //メダルのインスタンスを生成
+                var medals = Enumerable.Range(1, set.Capacity)
+                                       .Select(_ => Instantiate(set.Prefab))
+                                       .ToArray(); //遅延評価回避
+                
+                //メダルプールに入れる
+                _medalPool.Add(set.ValueType, new ReactiveCollection<Medal>(medals));//ReactiveCollectionの初期値を発行したいよぉ
+                //メダルのアクティブ数のカウントを委託する
+                _couter.OutsourceCounting(medals);
             }
-            //new ReactiveCollection<int>()
         }
 
-
+        public IMedal PickUp(MedalValue valueType, Vector3 position) => PickUp(valueType, position, Quaternion.identity);
         public IMedal PickUp(MedalValue valueType, Vector3 position, Quaternion rotation)
         {
-            ++_activatedMedalCountTable[valueType].Value;
-
             //activeでないメダルを見つける
             var idolMedal = _medalPool[valueType].FirstOrDefault(m => m.gameObject.activeSelf == false);
             //見つかったらそれを返す
             if (idolMedal != null)
             {
-                idolMedal.gameObject.SetActive(true);
-                idolMedal.gameObject.transform.position = position;
-                idolMedal.gameObject.transform.rotation = rotation;
+                idolMedal.Takeout(position, rotation);
                 return idolMedal;
             }
+            else
+            {
+                //見つからなかった（全て使用中）なら、新しく生成する
+                var medal = Instantiate(m_poolList.First(set => set.ValueType == valueType).Prefab, position, rotation);
+                //メダルプールに入れる
+                _medalPool[valueType].Add(medal);
+                //アクティブ数のカウントを委託
+                _couter.OutsourceCounting(medal);
 
-            //見つからなかった（全て使用中）なら、新しく生成する
-            var generated = Instantiate(m_poolList.First(set => set.ValueType == valueType).Prefab, position, rotation);
-            generated.OnReturnToPool += Returned;
-            _medalPool[valueType].Add(generated);
-            return generated;
-        }
-
-        private void Returned(MedalValue medalValue)
-        {
-            --_activatedMedalCountTable[medalValue].Value;
+                return medal;
+            }
         }
 
         [Serializable]
@@ -106,6 +111,61 @@ namespace MedalPusher.Item.Payout.Pool
             public MedalValue ValueType => valueType;
             public Medal Prefab => prefab;
             public int Capacity => initCapacity;
+        }
+
+        /// <summary>
+        /// メダルプールで管理されているメダルの各種カウント情報を管理する
+        /// </summary>
+        private class MedalPoolCounter
+        {
+            /// <summary>
+            /// 各メダルのアクティブメダル数
+            /// </summary>
+            private readonly IReadOnlyDictionary<MedalValue, ReactiveProperty<int>> _activeMedalCountTable;
+            /// <summary>
+            /// 各メダルのインスタンス生成総数
+            /// </summary>
+            private readonly IReadOnlyDictionary<MedalValue, ReactiveProperty<int>> _instantiatedMedalCountTable;
+
+
+            public MedalPoolCounter()
+            {
+                //Dictionaryを初期化
+                var medalTypes = Enum.GetValues(typeof(MedalValue)).Cast<MedalValue>();
+                _activeMedalCountTable = medalTypes.ToDictionary(medalval => medalval, _ => new ReactiveProperty<int>());
+                _instantiatedMedalCountTable = medalTypes.ToDictionary(medalval => medalval, _ => new ReactiveProperty<int>());
+            }
+
+            /// <summary>
+            /// メダルのアクティブ状態のチェックを委託する
+            /// </summary>
+            /// <param name="medal"></param>
+            public void OutsourceCounting(IReadOnlyMedal medal)
+            {
+                //メダルのアクティブ状態の変化を購読して、全体のアクティブメダル数をカウントする
+                //各々のメダルがアクティブになれば+1, 非アクティブになれば-1する
+                medal.Status
+                     .Skip(1)
+                     .Select(status => status.IsUsed())
+                     .Select(used => used ? 1 : -1)
+                     .Subscribe(diff => _activeMedalCountTable[medal.ValueType].Value += diff);
+                //インスタンス生成数を更新
+                ++_instantiatedMedalCountTable[medal.ValueType].Value;
+            }
+            public void OutsourceCounting(IEnumerable<IReadOnlyMedal> medals)
+            {
+                foreach (var medal in medals) OutsourceCounting(medal);
+            }
+
+            /// <summary>
+            /// カウント情報の購読を取得する
+            /// </summary>
+            /// <returns></returns>
+            public IReadOnlyDictionary<MedalValue, ObservableMedalPoolInfo> GetObservableInfo() =>
+                _instantiatedMedalCountTable.Zip(_activeMedalCountTable, (instantiateKVP, activeKVP) =>
+                                                    new { ValueType = instantiateKVP.Key,
+                                                          Info = new ObservableMedalPoolInfo(instantiateKVP.Value, activeKVP.Value) })
+                                            .ToDictionary(tuple => tuple.ValueType, tuple => tuple.Info);
         }
     }
 

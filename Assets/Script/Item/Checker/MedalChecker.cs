@@ -24,7 +24,7 @@ namespace MedalPusher.Item.Checker
 
 
             if (m_isDestroyOnChecked)
-                ItemChecked.Subscribe(m => m.ReturnToPool());
+                ItemChecked.Subscribe(medal => medal.ReturnToPool());
         }
 
         public IObservable<IMedal> ItemChecked { get; private set; }

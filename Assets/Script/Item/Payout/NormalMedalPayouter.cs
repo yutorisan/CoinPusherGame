@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using MedalPusher.Item.Payout.Pool;
+using MedalPusher.Item.Pool;
 using UniRx;
 using UnityEngine;
 using UnityUtility;

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-using MedalPusher.Item.Payout.Pool;
+using MedalPusher.Item.Pool;
 using UniRx;
 using Zenject;
 using System;

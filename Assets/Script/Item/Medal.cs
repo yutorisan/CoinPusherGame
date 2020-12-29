@@ -1,9 +1,10 @@
 ﻿using System;
+using MedalPusher.Item.Pool;
 using UnityEngine;
 
 namespace MedalPusher.Item
 {
-    public interface IMedal : IFieldObject, IPoolObject
+    public interface IReadOnlyMedal : IReadOnlyPoolObject
     {
         /// <summary>
         /// メダルの価値（枚数）
@@ -14,7 +15,11 @@ namespace MedalPusher.Item
         /// </summary>
         MedalValue ValueType { get; }
     }
-    public class Medal : MonoBehaviour, IMedal
+    public interface IMedal : IFieldObject, IReadOnlyMedal, IReturnOnlyPoolObject
+    {
+
+    }
+    public class Medal : PoolObject, IMedal
     {
         [SerializeField]
         private MedalValue m_value;
@@ -22,13 +27,6 @@ namespace MedalPusher.Item
         public int Value => (int)m_value;
         public MedalValue ValueType => m_value;
 
-        public event Action<MedalValue> OnReturnToPool;
-
-        public void ReturnToPool()
-        {
-            OnReturnToPool(m_value);
-            this.gameObject.SetActive(false);
-        }
     }
 
     public enum MedalValue

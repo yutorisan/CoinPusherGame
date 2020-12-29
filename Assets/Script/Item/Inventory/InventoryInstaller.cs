@@ -1,7 +1,7 @@
 using MedalPusher.Item;
 using MedalPusher.Item.Checker;
 using MedalPusher.Item.Payout;
-using MedalPusher.Item.Payout.Pool;
+using MedalPusher.Item.Pool;
 using UnityEngine;
 using Zenject;
 

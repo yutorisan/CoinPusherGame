@@ -5,8 +5,6 @@ namespace Case{
 }
 
 namespace Item{
-    interface IPoolObject
-
     interface IFieldItem
     class FieldItem
     interface IFieldItemEvent
@@ -15,14 +13,51 @@ namespace Item{
     IFieldItemEvent <|.. FieldItemEvent
     FieldItem *- IFieldItemEvent
 
+    interface IReadOnlyMedal{
+        +Value { get; } : int
+        +ValueType { get; } : MedalValue
+    }
     interface IMedal
     class Medal
-    IPoolObject <|-- IMedal
+    IReadOnlyMedal <|-- IMedal
     IMedal <|.. Medal
 
     interface IFieldObject
     IFieldObject <|-- IMedal
     IFieldObject <|-- IFieldItem
+
+    namespace Pool{
+        interface IReadOnlyPoolObject{
+            +IsUsed {get;} : bool
+            +UsedChanged<<event>> : bool
+        }
+        interface IReturnOnlyPoolObject{
+            +ReturnToPool() : void
+        }
+        interface IPoolObject{
+            +Takeout() : void
+        }
+        abstract PoolObject
+        
+        IReadOnlyPoolObject <|-- IReturnOnlyPoolObject
+        IReturnOnlyPoolObject <|-- IPoolObject
+        IReturnOnlyPoolObject <|-- Item.IMedal
+        IPoolObject <|.. PoolObject
+        PoolObject <|-- Item.Medal
+        IReadOnlyPoolObject <|-- Item.IReadOnlyMedal
+        
+
+        interface IMedalPool{
+            +IMedal PickUp()
+        }
+        interface IObservableMedalPoolInfo
+        class MedalPool
+
+        IMedalPool <|.. MedalPool
+        IObservableMedalPoolInfo <|.. MedalPool
+
+        MedalPool --> Item.Medal
+    }
     
     namespace Checker{
         interface IObservableItemChecker<TItem>{
@@ -59,7 +94,7 @@ namespace Item{
         IMedalPayouter <|.. MedalPayouter
         MedalPayouter <|-- NormalMedalPayouter
         MedalPayouter <|-- DeployMedalPayouter
-
+        MedalPayouter --> Item.Pool.IMedalPool
 
 
         interface IObservableFieldItemPayouter{
@@ -76,17 +111,7 @@ namespace Item{
         PayoutMedalView --> IObservableMedalPayoutStock : 払い出しメダル数を監視
         PayoutFieldItemView --> IObservableFieldItemPayouter : 払出し待機アイテムを監視
 
-        namespace Pool{
-            interface IMedalPool{
-                +IMedal PickUp()
-            }
-            interface IObservableMedalPoolInfo
-            class MedalPool
 
-            IMedalPool <|.. MedalPool
-            IObservableMedalPoolInfo <|.. MedalPool
-            Item.Payout.MedalPayouter --> IMedalPool
-        }
 
         class PayoutInstaller<<Installer>>
     }
@@ -220,7 +245,7 @@ namespace Lottery{
 namespace Debug{
     class MedalPoolLog
 
-    Item.Payout.Pool.IObservableMedalPoolInfo <-- MedalPoolLog
+    Item.Pool.IObservableMedalPoolInfo <-- MedalPoolLog
 }
 
 class SceneInstaller<<Installer>>
