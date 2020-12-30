@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using MedalPusher.Item.Pool;
 using UniRx;
 using UnityEngine;
+using UnityEngine.Scripting;
 using UnityUtility;
 using Zenject;
 
@@ -26,12 +27,12 @@ namespace MedalPusher.Item.Payout
         private void Start()
         {
             PowerOnTiming.SelectMany(_ => Observable.Interval(m_payoutInterval)
-                                                        //ストックが0になるまで
+                                                    //ストックが0になるまで
                                                     .TakeUntil(PayoutStock.Where(n => n == 0))
-                                                        //0になったらステータスをIdolにする
+                                                    //0になったらステータスをIdolにする
                                                     .DoOnCompleted(() => m_status = PayoutStatus.Idol))
                          //メダルを投入
-                         .Subscribe(_ => PayoutToField(m_payoutPoint.position));
+                         .Subscribe(_ => PayoutToField(m_payoutPoint.position, Quaternion.Euler(90, 0, 0)));
         }
     }
 }

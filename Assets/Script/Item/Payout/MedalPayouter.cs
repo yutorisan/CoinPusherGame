@@ -34,11 +34,15 @@ namespace MedalPusher.Item.Payout
         /// <summary>
         /// フィールドにメダルを出現させる
         /// </summary>
-        protected void PayoutToField(Vector3 position)
+        protected void PayoutToField(Vector3 position, Quaternion rotation)
         {
-            m_medalPool.PickUp(MedalValue.Value1, position, Quaternion.identity);
+            m_medalPool.PickUp(MedalValue.Value1, position, rotation);
             --m_payoutMedalStocks.Value;
         }
+        /// <summary>
+        /// フィールドにメダルを出現させる
+        /// </summary>
+        protected void PayoutToField(Vector3 position) => PayoutToField(position, Quaternion.identity);
         /// <summary>
         /// メダルの払出しを開始させるタイミング
         /// </summary>
