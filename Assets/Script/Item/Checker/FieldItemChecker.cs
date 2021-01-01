@@ -8,6 +8,8 @@ namespace MedalPusher.Item.Checker
     {
         public IObservable<IFieldItem> Checked => throw new NotImplementedException();
 
+        public IObservable<int> Count => throw new NotImplementedException();
+
         // Use this for initialization
         void Start()
         {

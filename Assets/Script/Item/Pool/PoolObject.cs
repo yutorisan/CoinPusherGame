@@ -106,7 +106,6 @@ namespace MedalPusher.Item.Pool
                 //使用状況を同一の値で上書きしようとした場合は例外発生させる
                 if (_useStatus.Value == newUseStatus) throw new PoolObjectInvalidOperationException();
                 _parentGObj.SetActive(newUseStatus.IsUsed());
-                print($"発行：{newUseStatus}");
                 _useStatus.Value = newUseStatus;
             }
 

@@ -12,6 +12,10 @@ namespace MedalPusher.Item.Checker
         /// アイテムを検出した
         /// </summary>
         IObservable<TItem> Checked { get; }
+        /// <summary>
+        /// Collider内にいるアイテムの数
+        /// </summary>
+        IObservable<int> Count { get; }  
     }
 
     /// <summary>
