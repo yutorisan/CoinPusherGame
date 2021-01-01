@@ -6,7 +6,7 @@ namespace MedalPusher.Item.Checker
 {
     public class FieldItemChecker : MonoBehaviour, IObservableItemChecker<IFieldItem>
     {
-        public IObservable<IFieldItem> ItemChecked => throw new NotImplementedException();
+        public IObservable<IFieldItem> Checked => throw new NotImplementedException();
 
         // Use this for initialization
         void Start()

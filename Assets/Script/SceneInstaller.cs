@@ -12,10 +12,6 @@ public class SceneInstaller : MonoInstaller
 
     public override void InstallBindings()
     {
-        Container.Bind<IObservableItemChecker<IMedal>>()
-                 .To<MedalPusher.Item.Checker.MedalChecker>()
-                 .FromComponentOn(m_winMedalChecker)
-                 .AsCached();
         Container.Bind<IMedalPayoutOperation>()
                  .To<MedalPayouterStorage>()
                  .FromComponentInHierarchy()

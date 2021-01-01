@@ -5,6 +5,7 @@ using MedalPusher.Input;
 using MedalPusher.Item;
 using MedalPusher.Item.Checker;
 using MedalPusher.Item.Payout;
+using Sirenix.OdinInspector;
 using UniRx;
 using UnityEngine;
 using Zenject;
@@ -17,13 +18,13 @@ public interface IObservableMedalInventory
     IObservable<int> ObservableMedalInventoryCount { get; }
 }
 
-public class MedalInventory : MonoBehaviour, IObservableMedalInventory
+public class MedalInventory : SerializedMonoBehaviour, IObservableMedalInventory
 {
     /// <summary>
     /// メダルの獲得通知を受け取る
     /// </summary>
-    [Inject]
-    private IObservableItemChecker<IMedal> m_medalChecker;
+    [SerializeField]
+    private IObservableMedalChecker m_medalChecker;
     /// <summary>
     /// メダル投入時に払出し司令を行う
     /// </summary>
@@ -52,7 +53,7 @@ public class MedalInventory : MonoBehaviour, IObservableMedalInventory
     private void Start()
     {
         //獲得メダルを購読してインベントリに追加
-        m_medalChecker.ItemChecked
+        m_medalChecker.Checked
                       .Subscribe(medal => m_inventoryMedalCount.Value += medal.Value);
         //メダル投入コマンドを受け取ったらメダルを投入
         GameCommandFormatter.Instance

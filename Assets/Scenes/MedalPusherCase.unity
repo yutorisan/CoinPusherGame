@@ -25645,6 +25645,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: LotteryPocket
       objectReference: {fileID: 0}
+    - target: {fileID: 8100620505813797060, guid: 8c4d799be33d444bdb9da1686eb8d876,
+        type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8100620505813797061, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_IsActive
@@ -32476,6 +32481,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd50bf3bd696841aaa8e7874dc1be305, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes:
+    - Name: m_medalChecker
+      Entry: 6
+      Data: 
   m_inventoryMedalCount:
     value: 500
 --- !u!1 &1353615089

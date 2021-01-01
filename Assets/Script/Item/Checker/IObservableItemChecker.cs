@@ -11,6 +11,12 @@ namespace MedalPusher.Item.Checker
         /// <summary>
         /// アイテムを検出した
         /// </summary>
-        IObservable<TItem> ItemChecked { get; }
+        IObservable<TItem> Checked { get; }
     }
+
+    /// <summary>
+    /// メダルの検出通知を受け取る
+    /// </summary>
+    public interface IObservableMedalChecker : IObservableItemChecker<IMedal> { }
+
 }

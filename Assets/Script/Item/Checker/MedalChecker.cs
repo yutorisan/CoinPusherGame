@@ -6,7 +6,7 @@ using UniRx.Triggers;
 
 namespace MedalPusher.Item.Checker
 {
-    public class MedalChecker : MonoBehaviour, IObservableItemChecker<IMedal>
+    public class MedalChecker : MonoBehaviour, IObservableMedalChecker
     {
         [SerializeField]
         private bool m_isDestroyOnChecked;
@@ -17,17 +17,17 @@ namespace MedalPusher.Item.Checker
         void Awake()
         {
             //TriggerしたもののtagがMedalだったら、そのIMedalコンポーネントを発行する
-            ItemChecked = this.OnTriggerEnterAsObservable()
-                              .Where(col => col.CompareTag("Medal"))
-                              .Select(col => col.GetComponent<IMedal>())
-                              .Share();
+            Checked = this.OnTriggerEnterAsObservable()
+                          .Where(col => col.CompareTag("Medal"))
+                          .Select(col => col.GetComponent<IMedal>())
+                          .Share();
 
 
             if (m_isDestroyOnChecked)
-                ItemChecked.Subscribe(medal => medal.ReturnToPool());
+                Checked.Subscribe(medal => medal.ReturnToPool());
         }
 
-        public IObservable<IMedal> ItemChecked { get; private set; }
+        public IObservable<IMedal> Checked { get; private set; }
 
     }
 }
