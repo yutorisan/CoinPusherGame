@@ -77,6 +77,9 @@ namespace Item{
         class FieldItemChecker
         IObservableItemChecker <|-- IObservableFieldItemChecker
         IObservableFieldItemChecker <|.. FieldItemChecker
+
+        MedalCheckerIndicator --> IObservableMedalChecker
+
     }
     
     namespace Payout{
@@ -239,7 +242,18 @@ namespace Lottery{
     Item.Payout.IFieldItemPayoutOperator <-- LotteryPrizeCollector
     Item.Payout.IMedalPayoutOperation <-- LotteryPrizeCollector
 
-    class LotteryInstaller<<Installer>>
+    interface IBallBornOperator{
+        +Born() : void
+    }
+    class BallBorner
+    IBallBornOperator <|.. BallBorner
+
+
+    class LotteryStockCollector
+    IObservableMedalChecker ))-- LotteryStockCollector
+    LotteryStockCollector --> IBallBornOperator
+
+    class LotteryInstaller<<Installer>>{}
 }
 
 namespace Debug{
