@@ -14,5 +14,9 @@ public class LotteryInstaller : MonoInstaller
                  .To<LotteryPrizeCollector>()
                  .FromComponentInHierarchy()
                  .AsCached();
+        Container.Bind<IBallBornOperator>()
+                 .To<BallBorner>()
+                 .FromComponentInHierarchy()
+                 .AsCached();
     }
 }
