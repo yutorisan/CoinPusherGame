@@ -200,29 +200,29 @@ namespace Input{
 
 namespace Slot{
     class Slot
-    Slot "1"*--"3" IReel
+    IReel "3"--*"1" Slot
 
     interface IReelOperation
     interface IReel
     class Reel
-    IReel <|.. Reel
-    Reel ..|> IReelOperation
+    Reel ..|> IReel
+    IReelOperation <|.. Reel
 
     interface ISlotController
     class SlotController
-    IReelController "3"<--"1" SlotController
+    SlotController "1"*--"3"  IReelController
 
     interface IReelController
     class ReelController
-    IReelOperation <-- ReelController
-    ReelController ..|> IReelController
+    ReelController *-- IReelOperation
+    IReelController <|.. ReelController
 
-    SlotController ..|> ISlotController
+    ISlotController <|.. SlotController 
 
     namespace Stock{
         class StockCounter
-        Slot.ISlotController <-- StockCounter
-        StockCounter --(( IObservableMedalChecker
+        StockCounter --> Slot.ISlotController
+        IObservableMedalChecker ))-- StockCounter
     }
     
 }
