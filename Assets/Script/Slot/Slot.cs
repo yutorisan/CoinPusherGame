@@ -1,18 +1,33 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
-public class Slot : MonoBehaviour
+namespace MedalPusher.Slot
 {
-    // Start is called before the first frame update
-    void Start()
+    /// <summary>
+    /// スロット
+    /// </summary>
+    public class Slot : SerializedMonoBehaviour
     {
-        
-    }
+        [SerializeField, BoxGroup("Reels")]
+        private readonly IObservableReelDecided m_reftReel;
+        [SerializeField, BoxGroup("Reels")]
+        private readonly IObservableReelDecided m_centerReel;
+        [SerializeField, BoxGroup("Reels")]
+        private readonly IObservableReelDecided m_rightReel;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+
+        // Start is called before the first frame update
+        void Start()
+        {
+
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+
+        }
     }
 }

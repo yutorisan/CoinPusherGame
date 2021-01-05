@@ -1,28 +1,25 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
 namespace MedalPusher.Slot
 {
     /// <summary>
-    /// リールに対して動きの指示を与える
+    /// スロットの役を決定できる
     /// </summary>
-    public interface IReelOperation
+    public interface ISlotRoleDeterminer
     {
 
     }
     /// <summary>
-    /// リールの出目が決定したことを通知可能
+    /// スロットの役を決定する
     /// </summary>
-    public interface IObservableReelDecided
+    public class SlotRoleDeterminer : MonoBehaviour, ISlotRoleDeterminer
     {
+        [Inject]
+        private ISlotProductionDeterminer _productionDeterminer;
 
-    }
-    /// <summary>
-    /// スロットのリール
-    /// </summary>
-    public class Reel : MonoBehaviour, IObservableReelDecided, IReelOperation
-    {
         // Start is called before the first frame update
         void Start()
         {

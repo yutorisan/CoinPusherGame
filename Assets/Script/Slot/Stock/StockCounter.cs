@@ -1,18 +1,25 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
-public class StockCounter : MonoBehaviour
+namespace MedalPusher.Slot.Stock
 {
-    // Start is called before the first frame update
-    void Start()
+    public class StockCounter : MonoBehaviour
     {
-        
-    }
+        [Inject]
+        private ISlotStarter _slotStarter;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        // Start is called before the first frame update
+        void Start()
+        {
+
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+
+        }
     }
 }

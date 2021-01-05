@@ -1,18 +1,35 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
-public class ReelController : MonoBehaviour
+namespace MedalPusher.Slot
 {
-    // Start is called before the first frame update
-    void Start()
+    /// <summary>
+    /// 各リールの動きを制御することができる
+    /// </summary>
+    public interface IReelController
     {
-        
-    }
 
-    // Update is called once per frame
-    void Update()
+    }
+    /// <summary>
+    /// 各リールの動きを制御する
+    /// </summary>
+    public class ReelController : MonoBehaviour, IReelController
     {
-        
+        [Inject]
+        private IReelOperation _reelOperation;
+
+        // Start is called before the first frame update
+        void Start()
+        {
+
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+
+        }
     }
 }
