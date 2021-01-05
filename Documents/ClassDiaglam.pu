@@ -200,31 +200,39 @@ namespace Input{
 
 namespace Slot{
     class Slot
-    IReel "3"--*"1" Slot
+    IObservableReelDecided "3"--*"1" Slot
 
     interface IReelOperation
-    interface IReel
+    interface IObservableReelDecided
     class Reel
-    Reel ..|> IReel
+    Reel ..|> IObservableReelDecided
     IReelOperation <|.. Reel
 
-    interface ISlotController
-    class SlotController
-    SlotController "1"*--"3"  IReelController
+    interface ISlotStarter
+    class SlotStarter
+    ISlotStarter <|.. SlotStarter 
+    SlotStarter *--  ISlotRoleDeterminer
+
+    interface ISlotRoleDeterminer
+    class SlotRoleDeterminer
+    ISlotRoleDeterminer <|.. SlotRoleDeterminer
+    SlotRoleDeterminer *-- ISlotProductionDeterminer
+
+    interface ISlotProductionDeterminer
+    class SlotProductionDeterminer
+    ISlotProductionDeterminer <|.. SlotProductionDeterminer
+    SlotProductionDeterminer "1"*--"3"  IReelController
 
     interface IReelController
     class ReelController
     ReelController *-- IReelOperation
     IReelController <|.. ReelController
 
-    ISlotController <|.. SlotController 
-
     namespace Stock{
         class StockCounter
-        StockCounter --> Slot.ISlotController
+        StockCounter --> Slot.ISlotStarter
         IObservableMedalChecker ))-- StockCounter
     }
-    
 }
 
 namespace PayoutPinball{
