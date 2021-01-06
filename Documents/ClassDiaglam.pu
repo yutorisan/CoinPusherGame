@@ -175,64 +175,57 @@ namespace Input{
     UserInputProvider --> Input
 }
 
-' namespace Slot{
-'     class StockManager
-'     IObservableStockCount <|.. StockManager
-'     IObservableMedalChecker ))-- StockManager
-'     class Slot
-'     enum SlotStatus{
-'         Idol
-'         Rolling
-'     }
-'     IObservableStockCount <-- Slot : ストック数を監視
-
-'     ' ISlot <|.. Slot
-'     SlotStatus <- Slot
-
-'     interface IObservableStockCount{
-'         +ObservableStockCount { get; }
-'     }
-
-'     class StockView<<View>>
-'     IObservableStockCount <- StockView : ストックを監視
-
-' }
-
 namespace Slot{
-    class Slot
-    IObservableReelDecided "3"--*"1" Slot
+    namespace Stock{
+        interface IObservableStockCount{
+            +Stock { get; } : IObservable<int>
+        }
+        class StockCounter
+        StockCounter ..|> IObservableStockCount
+        IObservableMedalChecker ))-- StockCounter
+    }
 
-    interface IReelOperation
-    interface IObservableReelDecided
-    class Reel
-    Reel ..|> IObservableReelDecided
-    IReelOperation <|.. Reel
-
-    interface ISlotStarter
     class SlotStarter
-    ISlotStarter <|.. SlotStarter 
+    Slot.Stock.IObservableStockCount <-- SlotStarter 
     SlotStarter *--  ISlotRoleDeterminer
 
-    interface ISlotRoleDeterminer
+    interface ISlotRoleDeterminer{
+        +DetermineRole() : void
+    }
     class SlotRoleDeterminer
     ISlotRoleDeterminer <|.. SlotRoleDeterminer
     SlotRoleDeterminer *-- ISlotProductionDeterminer
 
-    interface ISlotProductionDeterminer
+    interface ISlotProductionDeterminer{
+        +DetermineProduction(RoleSet) : void;
+    }
     class SlotProductionDeterminer
     ISlotProductionDeterminer <|.. SlotProductionDeterminer
-    SlotProductionDeterminer "1"*--"3"  IReelController
+    SlotProductionDeterminer "1"*--"3"  IReelDriver
 
-    interface IReelController
-    class ReelController
-    ReelController *-- IReelOperation
-    IReelController <|.. ReelController
-
-    namespace Stock{
-        class StockCounter
-        StockCounter --> Slot.ISlotStarter
-        IObservableMedalChecker ))-- StockCounter
+    interface IReelDriver{
+        +ControlTo(Production) : void
     }
+    class ReelDriver
+    ReelDriver *-- IReelOperation
+    IReelDriver <|.. ReelDriver
+
+    interface IReelOperation{
+        +GameObject { get; } : GameObject
+    }
+    interface IReel
+    class Reel
+    IReel <|.. Reel
+    IReelOperation <|.. Reel
+
+    interface IObservableSlotStatus{
+        +Status : IObservable<SlotStatus>
+    }
+    class Slot
+    IObservableSlotStatus <|...... Slot
+    Slot "1"*--"3" IReel
+
+    SlotStarter --> IObservableSlotStatus
 }
 
 namespace PayoutPinball{
