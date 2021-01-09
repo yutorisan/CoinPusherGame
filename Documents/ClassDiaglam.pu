@@ -203,6 +203,12 @@ namespace Slot{
     ISlotProductionDeterminer <|.. SlotProductionDeterminer
     SlotProductionDeterminer "1"*--"3"  IReelDriver
 
+    interface IReachReLotteryer
+    class ReachReLotteryer
+    IReachReLotteryer <|.. ReachReLotteryer
+
+    SlotProductionDeterminer -> IReachReLotteryer
+
     interface IReelDriver{
         +ControlTo(Production) : void
     }
