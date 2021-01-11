@@ -4,6 +4,7 @@ using System.Linq;
 using DG.Tweening;
 using Sirenix.OdinInspector;
 using Sirenix.Utilities;
+using Unity.MPE;
 using UnityEngine;
 using UnityUtility;
 using UnityUtility.Extensions;
@@ -16,12 +17,12 @@ namespace MedalPusher.Slot
     /// </summary>
     public interface IReelDriver
     {
-        /// <summary>
-        /// 指定の役を
-        /// </summary>
-        /// <param name="role"></param>
-        /// <param name="rollTimes"></param>
-        void BringToFront(RoleValue role, int rollTimes);
+        ///// <summary>
+        ///// 指定の役を
+        ///// </summary>
+        ///// <param name="role"></param>
+        ///// <param name="rollTimes"></param>
+        //void BringToFront(RoleValue role, int rollTimes);
 
     }
     /// <summary>
@@ -31,62 +32,109 @@ namespace MedalPusher.Slot
     {
         [SerializeField]
         private IReelOperation m_reelOperation;
-
         /// <summary>
         /// スロットの回転半径
         /// </summary>
         [SerializeField]
         private float m_radius;
+        /// <summary>
+        /// 初期状態からの回転角度
+        /// </summary>
+        [SerializeField, Range(-360, 360), OnValueChanged(nameof(OnDegreeChanged))]
+        private float m_degree;
 
+        /// <summary>
+        /// Roleと回転角度に関する情報
+        /// </summary>
         private UniReadOnly<RoleDegreeTable> _roleDegreeTable = new UniReadOnly<RoleDegreeTable>();
+        /// <summary>
+        /// Roleの初期座標
+        /// </summary>
+        private UniReadOnly<RoleInfoTable<Vector3>> _roleInitialPositionTable = new UniReadOnly<RoleInfoTable<Vector3>>();
 
         // Start is called before the first frame update
         void Start()
         {
-            var roleCnt = m_reelOperation.Roles.Count;
+            //すべてのRoleを円形に配置する
             _roleDegreeTable.Initialize(new RoleDegreeTable(
                 m_reelOperation.Roles
                                .Select((ope, index) => new { ope, index })
                                .ToDictionary(pair => pair.ope,
-                                             pair => 360f / roleCnt * pair.index)));
+                                             pair => 360f / m_reelOperation.Roles.Count * pair.index)));
+            //すべてのRoleの初期座標を記憶する
+            _roleInitialPositionTable.Initialize(new RoleInfoTable<Vector3>(
+                m_reelOperation.Roles.ToDictionary(role => role, role => role.transform.position)));
+
+            OnDegreeChanged();
         }
 
-        public void BringToFront(RoleValue roleVal, int rollTimes)
+        [Button("Bring")]
+        public void BringToFront(RoleValue roleVal, float duration)
         {
-
+            RollAbsolutely(- 60 - 360 / m_reelOperation.Roles.Count * GetRoleIndex(roleVal), duration);
         }
 
+        /// <summary>
+        /// 現在の角度から、任意の角度ぶんReelを回転させる
+        /// </summary>
+        /// <param name="degree">何度回転させるか</param>
+        /// <param name="duration"></param>
         [Button("Roll")]
-        public void Roll(float degree)
+        public void RollRelatively(float degree, float duration)
         {
             foreach (var role in m_reelOperation.Roles)
             {
-                DOTween.To(() => 0,
+                DOTween.To(() => _roleDegreeTable.Value[role],
                     newDeg =>
                     {
                         RotateRole(role, newDeg);
                     },
-                    _roleDegreeTable.Value[role] + degree, 0.5f);
+                    _roleDegreeTable.Value[role] + degree, duration);
+            }
+        }
+        /// <summary>
+        /// Reelを指定の角度まで回転させる
+        /// </summary>
+        /// <param name="degree">絶対的な角度</param>
+        /// <param name="duration"></param>
+        public void RollAbsolutely(float degree, float duration)
+        {
+            foreach (var role in m_reelOperation.Roles)
+            {
+                print($"{role.Value}を{_roleDegreeTable.Value[role]}から{_roleDegreeTable.Value.InitTable[role] + degree}に回転します");
+                DOTween.To(() => _roleDegreeTable.Value[role],
+                    newDeg =>
+                    {
+                        RotateRole(role, newDeg);
+                    },
+                    _roleDegreeTable.Value.InitTable[role] + degree, duration);
             }
         }
 
-        private float GetNewRadian(int index) => 2 * Mathf.PI / m_reelOperation.Roles.Count * index;
-
-
-        private void OnValidate()
+        private void OnDegreeChanged()
         {
-            int objCount = m_reelOperation.Roles.Count;
+            foreach (var role in m_reelOperation.Roles)
+            {
+                RotateRole(role,_roleDegreeTable.Value.InitTable[role] + m_degree);
+            }
+        }
 
-            m_reelOperation.Roles
-                .Select(ope => ope.transform)
-                .Select((transform, i) => new
-                {
-                    transform,
-                    transform.position,
-                    z = m_radius * Mathf.Cos(2 * Mathf.PI / objCount * i),
-                    y = m_radius * Mathf.Sin(2 * Mathf.PI / objCount * i)
-                })
-                .ForEach(pair => pair.transform.position = new Vector3(pair.position.x, pair.y, pair.z));
+        /// <summary>
+        /// RoleValueからIRoleOperationを探して取得する
+        /// </summary>
+        /// <param name="roleValue"></param>
+        /// <returns></returns>
+        private IRoleOperation FindOperation(RoleValue roleValue)
+        {
+            return m_reelOperation.Roles.First(ope => ope.Value == roleValue);
+        }
+        private int GetRoleIndex(RoleValue roleValue)
+        {
+            return m_reelOperation.Roles
+                                  .Select((ope, index) => new { ope, index })
+                                  .Where(pair => pair.ope.Value == roleValue)
+                                  .Select(pair => pair.index)
+                                  .First();
         }
 
         /// <summary>
@@ -97,32 +145,52 @@ namespace MedalPusher.Slot
         {
             //Roleのpositionを回転させる
             role.transform.position = new Vector3(
-                role.transform.position.x,
+                0,
                 m_radius * Mathf.Cos(targetDegree.ToRadian()),
-                m_radius * Mathf.Sin(targetDegree.ToRadian()));
+                m_radius * Mathf.Sin(targetDegree.ToRadian())) + _roleInitialPositionTable.Value[role];
             //テーブルを更新
             _roleDegreeTable.Value[role] = targetDegree;
         }
 
-        private class RoleDegreeTable
+        private class RoleInfoTable<T>
         {
-            private readonly IReadOnlyDictionary<IRoleOperation, float> m_initialTable;
-            private readonly Dictionary<IRoleOperation, float> m_operationTable;
-            private readonly Dictionary<RoleValue, float> m_roleValueTable;
+            protected readonly IReadOnlyDictionary<IRoleOperation, T> m_initialTable;
+            protected readonly Dictionary<IRoleOperation, T> m_operationTable;
+            protected readonly Dictionary<RoleValue, T> m_roleValueTable;
 
-            public RoleDegreeTable(IReadOnlyDictionary<IRoleOperation, float> initialTable)
+            public RoleInfoTable(IReadOnlyDictionary<IRoleOperation, T> initialTable)
             {
                 m_initialTable = initialTable;
                 m_operationTable = initialTable.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
                 m_roleValueTable = initialTable.ToDictionary(kvp => kvp.Key.Value, kvp => kvp.Value);
             }
 
-            public float this[IRoleOperation index]
+            public virtual T this[IRoleOperation index]
+            {
+                get => m_operationTable[index];
+                set => m_operationTable[index] = value;
+            }
+            public virtual T this[RoleValue index]
+            {
+                get => m_roleValueTable[index];
+                set => m_roleValueTable[index] = value;
+            }
+
+            public IReadOnlyDictionary<IRoleOperation, T> InitTable => m_initialTable;
+        }
+
+        private class RoleDegreeTable : RoleInfoTable<float>
+        {
+            public RoleDegreeTable(IReadOnlyDictionary<IRoleOperation, float> initialTable) : base(initialTable)
+            {
+            }
+
+            public override float this[IRoleOperation index]
             {
                 get => m_operationTable[index];
                 set => m_operationTable[index] = CorrectDegreeRange(value);
             }
-            public float this[RoleValue index]
+            public override float this[RoleValue index]
             {
                 get => m_roleValueTable[index];
                 set => m_roleValueTable[index] = CorrectDegreeRange(value);

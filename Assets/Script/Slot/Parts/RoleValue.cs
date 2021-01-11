@@ -34,6 +34,11 @@ namespace MedalPusher.Slot
             return -1939223833 + _value.GetHashCode();
         }
 
+        public override string ToString()
+        {
+            return _value.ToString();
+        }
+
         public static bool operator ==(RoleValue left, RoleValue right)
         {
             return left._value == right._value;
