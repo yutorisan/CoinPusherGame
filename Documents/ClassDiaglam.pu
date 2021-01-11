@@ -217,12 +217,20 @@ namespace Slot{
     IReelDriver <|.. ReelDriver
 
     interface IReelOperation{
-        +GameObject { get; } : GameObject
+        +Roles { get; } : IReadOnlyList<IRoleOperation>
     }
     interface IReel
     class Reel
     IReel <|.. Reel
     IReelOperation <|.. Reel
+
+    interface IRoleOperation{
+        +transform { get; } : Transform
+        +Value { get; } : RoleValue
+    }
+    class Role
+    IRoleOperation <|.. Role
+    Reel "1"*--"*" IRoleOperation
 
     interface IObservableSlotStatus{
         +Status : IObservable<SlotStatus>
