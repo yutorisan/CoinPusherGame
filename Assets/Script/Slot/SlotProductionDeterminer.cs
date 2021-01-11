@@ -11,21 +11,22 @@ namespace MedalPusher.Slot
     /// </summary>
     public interface ISlotProductionDeterminer
     {
-
+        void DetermineProduction(RoleSet roleSet);
     }
     /// <summary>
     /// スロットの演出を決定する
     /// </summary>
-    public class SlotProductionDeterminer : SerializedMonoBehaviour
+    public class SlotProductionDeterminer : SerializedMonoBehaviour, ISlotProductionDeterminer
     {
-        [SerializeField, BoxGroup("Reel")]
-        private readonly IReelController m_leftReelController;
-        [SerializeField, BoxGroup("Reel")]
-        private readonly IReelController m_centerReelController;
-        [SerializeField, BoxGroup("Reel")]
-        private readonly IReelController m_rightReelController;
+        [SerializeField]
+        private readonly IReadOnlyDictionary<ReelPos, IReelDriver> m_reelControllers = new Dictionary<ReelPos, IReelDriver>();
 
-        
+        public void DetermineProduction(RoleSet roleSet)
+        {
+            throw new System.NotImplementedException();
+        }
+
+
 
         // Start is called before the first frame update
         void Start()
