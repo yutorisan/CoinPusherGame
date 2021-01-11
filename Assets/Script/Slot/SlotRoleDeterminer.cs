@@ -107,7 +107,7 @@ namespace MedalPusher.Slot
                 public static ISlotRoleSetGenerator Instance => _instance ?? (_instance = new DirectWinRoleSetGenerator());
                 public RoleSet GenerateRoleSet()
                 {
-                    Role role = Role.FromRandom();
+                    RoleValue role = RoleValue.FromRandom();
                     return new RoleSet(role, role, role);
                 }
             }
@@ -122,9 +122,9 @@ namespace MedalPusher.Slot
                 public RoleSet GenerateRoleSet()
                 {
                     //リーチする役を決定
-                    Role reachRole = Role.FromRandom();
+                    RoleValue reachRole = RoleValue.FromRandom();
                     //外れる役を決定（偶然当たることもあるが織り込み済みとする）
-                    Role loseRole = Role.FromRandom();
+                    RoleValue loseRole = RoleValue.FromRandom();
                     //はずれる位置を決定
                     switch (Random.Range(0,3))
                     {
@@ -149,7 +149,7 @@ namespace MedalPusher.Slot
                 public static ISlotRoleSetGenerator Instance => _instance ?? (_instance = new LoseRoleSetGenerator());
                 public RoleSet GenerateRoleSet()
                 {
-                    return new RoleSet(Role.FromRandom(), Role.FromRandom(), Role.FromRandom());
+                    return new RoleSet(RoleValue.FromRandom(), RoleValue.FromRandom(), RoleValue.FromRandom());
                 }
             }
         }
