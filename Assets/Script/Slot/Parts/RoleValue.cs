@@ -1,11 +1,15 @@
 ﻿using System;
+using UnityEngine;
 
 namespace MedalPusher.Slot
 {
-    public struct Role : IEquatable<Role>
+    [Serializable]
+    public struct RoleValue : IEquatable<RoleValue>
     {
-        private readonly RoleEnum _value;
-        private Role(RoleEnum roleEnum)
+        [SerializeField]
+        private RoleEnum _value;
+
+        private RoleValue(RoleEnum roleEnum)
         {
             _value = roleEnum;
         }
@@ -17,10 +21,10 @@ namespace MedalPusher.Slot
 
         public override bool Equals(object obj)
         {
-            return obj is Role role && Equals(role);
+            return obj is RoleValue role && Equals(role);
         }
 
-        public bool Equals(Role other)
+        public bool Equals(RoleValue other)
         {
             return _value == other._value;
         }
@@ -30,65 +34,51 @@ namespace MedalPusher.Slot
             return -1939223833 + _value.GetHashCode();
         }
 
-        public static bool operator ==(Role left, Role right)
+        public static bool operator ==(RoleValue left, RoleValue right)
         {
             return left._value == right._value;
         }
-        public static bool operator !=(Role left, Role right)
+        public static bool operator !=(RoleValue left, RoleValue right)
         {
             return left._value != right._value;
         }
 
         #region Factory
-        public static readonly Role Role0 = new Role(RoleEnum.Role0);
-        public static readonly Role Role1 = new Role(RoleEnum.Role1);
-        public static readonly Role Role2 = new Role(RoleEnum.Role2);
-        public static readonly Role Role3 = new Role(RoleEnum.Role3);
-        public static readonly Role Role4 = new Role(RoleEnum.Role4);
-        public static readonly Role Role5 = new Role(RoleEnum.Role5);
-        public static readonly Role Role6 = new Role(RoleEnum.Role6);
-        public static readonly Role Role7 = new Role(RoleEnum.Role7);
-        public static readonly Role Role8 = new Role(RoleEnum.Role8);
-        public static readonly Role Role9 = new Role(RoleEnum.Role9);
+        public static readonly RoleValue Role0 = new RoleValue(RoleEnum.Role0);
+        public static readonly RoleValue Role1 = new RoleValue(RoleEnum.Role1);
+        public static readonly RoleValue Role2 = new RoleValue(RoleEnum.Role2);
+        public static readonly RoleValue Role3 = new RoleValue(RoleEnum.Role3);
+        public static readonly RoleValue Role4 = new RoleValue(RoleEnum.Role4);
+        public static readonly RoleValue Role5 = new RoleValue(RoleEnum.Role5);
+        public static readonly RoleValue Role6 = new RoleValue(RoleEnum.Role6);
+        public static readonly RoleValue Role7 = new RoleValue(RoleEnum.Role7);
+        public static readonly RoleValue Role8 = new RoleValue(RoleEnum.Role8);
+        public static readonly RoleValue Role9 = new RoleValue(RoleEnum.Role9);
         /// <summary>
         /// intからRoleを取得します
         /// </summary>
         /// <param name="n"></param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
-        public static Role FromInt32(int n)
+        public static RoleValue FromInt32(int n)
         {
             if (!Enum.IsDefined(typeof(RoleEnum), n))
-                throw new ArgumentOutOfRangeException(nameof(n), $"指定された値を{nameof(Role)}に変換できません。");
-            return new Role((RoleEnum)n);    
+                throw new ArgumentOutOfRangeException(nameof(n), $"指定された値を{nameof(RoleValue)}に変換できません。");
+            return new RoleValue((RoleEnum)n);    
         }
         /// <summary>
         /// すべての役の中からランダムの役を返します
         /// </summary>
         /// <returns></returns>
-        public static Role FromRandom()
+        public static RoleValue FromRandom()
         {
             return FromInt32(UnityEngine.Random.Range(0, TotalTypes));
         }
+        public static RoleValue FromEnum(RoleEnum @enum) => new RoleValue(@enum);
 
         #endregion
 
-        /// <summary>
-        /// スロットの役
-        /// </summary>
-        public enum RoleEnum
-        {
-            Role0,
-            Role1,
-            Role2,
-            Role3,
-            Role4,
-            Role5,
-            Role6,
-            Role7,
-            Role8,
-            Role9,
-        }
+
     }
 
     /// <summary>
@@ -98,28 +88,44 @@ namespace MedalPusher.Slot
     {
         Left, Center, Right
     }
+    /// <summary>
+    /// スロットの役
+    /// </summary>
+    public enum RoleEnum
+    {
+        Role0,
+        Role1,
+        Role2,
+        Role3,
+        Role4,
+        Role5,
+        Role6,
+        Role7,
+        Role8,
+        Role9,
+    }
 
     /// <summary>
     /// スロットの出目
     /// </summary>
     public struct RoleSet
     {
-        public RoleSet(Role left, Role center, Role right)
+        public RoleSet(RoleValue left, RoleValue center, RoleValue right)
         {
             this.Left = left;
             this.Center = center;
             this.Right = right;
         }
 
-        public Role Left { get; }
-        public Role Center { get; }
-        public Role Right { get; }
+        public RoleValue Left { get; }
+        public RoleValue Center { get; }
+        public RoleValue Right { get; }
 
         /// <summary>
         /// ビンゴになっている役を取得する
         /// ビンゴになっていなければnullが返る
         /// </summary>
-        public Role? BingoRole
+        public RoleValue? BingoRole
         {
             get
             {
@@ -165,7 +171,7 @@ namespace MedalPusher.Slot
         /// </summary>
         public struct ReachInfo
         {
-            public ReachInfo(Role reachRole, ReelPos reachPos)
+            public ReachInfo(RoleValue reachRole, ReelPos reachPos)
             {
                 this.ReachedRole = reachRole;
                 this.ReachReelPos = reachPos;
@@ -173,7 +179,7 @@ namespace MedalPusher.Slot
             /// <summary>
             /// リーチになっている役柄
             /// </summary>
-            public Role ReachedRole { get; }
+            public RoleValue ReachedRole { get; }
             /// <summary>
             /// 揃っていないリールの位置
             /// </summary>
