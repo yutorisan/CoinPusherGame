@@ -29357,7 +29357,7 @@ MonoBehaviour:
   - valueType: 1
     prefab: {fileID: 4163695586067320242, guid: 1685fea7b2dc4446fbcad615be0bccd8,
       type: 3}
-    initCapacity: 1000
+    initCapacity: 10
   - valueType: 3
     prefab: {fileID: 4163695586067320242, guid: 3503fe38dd38a443d9351e8e661a1561,
       type: 3}
@@ -36323,7 +36323,6 @@ MonoBehaviour:
       Entry: 10
       Data: 0
   m_radius: 0.3
-  m_degree: 0
 --- !u!1 &1374013632
 GameObject:
   m_ObjectHideFlags: 0

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
+using DG.Tweening.Core;
 using Sirenix.OdinInspector;
 using Sirenix.Utilities;
 using Unity.MPE;
@@ -34,7 +35,15 @@ namespace MedalPusher.Slot
         /// <summary>
         /// Reelの初期状態から、0を全面に持ってくるまでの補正角度
         /// </summary>
-        private static readonly float BringToFront0CorrectDegreeAngle = -60f;
+        private static readonly Angle FrontAngle = Angle.FromDegree(-60);
+        /// <summary>
+        /// このReelに属するRoleの数
+        /// </summary>
+        private static readonly UniReadOnly<int> RoleCount = new UniReadOnly<int>();
+        /// <summary>
+        /// Reelの半径
+        /// </summary>
+        private static readonly UniReadOnly<float> Radius = new UniReadOnly<float>();
 
         [SerializeField]
         private IReelOperation m_reelOperation;
@@ -43,199 +52,224 @@ namespace MedalPusher.Slot
         /// </summary>
         [SerializeField]
         private float m_radius;
-        /// <summary>
-        /// 初期状態からの回転角度
-        /// </summary>
-        [SerializeField, Range(-360, 360), OnValueChanged(nameof(OnDegreeChanged))]
-        private float m_degree;
 
         /// <summary>
-        /// Roleと回転角度に関する情報
+        /// 各Roleを動かすモジュール
         /// </summary>
-        private UniReadOnly<RoleDegreeTable> _roleDegreeTable = new UniReadOnly<RoleDegreeTable>();
-        /// <summary>
-        /// Roleの初期座標
-        /// </summary>
-        private UniReadOnly<RoleInfoTable<Vector3>> _roleInitialPositionTable = new UniReadOnly<RoleInfoTable<Vector3>>();
+        private UniReadOnly<IReadOnlyDictionary<RoleValue, RoleDriver>> m_roleDrivers = new UniReadOnly<IReadOnlyDictionary<RoleValue, RoleDriver>>();
+
+        private IReadOnlyDictionary<RoleValue, Angle> GetBringToFrontAngleTable(RoleValue wantToFrontRole)
+        {
+            var frontIndex = m_roleDrivers.Value[wantToFrontRole].Index;
+
+            return m_roleDrivers.Value
+                                .Select(kvp => new { rolev = kvp.Key, driver = kvp.Value })
+                                .Select(pair => new
+                                {
+                                    indexDiff = pair.driver.Index - frontIndex, //FrontのRoleと各RoleとのIndexの差分を算出
+                                    pair.rolev
+                                })
+                                .Select(pair => new
+                                {
+                                    angle = Angle.Round / RoleCount * pair.indexDiff + FrontAngle + Angle.Round, //算出した差分によってあるべき角度を算出
+                                    pair.rolev
+                                })
+                                .ToDictionary(pair => pair.rolev,
+                                              pair => pair.angle);
+        }
 
         // Start is called before the first frame update
         void Start()
         {
-            //すべてのRoleを円形に配置する
-            _roleDegreeTable.Initialize(new RoleDegreeTable(
+            Radius.Initialize(m_radius);
+            RoleCount.Initialize(m_reelOperation.Roles.Count);
+
+            //このReelが受け持つ各RoleからRoleDriverを生成して格納する
+            m_roleDrivers.Initialize(
                 m_reelOperation.Roles
                                .Select((ope, index) => new { ope, index })
-                               .ToDictionary(pair => pair.ope,
-                                             pair => 360f / m_reelOperation.Roles.Count * pair.index)));
-            //すべてのRoleの初期座標を記憶する
-            _roleInitialPositionTable.Initialize(new RoleInfoTable<Vector3>(
-                m_reelOperation.Roles.ToDictionary(role => role, role => role.transform.position)));
-
-            OnDegreeChanged();
+                               .ToDictionary(pair => pair.ope.Value,
+                                             pair => new RoleDriver(pair.ope, pair.index)));
         }
 
-        //[Button("Bring")]
-        //public void BringToFront(RoleValue roleVal, float duration)
-        //{
-        //    RollAbsolutely(BringToFront0CorrectDegreeAngle - 360 / m_reelOperation.Roles.Count * GetRoleIndex(roleVal), duration);
-        //}
-
-        /// <summary>
-        /// 現在の角度から、任意の角度ぶんReelを回転させる
-        /// </summary>
-        /// <param name="degree">何度回転させるか</param>
-        /// <param name="duration"></param>
-        [Button("Roll")]
-        public void RollRelatively(float degree, float duration)
-        {
-            foreach (var role in m_reelOperation.Roles)
-            {
-                DOTween.To(() => _roleDegreeTable.Value[role],
-                    newDeg =>
-                    {
-                        ApplyAngle(role, newDeg);
-                    },
-                    _roleDegreeTable.Value[role] + degree, duration);
-            }
-        }
-        /// <summary>
-        /// Reelを指定の角度まで回転させる
-        /// </summary>
-        /// <param name="degree">絶対的な角度</param>
-        /// <param name="duration"></param>
-        public Tween RollAbsolutely(IRoleOperation operation, float degree, float duration)
-        {
-            //print($"{role.Value}を{_roleDegreeTable.Value[role]}から{_roleDegreeTable.Value.InitTable[role] + degree}に回転します");
-            return DOTween.To(() => _roleDegreeTable.Value[operation],
-                                newDeg =>
-                                {
-                                    ApplyAngle(operation, newDeg);
-                                },
-                                _roleDegreeTable.Value.InitTable[operation] + degree, duration);
-        }
-
-        public Tween BringToFrontTw(IRoleOperation operation, RoleValue bringToRole, float duration)
-        {
-            return RollAbsolutely(operation,
-                                  BringToFront0CorrectDegreeAngle - 360 / m_reelOperation.Roles.Count * GetRoleIndex(bringToRole),
-                                  duration);
-        }
 
         [Button("回転後に指定位置で停止")]
-        private void RollAndStop(int times, RoleValue stopRole)
+        private void RollAndStop(RoleValue stopRole, int laps, float maxrps, float accelDutation, float deceleDuration)
         {
-            foreach (var operation in m_reelOperation.Roles)
-            {
-                DOTween.Sequence()
-                       .Append(SimpleRotate(operation, 10, 3f))
-                       .Append(BringToFrontTw(operation, stopRole, 1f))
-                       .Play();
-            }
+            var table = GetBringToFrontAngleTable(stopRole);
+
+            m_roleDrivers.Value.Values
+                         .Select(driver => DOTween.Sequence()
+                                                  .Append(driver.AccelerationRotate(accelDutation, maxrps))
+                                                  .Append(driver.LinearRotate(laps, maxrps))
+                                                  .Append(driver.DecelerateAndStopAbsAngle(table[driver.RoleValue], deceleDuration, maxrps)))
+                         .ForEach(sq => sq.Play());
         }
 
-        private Tween SimpleRotate(IRoleOperation operation, int times, float duration)
+        private class RoleDriver
         {
-            return DOTween.To(() => _roleDegreeTable.Value[operation],
-                                    newDeg => ApplyAngle(operation, newDeg),
-                                    _roleDegreeTable.Value[operation] + 360 * times, duration);
-        }
+            private IRoleOperation m_operation;
+            /// <summary>
+            /// 初期状態の角度
+            /// </summary>
+            private readonly Angle m_initialAngle;
+            /// <summary>
+            /// 初期状態の座標
+            /// </summary>
+            private readonly Vector3 m_initialPosition;
+            /// <summary>
+            /// 現在の角度
+            /// </summary>
+            private Angle m_nowAngle;
 
-        private void OnDegreeChanged()
-        {
-            foreach (var role in m_reelOperation.Roles)
+            /// <summary>
+            /// 所属するReelにおけるこのRoleの順番
+            /// </summary>
+            public int Index { get; }
+            /// <summary>
+            /// このDriverが操るRoleの値
+            /// </summary>
+            public RoleValue RoleValue => m_operation.Value;
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="operation"></param>
+            /// <param name="totalRoleCount">Roleの総数</param>
+            public RoleDriver(IRoleOperation operation, int index)
             {
-                ApplyAngle(role,_roleDegreeTable.Value.InitTable[role] + m_degree);
-            }
-        }
+                m_operation = operation;
+                Index = index;
+                m_initialPosition = operation.transform.position;
+                m_initialAngle = Angle.FromDegree(360f / RoleCount * index); //indexの順番に均等に円形配置
 
-        /// <summary>
-        /// RoleValueからIRoleOperationを探して取得する
-        /// </summary>
-        /// <param name="roleValue"></param>
-        /// <returns></returns>
-        private IRoleOperation FindOperation(RoleValue roleValue)
-        {
-            return m_reelOperation.Roles.First(ope => ope.Value == roleValue);
-        }
-        private int GetRoleIndex(RoleValue roleValue)
-        {
-            return m_reelOperation.Roles
-                                  .Select((ope, index) => new { ope, index })
-                                  .Where(pair => pair.ope.Value == roleValue)
-                                  .Select(pair => pair.index)
-                                  .First();
-        }
-
-        /// <summary>
-        /// 指定の角度にRoleを回転する
-        /// </summary>
-        /// <param name="targetDegree"></param>
-        private void ApplyAngle(IRoleOperation role, float targetDegree)
-        {
-            //Roleのpositionを回転させる
-            role.transform.position = new Vector3(
-                0,
-                m_radius * Mathf.Cos(targetDegree.ToRadian()),
-                m_radius * Mathf.Sin(targetDegree.ToRadian())) + _roleInitialPositionTable.Value[role];
-            //テーブルを更新
-            _roleDegreeTable.Value[role] = targetDegree;
-        }
-
-        private class RoleInfoTable<T>
-        {
-            protected readonly IReadOnlyDictionary<IRoleOperation, T> m_initialTable;
-            protected readonly Dictionary<IRoleOperation, T> m_operationTable;
-            protected readonly Dictionary<RoleValue, T> m_roleValueTable;
-
-            public RoleInfoTable(IReadOnlyDictionary<IRoleOperation, T> initialTable)
-            {
-                m_initialTable = initialTable;
-                m_operationTable = initialTable.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-                m_roleValueTable = initialTable.ToDictionary(kvp => kvp.Key.Value, kvp => kvp.Value);
-            }
-
-            public virtual T this[IRoleOperation index]
-            {
-                get => m_operationTable[index];
-                set => m_operationTable[index] = value;
-            }
-            public virtual T this[RoleValue index]
-            {
-                get => m_roleValueTable[index];
-                set => m_roleValueTable[index] = value;
-            }
-
-            public IReadOnlyDictionary<IRoleOperation, T> InitTable => m_initialTable;
-        }
-
-        private class RoleDegreeTable : RoleInfoTable<float>
-        {
-            public RoleDegreeTable(IReadOnlyDictionary<IRoleOperation, float> initialTable) : base(initialTable)
-            {
-            }
-
-            public override float this[IRoleOperation index]
-            {
-                get => m_operationTable[index];
-                set => m_operationTable[index] = CorrectDegreeRange(value);
-            }
-            public override float this[RoleValue index]
-            {
-                get => m_roleValueTable[index];
-                set => m_roleValueTable[index] = CorrectDegreeRange(value);
+                ApplyAngle(m_initialAngle);
             }
 
             /// <summary>
-            /// 角度を0~360の範囲に修正する
+            /// 指定された回転速度まで加速するTweenを取得する
             /// </summary>
-            /// <param name="degree"></param>
+            /// <param name="laps">指定の速度に到達するまでにかける回転数</param>
+            /// <param name="duration">指定の速度に到達するまでにかける秒数</param>
+            /// <param name="rps">到達目標速度</param>
             /// <returns></returns>
-            private float CorrectDegreeRange(float degree)
+            public Tween AccelerationRotate(float duration, float rps) =>
+                DOTween.To(AnglePlugin.Instance,
+                           NowAngleGetter,
+                           ApplyAngleSetter,
+                           m_nowAngle + Angle.Round * duration * rps,
+                           duration)
+                       .SetEase(Ease.InQuad)
+                       .OnComplete(PositiveNormalize)
+                       .OnPlay(() => print("１：加速フェーズ開始"));
+
+            /// <summary>
+            /// 等速の360°回転運動を行うTweenを取得する
+            /// </summary>
+            /// <param name="laps"></param>
+            /// <param name="rps">回転速度</param>
+            /// <returns></returns>
+            public Tween LinearRotate(int laps, float rps) =>
+                DOTween.To(AnglePlugin.Instance,
+                           NowAngleGetter,
+                           ApplyAngleSetter,
+                           m_nowAngle + Angle.Round * laps,
+                           laps / rps)
+                       .SetEase(Ease.Linear)
+                       .OnComplete(PositiveNormalize)
+                       .OnPlay(() => print("　２：等速フェーズ開始"));
+
+
+            ///// <summary>
+            ///// 指定の回数だけ360度ぐるっと回転するTweenを取得する
+            ///// </summary>
+            ///// <param name="times">回転回数</param>
+            ///// <param name="duration"></param>
+            ///// <returns></returns>
+            //public Tween SimpleRotate(int times, float duration)
+            //{
+            //    return DOTween.To(AnglePlugin.Instance,
+            //                      () => m_nowAngle,
+            //                      newAngle => ApplyAngle(newAngle),
+            //                      m_nowAngle + Angle.Round * times,
+            //                      duration)
+            //                  .SetEase(Ease.Linear)
+            //                  .OnComplete(PositiveNormalize);
+            //}
+
+            /// <summary>
+            /// 減速したのちに指定の角度で停止するTweenを取得する
+            /// </summary>
+            /// <param name="angle">停止目標とする角度</param>
+            /// <param name="duration">停止するまでにかける秒数</param>
+            /// <param name="initialRps">初期状態の回転速度</param>
+            /// <returns></returns>
+            public Tween DecelerateAndStopAbsAngle(Angle angle, float duration, float initialRps) =>
+                DOTween.To(AnglePlugin.Instance,
+                           NowAngleGetter,
+                           ApplyAngleSetter,
+                           angle + Angle.Round * duration * initialRps / 2,
+                           duration)
+                       .SetEase(Ease.OutQuad)
+                       .OnComplete(PositiveNormalize)
+                       .OnPlay(() => print("　　３：減速フェーズ開始"));
+
+            /// <summary>
+            /// Reelを指定の角度まで回転させるTweenを取得する
+            /// </summary>
+            /// <param name="angle">絶対的な角度</param>
+            /// <param name="duration"></param>
+            public Tween RollAbsolutely(Angle angle, float duration)
             {
-                if (degree > 360) return CorrectDegreeRange(degree - 360);
-                if (degree < 0) return CorrectDegreeRange(degree + 360);
-                return degree;
+                return DOTween.To(AnglePlugin.Instance,
+                                　() => m_nowAngle,
+                                  newAngle => ApplyAngle(newAngle),
+                                  angle,
+                                  duration);
             }
+
+            /// <summary>
+            /// 現在の角度から、任意の角度ぶんReelを回転させる
+            /// </summary>
+            /// <param name="angle">何度回転させるか</param>
+            /// <param name="duration"></param>
+            [Button("Roll")]
+            public Tween RollRelatively(Angle angle, float duration)
+            {
+                return DOTween.To(AnglePlugin.Instance,
+                                  () => m_nowAngle,
+                                  newAngle => ApplyAngle(newAngle),
+                                  m_nowAngle + angle,
+                                  duration);
+            }
+
+            /// <summary>
+            /// 指定の角度にRoleを回転移動する
+            /// </summary>
+            /// <param name="targetAngle"></param>
+            private void ApplyAngle(Angle targetAngle)
+            {
+                //Roleのpositionを回転させる
+                m_operation.transform.position = new Vector3(
+                    0,
+                    Radius * Mathf.Cos(targetAngle.TotalRadian),
+                    Radius * Mathf.Sin(targetAngle.TotalRadian)) + m_initialPosition;
+                //テーブルを更新
+                m_nowAngle = targetAngle;
+            }
+
+            /// <summary>
+            /// 現在の角度を正の角度で正規化するDOTween用コールバック処理
+            /// </summary>
+            private TweenCallback PositiveNormalize => () => m_nowAngle = m_nowAngle.PositiveNormalize();
+            /// <summary>
+            /// 現在のAngleをセットするDOTween用デフォルトゲッター
+            /// </summary>
+            private DOGetter<Angle> NowAngleGetter => () => m_nowAngle;
+            /// <summary>
+            /// 受け取ったAngleをそのままApplyするDOTween用デフォルトセッター
+            /// </summary>
+            private DOSetter<Angle> ApplyAngleSetter => angle => ApplyAngle(angle);
         }
     }
 }
