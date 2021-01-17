@@ -39,11 +39,11 @@ namespace MedalPusher.Slot
         /// <summary>
         /// このReelに属するRoleの数
         /// </summary>
-        private static readonly UniReadOnly<int> RoleCount = new UniReadOnly<int>();
+        private static readonly UniReadOnly<int> RoleCount = new UniReadOnly<int>(isOverwriteIgnoreMode: true);
         /// <summary>
         /// Reelの半径
         /// </summary>
-        private static readonly UniReadOnly<float> Radius = new UniReadOnly<float>();
+        private static readonly UniReadOnly<float> Radius = new UniReadOnly<float>(isOverwriteIgnoreMode: true);
 
         [SerializeField]
         private IReelOperation m_reelOperation;
@@ -92,7 +92,14 @@ namespace MedalPusher.Slot
                                              pair => new RoleDriver(pair.ope, pair.index)));
         }
 
-
+        /// <summary>
+        /// 停止状態からスロットを回転させ、指定の位置で停止する
+        /// </summary>
+        /// <param name="stopRole">停止する役柄</param>
+        /// <param name="laps">等速回転時の回転数</param>
+        /// <param name="maxrps">最大回転速度(rps)</param>
+        /// <param name="accelDutation">加速時間(s)</param>
+        /// <param name="deceleDuration">減速時間(s)</param>
         [Button("回転後に指定位置で停止")]
         private void RollAndStop(RoleValue stopRole, int laps, float maxrps, float accelDutation, float deceleDuration)
         {
@@ -160,8 +167,7 @@ namespace MedalPusher.Slot
                            m_nowAngle + Angle.Round * duration * rps,
                            duration)
                        .SetEase(Ease.InQuad)
-                       .OnComplete(PositiveNormalize)
-                       .OnPlay(() => print("１：加速フェーズ開始"));
+                       .OnComplete(PositiveNormalize);
 
             /// <summary>
             /// 等速の360°回転運動を行うTweenを取得する
@@ -176,26 +182,7 @@ namespace MedalPusher.Slot
                            m_nowAngle + Angle.Round * laps,
                            laps / rps)
                        .SetEase(Ease.Linear)
-                       .OnComplete(PositiveNormalize)
-                       .OnPlay(() => print("　２：等速フェーズ開始"));
-
-
-            ///// <summary>
-            ///// 指定の回数だけ360度ぐるっと回転するTweenを取得する
-            ///// </summary>
-            ///// <param name="times">回転回数</param>
-            ///// <param name="duration"></param>
-            ///// <returns></returns>
-            //public Tween SimpleRotate(int times, float duration)
-            //{
-            //    return DOTween.To(AnglePlugin.Instance,
-            //                      () => m_nowAngle,
-            //                      newAngle => ApplyAngle(newAngle),
-            //                      m_nowAngle + Angle.Round * times,
-            //                      duration)
-            //                  .SetEase(Ease.Linear)
-            //                  .OnComplete(PositiveNormalize);
-            //}
+                       .OnComplete(PositiveNormalize);
 
             /// <summary>
             /// 減速したのちに指定の角度で停止するTweenを取得する
@@ -211,37 +198,33 @@ namespace MedalPusher.Slot
                            angle + Angle.Round * duration * initialRps / 2,
                            duration)
                        .SetEase(Ease.OutQuad)
-                       .OnComplete(PositiveNormalize)
-                       .OnPlay(() => print("　　３：減速フェーズ開始"));
+                       .OnComplete(PositiveNormalize);
 
             /// <summary>
             /// Reelを指定の角度まで回転させるTweenを取得する
             /// </summary>
             /// <param name="angle">絶対的な角度</param>
             /// <param name="duration"></param>
-            public Tween RollAbsolutely(Angle angle, float duration)
-            {
-                return DOTween.To(AnglePlugin.Instance,
-                                　() => m_nowAngle,
-                                  newAngle => ApplyAngle(newAngle),
-                                  angle,
-                                  duration);
-            }
+            public Tween RollAbsolutely(Angle angle, float duration) =>
+                DOTween.To(AnglePlugin.Instance,
+                           NowAngleGetter,
+                           ApplyAngleSetter,
+                           angle,
+                           duration)
+                       .OnComplete(PositiveNormalize);
 
             /// <summary>
             /// 現在の角度から、任意の角度ぶんReelを回転させる
             /// </summary>
             /// <param name="angle">何度回転させるか</param>
             /// <param name="duration"></param>
-            [Button("Roll")]
-            public Tween RollRelatively(Angle angle, float duration)
-            {
-                return DOTween.To(AnglePlugin.Instance,
-                                  () => m_nowAngle,
-                                  newAngle => ApplyAngle(newAngle),
-                                  m_nowAngle + angle,
-                                  duration);
-            }
+            public Tween RollRelatively(Angle angle, float duration) =>
+                DOTween.To(AnglePlugin.Instance,
+                           NowAngleGetter,
+                           ApplyAngleSetter,
+                           m_nowAngle + angle,
+                           duration)
+                       .OnComplete(PositiveNormalize);
 
             /// <summary>
             /// 指定の角度にRoleを回転移動する
@@ -256,6 +239,8 @@ namespace MedalPusher.Slot
                     Radius * Mathf.Sin(targetAngle.TotalRadian)) + m_initialPosition;
                 //テーブルを更新
                 m_nowAngle = targetAngle;
+                if (double.IsNaN(m_nowAngle.TotalDegree)) print("NaNになった！！");
+                    
             }
 
             /// <summary>
