@@ -201,7 +201,7 @@ namespace Slot{
     }
     class SlotProductionDeterminer
     ISlotProductionDeterminer <|.. SlotProductionDeterminer
-    SlotProductionDeterminer "1"*--"3"  IReelDriver
+    SlotProductionDeterminer *-- ISlotDriver
 
     interface IReachReLotteryer
     class ReachReLotteryer
@@ -209,12 +209,22 @@ namespace Slot{
 
     SlotProductionDeterminer -> IReachReLotteryer
 
+    interface ISlotDriver{
+        +ControlBy(Production) : void
+    }
+    class SlotDriver
+    ISlotDriver <|.. SlotDriver
+
+    SlotDriver "1"*--"3" IReelDriver
+
     interface IReelDriver{
-        +ControlTo(Production) : void
+        +ControlBy(ProductionPart) : void
     }
     class ReelDriver
     ReelDriver *-- IReelOperation
     IReelDriver <|.. ReelDriver
+    ReelDriver "*"+-"1" RoleDriver
+    RoleDriver --> IRoleOperation
 
     interface IReelOperation{
         +Roles { get; } : IReadOnlyList<IRoleOperation>
