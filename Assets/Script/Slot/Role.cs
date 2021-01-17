@@ -9,14 +9,28 @@ namespace MedalPusher.Slot
     {
         Transform transform { get; }
         RoleValue Value { get; }
+        void ChangeOpacity(float opacity);
     }
     public class Role : MonoBehaviour, IRoleOperation
     {
         [SerializeField]
         private RoleValue m_value;
+
+        private Material m_material;
         // Start is called before the first frame update
-        void Start()
+        void Awake()
         {
+            m_material = GetComponentInChildren<Renderer>().material;
+            //print($"Start : {m_value} : {m_material}");
+        }
+
+        public void ChangeOpacity(float opacity)
+        {
+            //print($"ChangeOpacity : {m_value} : {m_material}");
+            m_material.color = new Color(m_material.color.r,
+                                         m_material.color.g,
+                                         m_material.color.b,
+                                         opacity);
         }
 
         public RoleValue Value => m_value;

@@ -115,6 +115,7 @@ namespace MedalPusher.Slot
 
         private class RoleDriver
         {
+            private static readonly Angle RoleDisplayAngle = Angle.FromDegree(90);
             private IRoleOperation m_operation;
             /// <summary>
             /// 初期状態の角度
@@ -148,7 +149,9 @@ namespace MedalPusher.Slot
                 m_operation = operation;
                 Index = index;
                 m_initialPosition = operation.transform.position;
-                m_initialAngle = Angle.FromDegree(360f / RoleCount * index); //indexの順番に均等に円形配置
+                //indexの順番に均等に円形配置
+                //+FrontAngleは正面に何かしらのRoleをもってくるため
+                m_initialAngle = (Angle.Round / RoleCount * index + FrontAngle).PositiveNormalize(); 
 
                 ApplyAngle(m_initialAngle);
             }
@@ -237,10 +240,23 @@ namespace MedalPusher.Slot
                     0,
                     Radius * Mathf.Cos(targetAngle.TotalRadian),
                     Radius * Mathf.Sin(targetAngle.TotalRadian)) + m_initialPosition;
+                //透明度を更新する
+                m_operation.ChangeOpacity(getOpacity());
                 //テーブルを更新
                 m_nowAngle = targetAngle;
                 if (double.IsNaN(m_nowAngle.TotalDegree)) print("NaNになった！！");
-                    
+                
+
+                float getOpacity()
+                {
+                    //正面の角度からの差分の絶対値を算出
+                    var diffOfFront = (FrontAngle - targetAngle.Normalize()).Absolute();
+
+                    //表示範囲より外側は不透明度0
+                    if (diffOfFront > RoleDisplayAngle) return 0;
+                    //内側なら外に行くたびに透明になる
+                    else return 1 - diffOfFront.TotalDegree / RoleDisplayAngle.TotalDegree;
+                }
             }
 
             /// <summary>
