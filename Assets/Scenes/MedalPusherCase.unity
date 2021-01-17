@@ -3065,6 +3065,7 @@ GameObject:
   m_Component:
   - component: {fileID: 250284697}
   - component: {fileID: 250284698}
+  - component: {fileID: 250284699}
   m_Layer: 0
   m_Name: ReelDriver
   m_TagString: Untagged
@@ -3112,6 +3113,24 @@ MonoBehaviour:
       Entry: 10
       Data: 0
   m_radius: 0.2
+--- !u!114 &250284699
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 250284696}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0166d8ff8d905b048b2448179e1f5d11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _components:
+  - {fileID: 250284698}
+  _identifier: Right
+  _useSceneContext: 0
+  _context: {fileID: 923911570}
+  _bindType: 1
 --- !u!43 &281484950
 Mesh:
   m_ObjectHideFlags: 0
@@ -27958,6 +27977,7 @@ Transform:
   - {fileID: 533609291}
   - {fileID: 1532600577}
   - {fileID: 48185845}
+  - {fileID: 1454929005}
   m_Father: {fileID: 0}
   m_RootOrder: 12
   m_LocalEulerAnglesHint: {x: 20, y: 0, z: 0}
@@ -37685,6 +37705,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1372738439}
   - component: {fileID: 1372738440}
+  - component: {fileID: 1372738441}
   m_Layer: 0
   m_Name: ReelDriver
   m_TagString: Untagged
@@ -37732,6 +37753,24 @@ MonoBehaviour:
       Entry: 10
       Data: 0
   m_radius: 0.2
+--- !u!114 &1372738441
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1372738438}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0166d8ff8d905b048b2448179e1f5d11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _components:
+  - {fileID: 1372738440}
+  _identifier: Left
+  _useSceneContext: 0
+  _context: {fileID: 923911570}
+  _bindType: 1
 --- !u!1 &1374013632
 GameObject:
   m_ObjectHideFlags: 0
@@ -42716,6 +42755,49 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_isDestroyOnChecked: 0
+--- !u!1 &1454929004
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1454929005}
+  - component: {fileID: 1454929006}
+  m_Layer: 0
+  m_Name: SlotDriver
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1454929005
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1454929004}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 923911566}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1454929006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1454929004}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88b25721172f948ffbfa5271a19b48b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1462038805
 GameObject:
   m_ObjectHideFlags: 0
@@ -43390,69 +43472,7 @@ MonoBehaviour:
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
-    SerializationNodes:
-    - Name: m_reelControllers
-      Entry: 7
-      Data: 0|System.Collections.Generic.Dictionary`2[[MedalPusher.Slot.ReelPos,
-        Assembly-CSharp],[MedalPusher.Slot.IReelDriver, Assembly-CSharp]], mscorlib
-    - Name: comparer
-      Entry: 7
-      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[MedalPusher.Slot.ReelPos,
-        Assembly-CSharp]], mscorlib
-    - Name: 
-      Entry: 12
-      Data: 0
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 12
-      Data: 3
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 0
-    - Name: $v
-      Entry: 6
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 1
-    - Name: $v
-      Entry: 6
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 2
-    - Name: $v
-      Entry: 6
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
+    SerializationNodes: []
 --- !u!1001 &1549221884
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -68164,6 +68184,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2048537125}
   - component: {fileID: 2048537126}
+  - component: {fileID: 2048537127}
   m_Layer: 0
   m_Name: ReelDriver
   m_TagString: Untagged
@@ -68211,6 +68232,24 @@ MonoBehaviour:
       Entry: 10
       Data: 0
   m_radius: 0.2
+--- !u!114 &2048537127
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2048537124}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0166d8ff8d905b048b2448179e1f5d11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _components:
+  - {fileID: 2048537126}
+  _identifier: Middle
+  _useSceneContext: 0
+  _context: {fileID: 923911570}
+  _bindType: 1
 --- !u!1 &2121404591
 GameObject:
   m_ObjectHideFlags: 0

@@ -19,13 +19,11 @@ namespace MedalPusher.Slot
     /// </summary>
     public interface IReelDriver
     {
-        ///// <summary>
-        ///// 指定の役を
-        ///// </summary>
-        ///// <param name="role"></param>
-        ///// <param name="rollTimes"></param>
-        //void BringToFront(RoleValue role, int rollTimes);
-
+        /// <summary>
+        /// 指定したリールの演出に従って、リールを制御します。
+        /// </summary>
+        /// <param name="production"></param>
+        void ControlBy(ProductionPart production);
     }
     /// <summary>
     /// 各リールの動きを制御する
@@ -92,6 +90,11 @@ namespace MedalPusher.Slot
                                              pair => new RoleDriver(pair.ope, pair.index)));
         }
 
+        public void ControlBy(ProductionPart production)
+        {
+            RollAndStop(production.DisplayRole, 5, 3, 2, 2);
+        }
+
         /// <summary>
         /// 停止状態からスロットを回転させ、指定の位置で停止する
         /// </summary>
@@ -115,6 +118,9 @@ namespace MedalPusher.Slot
 
         private class RoleDriver
         {
+            /// <summary>
+            /// 正面からの表示範囲角度
+            /// </summary>
             private static readonly Angle RoleDisplayAngle = Angle.FromDegree(90);
             private IRoleOperation m_operation;
             /// <summary>

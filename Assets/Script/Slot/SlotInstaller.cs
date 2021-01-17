@@ -24,8 +24,8 @@ namespace MedalPusher.Slot
                      .To<SlotProductionDeterminer>()
                      .FromComponentInHierarchy()
                      .AsCached();
-            Container.Bind<IReelDriver>()
-                     .To<ReelDriver>()
+            Container.Bind<ISlotDriver>()
+                     .To<SlotDriver>()
                      .FromComponentInHierarchy()
                      .AsCached();
         }

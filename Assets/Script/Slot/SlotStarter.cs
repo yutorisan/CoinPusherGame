@@ -5,6 +5,7 @@ using MedalPusher.Slot.Stock;
 using UnityEngine;
 using Zenject;
 using UniRx;
+using Sirenix.OdinInspector;
 
 namespace MedalPusher.Slot
 {
@@ -40,6 +41,12 @@ namespace MedalPusher.Slot
             //スロットを回転させる（役の決定を依頼する）
                            .Subscribe(_ => _roleDeterminer.DetermineRole());
                                   
+        }
+
+        [Button]
+        private void ForceStart()
+        {
+            _roleDeterminer.DetermineRole();
         }
     }
 }

@@ -21,12 +21,10 @@ namespace MedalPusher.Slot
         void Awake()
         {
             m_material = GetComponentInChildren<Renderer>().material;
-            //print($"Start : {m_value} : {m_material}");
         }
 
         public void ChangeOpacity(float opacity)
         {
-            //print($"ChangeOpacity : {m_value} : {m_material}");
             m_material.color = new Color(m_material.color.r,
                                          m_material.color.g,
                                          m_material.color.b,

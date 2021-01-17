@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using Zenject;
 
 namespace MedalPusher.Slot
 {
@@ -18,26 +19,12 @@ namespace MedalPusher.Slot
     /// </summary>
     public class SlotProductionDeterminer : SerializedMonoBehaviour, ISlotProductionDeterminer
     {
-        [SerializeField]
-        private readonly IReadOnlyDictionary<ReelPos, IReelDriver> m_reelControllers = new Dictionary<ReelPos, IReelDriver>();
+        [Inject]
+        private ISlotDriver m_slotDriver;
 
         public void DetermineProduction(RoleSet roleSet)
         {
-            throw new System.NotImplementedException();
-        }
-
-
-
-        // Start is called before the first frame update
-        void Start()
-        {
-
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-
+            m_slotDriver.ControlBy(new Production(roleSet));
         }
     }
 }

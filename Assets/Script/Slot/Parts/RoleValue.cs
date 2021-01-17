@@ -118,12 +118,12 @@ namespace MedalPusher.Slot
         public RoleSet(RoleValue left, RoleValue center, RoleValue right)
         {
             this.Left = left;
-            this.Center = center;
+            this.Middle = center;
             this.Right = right;
         }
 
         public RoleValue Left { get; }
-        public RoleValue Center { get; }
+        public RoleValue Middle { get; }
         public RoleValue Right { get; }
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace MedalPusher.Slot
         {
             get
             {
-                if (Left == Center && Center == Right) return Left;
+                if (Left == Middle && Middle == Right) return Left;
                 else return null;
             }
         }
@@ -155,10 +155,10 @@ namespace MedalPusher.Slot
                 if (IsBingo) return null;
 
                 //いずれかリーチならその情報を返す
-                if (Left == Center)
+                if (Left == Middle)
                     return new ReachInfo(Left, ReelPos.Right);
-                if (Center == Right)
-                    return new ReachInfo(Center, ReelPos.Left);
+                if (Middle == Right)
+                    return new ReachInfo(Middle, ReelPos.Left);
                 if (Left == Right)
                     return new ReachInfo(Left, ReelPos.Center);
 
