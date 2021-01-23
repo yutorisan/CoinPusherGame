@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using DG.Tweening;
+using DG.Tweening.Plugins.Options;
 using UnityEngine;
 using UnityUtility;
 
@@ -44,18 +46,6 @@ namespace MedalPusher.Slot
                                       .Select(transform => transform.GetComponent<IRoleOperation>())
                                       .ToList());
             }
-        }
-
-        // Start is called before the first frame update
-        void Start()
-        {
-
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-
         }
     }
 }

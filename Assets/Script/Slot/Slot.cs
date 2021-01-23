@@ -26,7 +26,7 @@ namespace MedalPusher.Slot
         [SerializeField, BoxGroup("Reels")]
         private readonly IObservableReelDecided m_rightReel;
 
-        public IReadOnlyReactiveProperty<SlotStatus> Status => Observable.Return(SlotStatus.Rolling).ToReactiveProperty();
+        public IReadOnlyReactiveProperty<SlotStatus> Status => Observable.Return(SlotStatus.Idol).ToReactiveProperty();
 
 
         // Start is called before the first frame update

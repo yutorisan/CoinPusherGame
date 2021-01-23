@@ -5,6 +5,7 @@ using MedalPusher.Slot.Stock;
 using UnityEngine;
 using Zenject;
 using UniRx;
+using UniRx.Diagnostics;
 using Sirenix.OdinInspector;
 
 namespace MedalPusher.Slot
@@ -32,6 +33,7 @@ namespace MedalPusher.Slot
                             //前よりストックが増えている
                             .Where(pair => pair.Current > pair.Previous)
                             .AsUnitObservable()
+                            .Debug()
                             .Merge(
             //ストックが溜まっている場合にIdol状態になった場合に、
                 _slotStatus.Status
