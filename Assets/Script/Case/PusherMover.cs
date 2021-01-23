@@ -32,8 +32,8 @@ public class PusherMover : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        double degree = 360 * (Time.time % m_cycleSecond) / m_cycleSecond;
-        var diff = m_moveLength * Mathf.Sin((float)degree.ToRadian());
+        Angle angle = Angle.FromDegree(360 * (Time.time % m_cycleSecond) / m_cycleSecond);
+        var diff = m_moveLength * Mathf.Sin(angle.TotalRadian);
         m_rigidbody.MovePosition(m_initPos.PlusZ(diff));
     }
 }
