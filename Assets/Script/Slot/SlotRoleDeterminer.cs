@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using MedalPusher.Slot.Prize;
 using Sirenix.OdinInspector;
 using UniRx;
 using UnityEngine;
@@ -26,7 +27,9 @@ namespace MedalPusher.Slot
     public class SlotRoleDeterminer : MonoBehaviour, ISlotRoleDeterminer
     {
         [Inject]
-        private ISlotProductionDeterminer _productionDeterminer;
+        private ISlotProductionDeterminer m_productionDeterminer;
+        [Inject]
+        private ISlotPrizeOrderer m_prizeOrderer;
 
         /// <summary>
         /// 直接当たる確率
@@ -44,7 +47,7 @@ namespace MedalPusher.Slot
         [SerializeField, Range(0f, 1f), LabelText("リーチ状態から当たる確率"),]
         private float m_reachWinningProbability = 0.5f;
 
-        private SlotRoleSetGeneratorSelector _generatorSelector;
+        private SlotRoleSetGeneratorSelector m_generatorSelector;
 
         /// <summary>
         /// はずれる確率
@@ -55,13 +58,19 @@ namespace MedalPusher.Slot
         // Start is called before the first frame update
         void Start()
         {
-            _generatorSelector = new SlotRoleSetGeneratorSelector(this);
+            m_generatorSelector = new SlotRoleSetGeneratorSelector(this);
         }
 
         public IObservable<Unit> DetermineRole()
         {
-            var roleset = _generatorSelector.Select().GenerateRoleSet();
-            return _productionDeterminer.DetermineProduction(roleset);
+            //出目を決定
+            var roleset = m_generatorSelector.Select().GenerateRoleSet();
+            //出目に応じて演出の決定を依頼
+            var done = m_productionDeterminer.DetermineProduction(roleset);
+            //依頼した演出が終了したら、景品の払い出しを依頼
+            done.Subscribe(_ => m_prizeOrderer.Order(roleset));
+
+            return done;
         }
 
         /// <summary>

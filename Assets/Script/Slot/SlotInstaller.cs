@@ -1,3 +1,4 @@
+using MedalPusher.Slot.Prize;
 using MedalPusher.Slot.Stock;
 using UnityEngine;
 using Zenject;
@@ -28,6 +29,10 @@ namespace MedalPusher.Slot
                      .To<SlotDriver>()
                      .FromComponentInHierarchy()
                      .AsCached();
+
+            Container.Bind<ISlotPrizeOrderer>()
+                     .To<SlotPrizeOrderer>()
+                     .AsTransient();
         }
     }
 }

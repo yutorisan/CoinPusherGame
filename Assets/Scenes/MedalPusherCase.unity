@@ -5166,7 +5166,8 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
+  m_Children:
+  - {fileID: 1747879483}
   m_Father: {fileID: 923911566}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -5182,8 +5183,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6323d1f09ffa54f91adc1f84444ba7a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_directWinningProbability: 0.01
-  m_reachProbability: 0.1
+  m_directWinningProbability: 0.1
+  m_reachProbability: 0.2
   m_reachWinningProbability: 0.5
 --- !u!1 &549839151
 GameObject:
@@ -27121,7 +27122,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &659685684
 Transform:
   m_ObjectHideFlags: 0
@@ -28180,16 +28181,7 @@ MonoBehaviour:
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
-    SerializationNodes:
-    - Name: m_reftReel
-      Entry: 6
-      Data: 
-    - Name: m_centerReel
-      Entry: 6
-      Data: 
-    - Name: m_rightReel
-      Entry: 6
-      Data: 
+    SerializationNodes: []
 --- !u!114 &923911569
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -65804,6 +65796,36 @@ Transform:
   m_Father: {fileID: 1929555135}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+--- !u!1 &1747879482
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1747879483}
+  m_Layer: 0
+  m_Name: SlotPrizeOrderer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1747879483
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1747879482}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 533609291}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1750919744
 PrefabInstance:
   m_ObjectHideFlags: 0
