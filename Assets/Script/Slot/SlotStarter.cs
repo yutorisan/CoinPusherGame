@@ -16,39 +16,36 @@ namespace MedalPusher.Slot
     public class SlotStarter : MonoBehaviour
     {
         [Inject]
-        private ISlotRoleDeterminer _roleDeterminer;
+        private ISlotRoleDeterminer m_roleDeterminer;
         [Inject]
-        private IObservableStockCount _observableStock;
-        [Inject]
-        private IObservableSlotStatus _slotStatus;
+        private IStockCounter m_stockCounter;
+        /// <summary>
+        /// スロットを回転させていいかどうか
+        /// </summary>
+        private bool m_isAllowedStart = true;
+        /// <summary>
+        /// スロット回転完了通知を受け取ったらそれをクラス内に伝えるためのSubject
+        /// </summary>
+        private readonly Subject<Unit> m_slotOnCompletedSubject = new Subject<Unit>();
 
         // Start is called before the first frame update
         void Start()
         {
-            //ストックが追加された場合と、
-            _observableStock.Stock
-                            .Pairwise()
-                            //スロットが稼働中でない場合のみ
-                            .Where(_ => _slotStatus.Status.Value == SlotStatus.Idol)
-                            //前よりストックが増えている
-                            .Where(pair => pair.Current > pair.Previous)
-                            .AsUnitObservable()
-                            .Debug()
-                            .Merge(
-            //ストックが溜まっている場合にIdol状態になった場合に、
-                _slotStatus.Status
-                           .Where(status => status == SlotStatus.Idol)
-                           .Where(_ => _observableStock.Stock.Value > 0)
-                           .AsUnitObservable())
-            //スロットを回転させる（役の決定を依頼する）
-                           .Subscribe(_ => _roleDeterminer.DetermineRole());
-                                  
-        }
+            //スロットの抽選が完了したら、スロット回転可能にする
+            m_slotOnCompletedSubject.Subscribe(_ => m_isAllowedStart = true);
 
-        [Button]
-        private void ForceStart()
-        {
-            _roleDeterminer.DetermineRole();
+            //スロットの開始条件が整ったらスロット開始を依頼する
+            m_stockCounter.StockSupplied            //ストックが供給された、かつ
+                          .Where(_ => m_isAllowedStart) //スロットを回転させても良い
+                          //または、前のスロットの回転が終了して、かつまだストックがある
+                          .Merge(m_slotOnCompletedSubject.Where(_ => m_stockCounter.IsSpendable))                           .SelectMany(_ =>
+                          { //ならば、ストックを消費してスロットの回転を開始させる
+                              m_stockCounter.SpendStock();
+                              m_isAllowedStart = false;
+                              return m_roleDeterminer.DetermineRole();
+                          }) //スロットの回転完了通知をもらったら、それをクラス内に伝達させる
+                          .Subscribe(_ => m_slotOnCompletedSubject.OnNext(Unit.Default));
+
         }
     }
 }

@@ -1,6 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
+using UniRx;
 using UnityEngine;
 using UnityEngine.Playables;
 using Zenject;
@@ -15,7 +17,8 @@ namespace MedalPusher.Slot
         /// <summary>
         /// 出目の決定を依頼する
         /// </summary>
-        void DetermineRole();
+        /// <returns>依頼した出目決定によってスロットが回転し、その出目がでたことの通知</returns>
+        IObservable<Unit> DetermineRole();
     }
     /// <summary>
     /// スロットの出目を決定する
@@ -55,10 +58,10 @@ namespace MedalPusher.Slot
             _generatorSelector = new SlotRoleSetGeneratorSelector(this);
         }
 
-        public void DetermineRole()
+        public IObservable<Unit> DetermineRole()
         {
             var roleset = _generatorSelector.Select().GenerateRoleSet();
-            _productionDeterminer.DetermineProduction(roleset);
+            return _productionDeterminer.DetermineProduction(roleset);
         }
 
         /// <summary>
@@ -82,7 +85,7 @@ namespace MedalPusher.Slot
             /// <returns></returns>
             public ISlotRoleSetGenerator Select()
             {
-                switch (Random.value)
+                switch (UnityEngine.Random.value)
                 {
                     //ダイレクトあたり
                     case float p when p < _parent.m_directWinningProbability:
@@ -125,7 +128,7 @@ namespace MedalPusher.Slot
                     //外れる役を決定（偶然当たることもあるが織り込み済みとする）
                     RoleValue loseRole = RoleValue.FromRandom();
                     //はずれる位置を決定
-                    switch (Random.Range(0,3))
+                    switch (UnityEngine.Random.Range(0,3))
                     {
                         case 0:
                             return new RoleSet(loseRole, reachRole, reachRole);

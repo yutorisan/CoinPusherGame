@@ -1,15 +1,18 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
 using DG.Tweening.Core;
 using Sirenix.OdinInspector;
 using Sirenix.Utilities;
+using UniRx;
 using UnityEditor;
 using UnityEngine;
 using UnityUtility;
 using UnityUtility.Extensions;
 using Zenject;
+using UniRx.Diagnostics;
 
 namespace MedalPusher.Slot
 {
@@ -21,13 +24,21 @@ namespace MedalPusher.Slot
         /// <summary>
         /// 指定したリールの演出に従って、リールを制御します。
         /// </summary>
-        /// <param name="production"></param>
-        void ControlBy(ProductionPart production);
+        /// <param name="production">リールの演出</param>
+        /// <returns>リール制御の完了通知</returns>
+        IObservable<Unit> ControlBy(ProductionPart production);
+    }
+    /// <summary>
+    /// リールの出目が決定したことを通知可能
+    /// </summary>
+    public interface IObservableReelStatus
+    {
+        IReadOnlyReactiveProperty<ReelStatus> Status { get; }
     }
     /// <summary>
     /// 各リールの動きを制御する
     /// </summary>
-    public class ReelDriver : SerializedMonoBehaviour, IReelDriver
+    public class ReelDriver : SerializedMonoBehaviour, IReelDriver, IObservableReelStatus
     {
         /// <summary>
         /// Reelの初期状態から、0を全面に持ってくるまでの補正角度
@@ -49,6 +60,7 @@ namespace MedalPusher.Slot
         /// </summary>
         [SerializeField]
         private float m_radius;
+        private readonly ReactiveProperty<ReelStatus> m_status = new ReactiveProperty<ReelStatus>(ReelStatus.Idol);
 
         /// <summary>
         /// 各Roleを動かすモジュール
@@ -89,9 +101,12 @@ namespace MedalPusher.Slot
                                              pair => new RoleDriver(pair.ope, pair.index)));
         }
 
-        public void ControlBy(ProductionPart production)
+        public IReadOnlyReactiveProperty<ReelStatus> Status => m_status;
+
+        public IObservable<Unit> ControlBy(ProductionPart production)
         {
-            RollAndStop(production.DisplayRole, 5, 3, 2, 2);
+            m_status.Value = ReelStatus.Driving;
+            return RollAndStop(production.DisplayRole, 5, 3, 2, 2);
         }
 
         /// <summary>
@@ -102,9 +117,12 @@ namespace MedalPusher.Slot
         /// <param name="maxrps">最大回転速度(rps)</param>
         /// <param name="accelDutation">加速時間(s)</param>
         /// <param name="deceleDuration">減速時間(s)</param>
+        /// <returns>回転→停止の完了通知</returns>
         [Button("回転後に指定位置で停止")]
-        private void RollAndStop(RoleValue stopRole, int laps, float maxrps, float accelDutation, float deceleDuration)
+        private IObservable<Unit> RollAndStop(RoleValue stopRole, int laps, float maxrps, float accelDutation, float deceleDuration)
         {
+            Subject<Unit> completeRole = new Subject<Unit>();
+
             var table = GetBringToFrontAngleTable(stopRole);
 
             m_roleDrivers.Value.Values
@@ -112,7 +130,11 @@ namespace MedalPusher.Slot
                                                   .Append(driver.AccelerationRotate(accelDutation, maxrps))
                                                   .Append(driver.LinearRotate(laps, maxrps))
                                                   .Append(driver.DecelerateAndStopAbsAngle(table[driver.RoleValue], deceleDuration, maxrps)))
-                         .ForEach(sq => sq.Play());
+                         .ForEach(sq => sq.Play().OnComplete(() => completeRole.OnNext(Unit.Default))); //ひとつのRoleのシーケンスが終わったらOnNext叩く
+
+            //最後のRoleDriverがOnNext叩いたらOnCompleted
+            return completeRole.Skip(m_roleDrivers.Value.Count - 1)
+                               .SelectMany(_ => Observable.ReturnUnit());
         }
 
         private class RoleDriver
@@ -277,5 +299,11 @@ namespace MedalPusher.Slot
             /// </summary>
             private DOSetter<Angle> ApplyAngleSetter => angle => ApplyAngle(angle);
         }
+    }
+
+    public enum ReelStatus
+    {
+        Idol,
+        Driving
     }
 }

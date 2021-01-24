@@ -19,17 +19,11 @@ namespace MedalPusher.Slot
         /// </summary>
         IReadOnlyList<IRoleOperation> Roles { get; }
     }
-    /// <summary>
-    /// リールの出目が決定したことを通知可能
-    /// </summary>
-    public interface IObservableReelDecided
-    {
 
-    }
     /// <summary>
     /// スロットのリール
     /// </summary>
-    public class Reel : MonoBehaviour, IObservableReelDecided, IReelOperation
+    public class Reel : MonoBehaviour, IReelOperation
     {
         private IReadOnlyList<IRoleOperation> _reelsCash;
         public IReadOnlyList<IRoleOperation> Roles

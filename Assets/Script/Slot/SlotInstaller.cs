@@ -8,13 +8,13 @@ namespace MedalPusher.Slot
     {
         public override void InstallBindings()
         {
-            Container.Bind<IObservableStockCount>()
+            Container.Bind<IStockCounter>()
                      .To<StockCounter>()
                      .FromComponentInHierarchy()
                      .AsCached();
-            Container.Bind<IObservableSlotStatus>()
-                     .To<Slot>()
-                     .FromComponentInHierarchy()
+            Container.Bind<IObservableStockCount>()
+                     .To<StockCounter>()
+                     .FromComponentsInHierarchy()
                      .AsCached();
             Container.Bind<ISlotRoleDeterminer>()
                      .To<SlotRoleDeterminer>()
