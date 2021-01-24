@@ -180,24 +180,29 @@ namespace Slot{
         interface IObservableStockCount{
             +Stock { get; } : IObservable<int>
         }
+        interface IStockCounter
         class StockCounter
-        StockCounter ..|> IObservableStockCount
-        IObservableMedalChecker ))-- StockCounter
+        IObservableStockCount <|.. StockCounter
+        StockCounter ..|> IStockCounter
+        IObservableMedalChecker ))- StockCounter
+
+        class StockCounterView<<View>>
+        StockCounterView --> IObservableStockCount
     }
 
     class SlotStarter
-    Slot.Stock.IObservableStockCount <-- SlotStarter 
+    Slot.Stock.IStockCounter <-- SlotStarter
     SlotStarter *--  ISlotRoleDeterminer
 
     interface ISlotRoleDeterminer{
-        +DetermineRole() : void
+        +DetermineRole() : IObservable<Unit>
     }
     class SlotRoleDeterminer
     ISlotRoleDeterminer <|.. SlotRoleDeterminer
     SlotRoleDeterminer *-- ISlotProductionDeterminer
 
     interface ISlotProductionDeterminer{
-        +DetermineProduction(RoleSet) : void;
+        +DetermineProduction(RoleSet) : IObservable<Unit>
     }
     class SlotProductionDeterminer
     ISlotProductionDeterminer <|.. SlotProductionDeterminer
@@ -210,7 +215,7 @@ namespace Slot{
     SlotProductionDeterminer -> IReachReLotteryer
 
     interface ISlotDriver{
-        +ControlBy(Production) : void
+        +ControlBy(Production) : IObservable<Unit>
     }
     class SlotDriver
     ISlotDriver <|.. SlotDriver
@@ -218,7 +223,7 @@ namespace Slot{
     SlotDriver "1"*--"3" IReelDriver
 
     interface IReelDriver{
-        +ControlBy(ProductionPart) : void
+        +ControlBy(ProductionPart) : IObservable<Unit>
     }
     class ReelDriver
     ReelDriver *-- IReelOperation
@@ -229,9 +234,7 @@ namespace Slot{
     interface IReelOperation{
         +Roles { get; } : IReadOnlyList<IRoleOperation>
     }
-    interface IReel
     class Reel
-    IReel <|.. Reel
     IReelOperation <|.. Reel
 
     interface IRoleOperation{
@@ -242,14 +245,14 @@ namespace Slot{
     IRoleOperation <|.. Role
     Reel "1"*--"*" IRoleOperation
 
-    interface IObservableSlotStatus{
-        +Status : IObservable<SlotStatus>
+    interface ISlotPrizeOrderer{
+        +Order(RoleSet) : void
     }
-    class Slot
-    IObservableSlotStatus <|...... Slot
-    Slot "1"*--"3" IReel
+    class SlotPrizeFacade
+    ISlotPrizeOrderer <|.. SlotPrizeFacade
 
-    SlotStarter --> IObservableSlotStatus
+    ISlotPrizeOrderer <- SlotRoleDeterminer
+    Item.Payout.IMedalPayoutOperation <-- SlotPrizeFacade
 }
 
 namespace PayoutPinball{
