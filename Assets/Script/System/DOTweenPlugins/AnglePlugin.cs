@@ -7,19 +7,19 @@ using DG.Tweening.Plugins.Core;
 using DG.Tweening.Plugins.Options;
 using UnityUtility;
 
-public class AnglePlugin : ABSTweenPlugin<Angle, Angle, NoOptions>
+public class AnglePlugin : ABSTweenPlugin<Angle, Angle, AngleOptions>
 {
     private static AnglePlugin _instance;
     public static AnglePlugin Instance => _instance ?? (_instance = new AnglePlugin());
 
     private AnglePlugin() { }
 
-    public override Angle ConvertToStartValue(TweenerCore<Angle, Angle, NoOptions> t, Angle value)
+    public override Angle ConvertToStartValue(TweenerCore<Angle, Angle, AngleOptions> t, Angle value)
     {
         return value;
     }
 
-    public override void EvaluateAndApply(NoOptions options,
+    public override void EvaluateAndApply(AngleOptions options,
                                           Tween t,
                                           bool isRelative,
                                           DOGetter<Angle> getter,
@@ -32,37 +32,37 @@ public class AnglePlugin : ABSTweenPlugin<Angle, Angle, NoOptions>
                                           UpdateNotice updateNotice)
     {
         float ease = EaseManager.Evaluate(t, elapsed, duration, t.easeOvershootOrAmplitude, t.easePeriod);
-
-        startValue += changeValue * ease;
-        setter(startValue);
+        setter(startValue + changeValue * ease);
     }
 
-    public override float GetSpeedBasedDuration(NoOptions options, float unitsXSecond, Angle changeValue)
+    public override float GetSpeedBasedDuration(AngleOptions options, float unitsXSecond, Angle changeValue)
     {
         throw new NotImplementedException();
     }
 
-    public override void Reset(TweenerCore<Angle, Angle, NoOptions> t)
+    public override void Reset(TweenerCore<Angle, Angle, AngleOptions> t)
     {
         //何もしない
     }
 
-    public override void SetChangeValue(TweenerCore<Angle, Angle, NoOptions> t)
+    public override void SetChangeValue(TweenerCore<Angle, Angle, AngleOptions> t)
     {
-        t.changeValue = t.endValue - t.startValue;
+        var diffAngle = t.endValue - t.startValue;
+        if (t.plugOptions.Direction == AngleTweenDirection.Forward) t.changeValue = diffAngle.PositiveNormalize();
+        else t.changeValue = diffAngle;
     }
 
-    public override void SetFrom(TweenerCore<Angle, Angle, NoOptions> t, bool isRelative)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override void SetFrom(TweenerCore<Angle, Angle, NoOptions> t, Angle fromValue, bool setImmediately, bool isRelative)
+    public override void SetFrom(TweenerCore<Angle, Angle, AngleOptions> t, bool isRelative)
     {
         throw new NotImplementedException();
     }
 
-    public override void SetRelativeEndValue(TweenerCore<Angle, Angle, NoOptions> t)
+    public override void SetFrom(TweenerCore<Angle, Angle, AngleOptions> t, Angle fromValue, bool setImmediately, bool isRelative)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void SetRelativeEndValue(TweenerCore<Angle, Angle, AngleOptions> t)
     {
         throw new NotImplementedException();
     }
