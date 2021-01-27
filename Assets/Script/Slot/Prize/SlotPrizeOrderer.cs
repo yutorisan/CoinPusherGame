@@ -11,16 +11,16 @@ namespace MedalPusher.Slot.Prize
     /// </summary>
     public interface ISlotPrizeOrderer
     {
-        void Order(RoleSet set);
+        void Order(SlotResult result);
     }
     public class SlotPrizeOrderer : ISlotPrizeOrderer
     {
         [Inject]
         private IMedalPayoutOperation m_medalPayoutOperation;
 
-        public void Order(RoleSet set)
+        public void Order(SlotResult result)
         {
-            if (set.IsBingo)
+            if (result.RoleSet.IsBingo)
             {
                 //あたったら一律20枚払い出し
                 m_medalPayoutOperation.PayoutRequest(20);

@@ -4,6 +4,7 @@ using UnityEngine;
 using Zenject;
 using UniRx;
 using System;
+using Cysharp.Threading.Tasks;
 
 namespace MedalPusher.Slot
 {
@@ -14,7 +15,7 @@ namespace MedalPusher.Slot
         /// </summary>
         /// <param name="production">演出</param>
         /// <returns>スロットの制御完了通知</returns>
-        IObservable<Unit> ControlBy(Production production);
+        UniTask ControlBy(Production production);
     }
     public class SlotDriver : MonoBehaviour, ISlotDriver
     {
@@ -25,14 +26,13 @@ namespace MedalPusher.Slot
         [Inject(Id = "Right")]
         private IReelDriver m_rightReelDriver;
 
-        public IObservable<Unit> ControlBy(Production production)
+        public UniTask ControlBy(Production production)
         {
-            var leftReelCompleted = m_leftReelDriver.ControlBy(production.LeftPart);
-            var middleReelCompleted = m_middleReelDriver.ControlBy(production.MiddlePart);
-            var rightReelCompleted = m_rightReelDriver.ControlBy(production.RightPart);
+            var leftReelControlTask = m_leftReelDriver.ControlBy(production.LeftPart);
+            var middleReelControlTask = m_middleReelDriver.ControlBy(production.MiddlePart);
+            var rightReelControlTask = m_rightReelDriver.ControlBy(production.RightPart);
 
-            return leftReelCompleted.ZipLatest(middleReelCompleted, (unit, unit2) => unit)
-                                    .ZipLatest(rightReelCompleted, (unit, unit2) => unit);
+            return UniTask.WhenAll(leftReelControlTask, middleReelControlTask, rightReelControlTask);
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Cysharp.Threading.Tasks;
 using Sirenix.OdinInspector;
 using UniRx;
 using UnityEngine;
@@ -17,9 +18,9 @@ namespace MedalPusher.Slot
         /// <summary>
         /// スロットの演出の決定を依頼する
         /// </summary>
-        /// <param name="roleSet">演出の結果、最終的に表示する出目</param>
+        /// <param name="scenario">スロットのシナリオ</param>
         /// <returns>スロットの演出を決定して回したスロットの回転が完了したことを知らせる通知</returns>
-        IObservable<Unit> DetermineProduction(RoleSet roleSet);
+        UniTask DetermineProduction(Scenario scenario);
     }
     /// <summary>
     /// スロットの演出を決定する
@@ -29,9 +30,24 @@ namespace MedalPusher.Slot
         [Inject]
         private ISlotDriver m_slotDriver;
 
-        public IObservable<Unit> DetermineProduction(RoleSet roleSet)
+        public UniTask DetermineProduction(Scenario scenario)
         {
-            return m_slotDriver.ControlBy(new Production(roleSet));
+            Production production = new Production(scenario);
+
+            //if (scenario.FirstRoleset.IsReach)
+            //{ //リーチである
+            //    //リーチ後に当たりにするかどうかによって、リーチのリールの最終的な出目を決定する
+            //    RoleValue finalReachRoleValue = scenario.IsWinIfReach ?
+            //        scenario.FirstRoleset.ReachStatus.Value.ReachedRole :
+            //        scenario.FirstRoleset.ReachStatus.Value.ReachedRole.NextRoleValue;
+            //    production = new Production(firstRoleSet, finalReachRoleValue);
+            //}
+            //else
+            //{ //リーチではない
+            //    production = new Production(firstRoleSet);
+            //}
+
+            return m_slotDriver.ControlBy(production);
         }
     }
 }

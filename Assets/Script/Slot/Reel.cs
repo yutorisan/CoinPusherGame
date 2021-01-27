@@ -17,7 +17,7 @@ namespace MedalPusher.Slot
         /// <summary>
         /// リールの各役のGameObject
         /// </summary>
-        IReadOnlyList<IRoleOperation> Roles { get; }
+        IReadOnlyList<IRoleOperation> RoleOperations { get; }
     }
 
     /// <summary>
@@ -26,7 +26,7 @@ namespace MedalPusher.Slot
     public class Reel : MonoBehaviour, IReelOperation
     {
         private IReadOnlyList<IRoleOperation> _reelsCash;
-        public IReadOnlyList<IRoleOperation> Roles
+        public IReadOnlyList<IRoleOperation> RoleOperations
         {
             get
             {

@@ -7,6 +7,7 @@ using Zenject;
 using UniRx;
 using UniRx.Diagnostics;
 using Sirenix.OdinInspector;
+using MedalPusher.Slot.Prize;
 
 namespace MedalPusher.Slot
 {
@@ -31,21 +32,22 @@ namespace MedalPusher.Slot
         // Start is called before the first frame update
         void Start()
         {
-            //スロットの抽選が完了したら、スロット回転可能にする
-            m_slotOnCompletedSubject.Subscribe(_ => m_isAllowedStart = true);
-
             //スロットの開始条件が整ったらスロット開始を依頼する
             m_stockCounter.StockSupplied            //ストックが供給された、かつ
                           .Where(_ => m_isAllowedStart) //スロットを回転させても良い
-                          //または、前のスロットの回転が終了して、かつまだストックがある
-                          .Merge(m_slotOnCompletedSubject.Where(_ => m_stockCounter.IsSpendable))                           .SelectMany(_ =>
+                                                        //または、前のスロットの回転が終了して、かつまだストックがある
+                          .Merge(m_slotOnCompletedSubject.Where(_ => m_stockCounter.IsSpendable))
+                          .Subscribe(async _ =>
                           { //ならば、ストックを消費してスロットの回転を開始させる
                               m_stockCounter.SpendStock();
                               m_isAllowedStart = false;
-                              return m_roleDeterminer.DetermineRole();
-                          }) //スロットの回転完了通知をもらったら、それをクラス内に伝達させる
-                          .Subscribe(_ => m_slotOnCompletedSubject.OnNext(Unit.Default));
+                              await m_roleDeterminer.DetermineRole();
+                              m_isAllowedStart = true;
+                              m_slotOnCompletedSubject.OnNext(Unit.Default);
+                          });
 
         }
+
+        
     }
 }

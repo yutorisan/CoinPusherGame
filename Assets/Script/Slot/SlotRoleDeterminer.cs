@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
+using Cysharp.Threading.Tasks;
 using MedalPusher.Slot.Prize;
 using Sirenix.OdinInspector;
+using TMPro.Examples;
 using UniRx;
 using UnityEngine;
 using UnityEngine.Playables;
@@ -19,7 +22,7 @@ namespace MedalPusher.Slot
         /// 出目の決定を依頼する
         /// </summary>
         /// <returns>依頼した出目決定によってスロットが回転し、その出目がでたことの通知</returns>
-        IObservable<Unit> DetermineRole();
+        UniTask DetermineRole();
     }
     /// <summary>
     /// スロットの出目を決定する
@@ -47,7 +50,7 @@ namespace MedalPusher.Slot
         [SerializeField, Range(0f, 1f), LabelText("リーチ状態から当たる確率"),]
         private float m_reachWinningProbability = 0.5f;
 
-        private SlotRoleSetGeneratorSelector m_generatorSelector;
+        private SlotScenarioGeneratorSelector m_generatorSelector;
 
         /// <summary>
         /// はずれる確率
@@ -58,93 +61,110 @@ namespace MedalPusher.Slot
         // Start is called before the first frame update
         void Start()
         {
-            m_generatorSelector = new SlotRoleSetGeneratorSelector(this);
+            m_generatorSelector = new SlotScenarioGeneratorSelector(this);
         }
 
-        public IObservable<Unit> DetermineRole()
+        public UniTask DetermineRole()
         {
             //出目を決定
-            var roleset = m_generatorSelector.Select().GenerateRoleSet();
+            var scenario = m_generatorSelector.Select().GenerateScenario();
             //出目に応じて演出の決定を依頼
-            var done = m_productionDeterminer.DetermineProduction(roleset);
-            //依頼した演出が終了したら、景品の払い出しを依頼
-            done.Subscribe(_ => m_prizeOrderer.Order(roleset));
-
-            return done;
+            return m_productionDeterminer.DetermineProduction(scenario)
+                                         .ContinueWith(() => m_prizeOrderer.Order(scenario.Result));
         }
 
         /// <summary>
         /// スロットの出目を生成できる
         /// </summary>
-        private interface ISlotRoleSetGenerator
+        private interface ISlotScenarioGenerator
         {
-            RoleSet GenerateRoleSet();
+            Scenario GenerateScenario();
         }
         /// <summary>
         /// 適切なISlotRoleSetGeneratorを選択する
         /// </summary>
-        private class SlotRoleSetGeneratorSelector
+        private class SlotScenarioGeneratorSelector
         {
             private SlotRoleDeterminer _parent;
-            public SlotRoleSetGeneratorSelector(SlotRoleDeterminer parent) => _parent = parent;
+            public SlotScenarioGeneratorSelector(SlotRoleDeterminer parent) => _parent = parent;
 
             /// <summary>
             /// 設定された確率に応じて抽選されたSlotRoleSetGeneratorを選択する
             /// </summary>
             /// <returns></returns>
-            public ISlotRoleSetGenerator Select()
+            public ISlotScenarioGenerator Select()
             {
                 switch (UnityEngine.Random.value)
                 {
                     //ダイレクトあたり
                     case float p when p < _parent.m_directWinningProbability:
-                        return DirectWinRoleSetGenerator.Instance;
+                        return DirectWinScenarioGenerator.GetInstance();
                     //リーチ
                     case float p when p < _parent.m_reachProbability:
-                        return ReachRoleSetGenerator.Instance;
+                        return ReachScenarioGenerator.GetInstance(_parent.m_reachWinningProbability);
                     //はずれ
                     default:
-                        return LoseRoleSetGenerator.Instance;
+                        return LoseScenarioGenerator.GetInstance();
                 }
             }
 
             /// <summary>
             /// 当たりとなるようなスロットの出目を生成する
             /// </summary>
-            private class DirectWinRoleSetGenerator : ISlotRoleSetGenerator
+            private class DirectWinScenarioGenerator : ISlotScenarioGenerator
             {
-                private DirectWinRoleSetGenerator() { }
-                private static DirectWinRoleSetGenerator _instance;
-                public static ISlotRoleSetGenerator Instance => _instance ?? (_instance = new DirectWinRoleSetGenerator());
-                public RoleSet GenerateRoleSet()
+                private DirectWinScenarioGenerator() { }
+                private static DirectWinScenarioGenerator _instance;
+                public static ISlotScenarioGenerator GetInstance() => _instance ?? (_instance = new DirectWinScenarioGenerator());
+                public Scenario GenerateScenario()
                 {
                     RoleValue role = RoleValue.FromRandom();
-                    return new RoleSet(role, role, role);
+                    return new Scenario(new RoleSet(role, role, role));
                 }
             }
             /// <summary>
             /// リーチとなるようなスロットの出目を生成する
             /// </summary>
-            private class ReachRoleSetGenerator : ISlotRoleSetGenerator
+            private class ReachScenarioGenerator : ISlotScenarioGenerator
             {
-                private ReachRoleSetGenerator() { }
-                private static ReachRoleSetGenerator _instance;
-                public static ISlotRoleSetGenerator Instance => _instance ?? (_instance = new ReachRoleSetGenerator());
-                public RoleSet GenerateRoleSet()
+                private float m_reachToWinProbability;
+                private ReachScenarioGenerator(float reachToWinPropability) => this.m_reachToWinProbability = reachToWinPropability;
+                private static ReachScenarioGenerator _instance;
+                public static ISlotScenarioGenerator GetInstance(float reachToWinProbability)
+                {
+                    if (_instance == null) return new ReachScenarioGenerator(reachToWinProbability);
+                    else
+                    {
+                        _instance.m_reachToWinProbability = reachToWinProbability;
+                        return _instance;
+                    }
+                }
+                public Scenario GenerateScenario()
                 {
                     //リーチする役を決定
                     RoleValue reachRole = RoleValue.FromRandom();
-                    //外れる役を決定（偶然当たることもあるが織り込み済みとする）
-                    RoleValue loseRole = RoleValue.FromRandom();
+                    //外れる役を決定
+                    RoleValue loseRole = RoleValue.FromRandom(reachRole);
+
+                    //リーチ後に当たるかはずれるかを決定
+                    bool isWin = UnityEngine.Random.value < m_reachToWinProbability;
+
+                    //リーチ後の確定役を決定
+                    RoleValue afterReachRole;
+                    //あたりなら揃える
+                    if (isWin) afterReachRole = reachRole;
+                    //ハズレならその前後の役にする（ランダム）
+                    else afterReachRole = UnityEngine.Random.value < 0.5 ? reachRole.NextRoleValue : reachRole.PreviousRoleValue;
+
                     //はずれる位置を決定
                     switch (UnityEngine.Random.Range(0,3))
                     {
                         case 0:
-                            return new RoleSet(loseRole, reachRole, reachRole);
+                            return new Scenario(new RoleSet(loseRole, reachRole, reachRole), afterReachRole);
                         case 1:
-                            return new RoleSet(reachRole, loseRole, reachRole);
+                            return new Scenario(new RoleSet(reachRole, loseRole, reachRole), afterReachRole);
                         case 2:
-                            return new RoleSet(reachRole, reachRole, loseRole);
+                            return new Scenario(new RoleSet(reachRole, reachRole, loseRole), afterReachRole);
                         default:
                             throw new System.Exception("リーチの位置を決定できませんでした");
                     }
@@ -153,14 +173,17 @@ namespace MedalPusher.Slot
             /// <summary>
             /// はずれとなるようなスロットの出目を生成する
             /// </summary>
-            private class LoseRoleSetGenerator : ISlotRoleSetGenerator
+            private class LoseScenarioGenerator : ISlotScenarioGenerator
             {
-                private LoseRoleSetGenerator() { }
-                private static LoseRoleSetGenerator _instance;
-                public static ISlotRoleSetGenerator Instance => _instance ?? (_instance = new LoseRoleSetGenerator());
-                public RoleSet GenerateRoleSet()
+                private LoseScenarioGenerator() { }
+                private static LoseScenarioGenerator _instance;
+                public static ISlotScenarioGenerator GetInstance() => _instance ?? (_instance = new LoseScenarioGenerator());
+                public Scenario GenerateScenario()
                 {
-                    return new RoleSet(RoleValue.FromRandom(), RoleValue.FromRandom(), RoleValue.FromRandom());
+                    var role1 = RoleValue.FromRandom();
+                    var role2 = RoleValue.FromRandom(role1);
+                    var role3 = RoleValue.FromRandom(role1, role2);
+                    return new Scenario(new RoleSet(role1, role2, role3));
                 }
             }
         }

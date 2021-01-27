@@ -5184,8 +5184,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_directWinningProbability: 0.1
-  m_reachProbability: 0.2
-  m_reachWinningProbability: 0.5
+  m_reachProbability: 0.8
+  m_reachWinningProbability: 0.7
 --- !u!1 &549839151
 GameObject:
   m_ObjectHideFlags: 0
@@ -28148,8 +28148,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 923911565}
-  m_LocalRotation: {x: 0.17364816, y: 0, z: 0, w: 0.9848078}
-  m_LocalPosition: {x: -0.116, y: 0.274, z: 0}
+  m_LocalRotation: {x: 0.10825779, y: -0, z: -0, w: 0.99412286}
+  m_LocalPosition: {x: -0.116, y: 0.58934027, z: -0.011390369}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 483781652}
@@ -28160,7 +28160,7 @@ Transform:
   - {fileID: 1454929005}
   m_Father: {fileID: 0}
   m_RootOrder: 12
-  m_LocalEulerAnglesHint: {x: 20, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 12.43, y: 0, z: 0}
 --- !u!114 &923911567
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -30768,15 +30768,15 @@ MonoBehaviour:
   - valueType: 1
     prefab: {fileID: 4163695586067320242, guid: 1685fea7b2dc4446fbcad615be0bccd8,
       type: 3}
-    initCapacity: 1000
+    initCapacity: 100
   - valueType: 3
     prefab: {fileID: 4163695586067320242, guid: 3503fe38dd38a443d9351e8e661a1561,
       type: 3}
-    initCapacity: 3
+    initCapacity: 0
   - valueType: 10
     prefab: {fileID: 4163695586067320242, guid: 469ec0e49f9b545a4a8aece4ba996f80,
       type: 3}
-    initCapacity: 3
+    initCapacity: 0
 --- !u!4 &1141531082
 Transform:
   m_ObjectHideFlags: 0
