@@ -118,8 +118,7 @@ namespace MedalPusher.Slot
                 public static ISlotScenarioGenerator GetInstance() => _instance ?? (_instance = new DirectWinScenarioGenerator());
                 public Scenario GenerateScenario()
                 {
-                    RoleValue role = RoleValue.FromRandom();
-                    return new Scenario(new RoleSet(role, role, role));
+                    return Scenario.DirectWin(RoleValue.FromRandom());
                 }
             }
             /// <summary>
@@ -160,11 +159,11 @@ namespace MedalPusher.Slot
                     switch (UnityEngine.Random.Range(0,3))
                     {
                         case 0:
-                            return new Scenario(new RoleSet(loseRole, reachRole, reachRole), afterReachRole);
+                            return Scenario.Reach(new RoleSet(loseRole, reachRole, reachRole), afterReachRole);
                         case 1:
-                            return new Scenario(new RoleSet(reachRole, loseRole, reachRole), afterReachRole);
+                            return Scenario.Reach(new RoleSet(reachRole, loseRole, reachRole), afterReachRole);
                         case 2:
-                            return new Scenario(new RoleSet(reachRole, reachRole, loseRole), afterReachRole);
+                            return Scenario.Reach(new RoleSet(reachRole, reachRole, loseRole), afterReachRole);
                         default:
                             throw new System.Exception("リーチの位置を決定できませんでした");
                     }
@@ -183,7 +182,7 @@ namespace MedalPusher.Slot
                     var role1 = RoleValue.FromRandom();
                     var role2 = RoleValue.FromRandom(role1);
                     var role3 = RoleValue.FromRandom(role1, role2);
-                    return new Scenario(new RoleSet(role1, role2, role3));
+                    return Scenario.Lose(new RoleSet(role1, role2, role3));
                 }
             }
         }

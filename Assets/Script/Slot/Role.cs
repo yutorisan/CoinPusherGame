@@ -5,13 +5,17 @@ using UnityUtility;
 
 namespace MedalPusher.Slot
 {
-    public interface IRoleOperation
+    /// <summary>
+    /// Roleのマーカーインターフェイス
+    /// </summary>
+    public interface IRole { }
+    public interface IRoleOperation : IRole
     {
         Transform transform { get; }
         RoleValue Value { get; }
         void ChangeOpacity(float opacity);
     }
-    public class Role : MonoBehaviour, IRoleOperation
+    public class Role : MonoBehaviour, IRoleOperation, IRole
     {
         [SerializeField]
         private RoleValue m_value;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace MedalPusher.Slot
 {
@@ -7,24 +8,27 @@ namespace MedalPusher.Slot
     /// </summary>
     public readonly struct Scenario
     {
+        private readonly ReelScenario m_leftScenario, m_milldeScenario, m_rightScenario;
+
         /// <summary>
         /// ノーマルのシナリオを新規作成
         /// </summary>
         /// <param name="roleset"></param>
-        public Scenario(RoleSet roleset)
+        private Scenario(RoleSet roleset)
         {
             this.FirstRoleset = roleset;
+            this.FinalRoleset = roleset;
 
-            LeftScenario = new ReelScenario(roleset.Left);
-            MiddleScenario = new ReelScenario(roleset.Middle);
-            RightScenario = new ReelScenario(roleset.Right);
+            m_leftScenario = new ReelScenario(roleset[ReelPos.Left]);
+            m_milldeScenario = new ReelScenario(roleset[ReelPos.Middle]);
+            m_rightScenario = new ReelScenario(roleset[ReelPos.Right]);
         }
         /// <summary>
         /// リーチのシナリオを新規作成
         /// </summary>
         /// <param name="reachedRoleSet">リーチになっているセット</param>
         /// <param name="afterReachRole">リーチ再抽選後にキーとなるリールが示すRole</param>
-        public Scenario(RoleSet reachedRoleSet, RoleValue afterReachRole)
+        private Scenario(RoleSet reachedRoleSet, RoleValue afterReachRole)
         {
             if (!reachedRoleSet.IsReach) throw new InvalidOperationException("入力されたセットはリーチではありません");
 
@@ -32,36 +36,82 @@ namespace MedalPusher.Slot
             switch (FirstRoleset.ReachStatus.Value.ReachReelPos)
             {
                 case ReelPos.Left:
-                    LeftScenario = new ReelScenario(reachedRoleSet.Left, afterReachRole);
-                    MiddleScenario = new ReelScenario(reachedRoleSet.Middle);
-                    RightScenario = new ReelScenario(reachedRoleSet.Right);
+                    m_leftScenario = new ReelScenario(reachedRoleSet[ReelPos.Left], afterReachRole);
+                    m_milldeScenario = new ReelScenario(reachedRoleSet[ReelPos.Middle]);
+                    m_rightScenario = new ReelScenario(reachedRoleSet[ReelPos.Right]);
+                    FinalRoleset = new RoleSet(afterReachRole, reachedRoleSet[ReelPos.Middle], reachedRoleSet[ReelPos.Right]);
                     break;
                 case ReelPos.Middle:
-                    LeftScenario = new ReelScenario(reachedRoleSet.Left);
-                    MiddleScenario = new ReelScenario(reachedRoleSet.Middle, afterReachRole);
-                    RightScenario = new ReelScenario(reachedRoleSet.Right);
+                    m_leftScenario = new ReelScenario(reachedRoleSet[ReelPos.Left]);
+                    m_milldeScenario = new ReelScenario(reachedRoleSet[ReelPos.Middle], afterReachRole);
+                    m_rightScenario = new ReelScenario(reachedRoleSet[ReelPos.Right]);
+                    FinalRoleset = new RoleSet(reachedRoleSet[ReelPos.Left], afterReachRole, reachedRoleSet[ReelPos.Right]);
                     break;
                 case ReelPos.Right:
-                    LeftScenario = new ReelScenario(reachedRoleSet.Left);
-                    MiddleScenario = new ReelScenario(reachedRoleSet.Middle);
-                    RightScenario = new ReelScenario(reachedRoleSet.Right, afterReachRole);
+                    m_leftScenario = new ReelScenario(reachedRoleSet[ReelPos.Left]);
+                    m_milldeScenario = new ReelScenario(reachedRoleSet[ReelPos.Middle]);
+                    m_rightScenario = new ReelScenario(reachedRoleSet[ReelPos.Right], afterReachRole);
+                    FinalRoleset = new RoleSet(reachedRoleSet[ReelPos.Left], reachedRoleSet[ReelPos.Middle], afterReachRole);
                     break;
                 default:
                     throw new InvalidOperationException();
             }
 
         }
+
+        /// <summary>
+        /// ハズレのシナリオを作成
+        /// </summary>
+        /// <param name="roleSet"></param>
+        /// <returns></returns>
+        public static Scenario Lose(RoleSet roleSet)
+        {
+            return new Scenario(roleSet);
+        }
+        /// <summary>
+        /// リーチのシナリオを作成
+        /// </summary>
+        /// <param name="reachedRoleSet">リーチのRoleset</param>
+        /// <param name="afterReachRole">リーチ再抽選後にキーとなるリールが示すRole</param>
+        /// <returns></returns>
+        public static Scenario Reach(RoleSet reachedRoleSet, RoleValue afterReachRole)
+        {
+            return new Scenario(reachedRoleSet, afterReachRole);
+        }
+        /// <summary>
+        /// ダイレクトで当たるシナリオを作成
+        /// </summary>
+        /// <param name="winRole"></param>
+        /// <returns></returns>
+        public static Scenario DirectWin(RoleValue winRole)
+        {
+            return new Scenario(new RoleSet(winRole, winRole, winRole));
+        }
+
+        public ReelScenario GetReelScenario(ReelPos pos)
+        {
+            switch (pos)
+            {
+                case ReelPos.Left: return m_leftScenario;
+                case ReelPos.Middle: return m_milldeScenario;
+                case ReelPos.Right: return m_rightScenario;
+                default: throw new Exception();
+            }
+        }
+
         /// <summary>
         /// 最初に表示する出目
         /// </summary>
         public RoleSet FirstRoleset { get; }
-
-        public ReelScenario LeftScenario { get; }
-        public ReelScenario MiddleScenario { get; }
-        public ReelScenario RightScenario { get; }
+        /// <summary>
+        /// 最終的に表示する出目
+        /// </summary>
+        public RoleSet FinalRoleset { get; }
 
         public SlotResult Result =>
-            new SlotResult(new RoleSet(LeftScenario.FinallyRole, MiddleScenario.FinallyRole, RightScenario.FinallyRole));
+            new SlotResult(new RoleSet(m_leftScenario.FinallyRole, m_milldeScenario.FinallyRole, m_rightScenario.FinallyRole));
+        public bool IsReachScenario => FirstRoleset.IsReach;
+        public bool IsWinScenario => FinalRoleset.IsBingo;
     }
 
     /// <summary>

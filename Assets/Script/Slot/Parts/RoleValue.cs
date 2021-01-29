@@ -218,16 +218,28 @@ namespace MedalPusher.Slot
     /// </summary>
     public readonly struct RoleSet
     {
+        private readonly RoleValue m_left, m_middle, m_right;
         public RoleSet(RoleValue left, RoleValue center, RoleValue right)
         {
-            this.Left = left;
-            this.Middle = center;
-            this.Right = right;
+            this.m_left = left;
+            this.m_middle = center;
+            this.m_right = right;
         }
 
-        public RoleValue Left { get; }
-        public RoleValue Middle { get; }
-        public RoleValue Right { get; }
+        public RoleValue this[ReelPos index]
+        {
+            get
+            {
+                switch (index)
+                {
+                    case ReelPos.Left: return m_left;
+                    case ReelPos.Middle: return m_middle;
+                    case ReelPos.Right: return m_right;
+                    default: throw new Exception();
+                }
+            }
+        }
+ 
 
         /// <summary>
         /// ビンゴになっている役を取得する
@@ -237,7 +249,7 @@ namespace MedalPusher.Slot
         {
             get
             {
-                if (Left == Middle && Middle == Right) return Left;
+                if (m_left == m_middle && m_middle == m_right) return m_left;
                 else return null;
             }
         }
@@ -258,12 +270,12 @@ namespace MedalPusher.Slot
                 if (IsBingo) return null;
 
                 //いずれかリーチならその情報を返す
-                if (Left == Middle)
-                    return new ReachInfo(Left, ReelPos.Right);
-                if (Middle == Right)
-                    return new ReachInfo(Middle, ReelPos.Left);
-                if (Left == Right)
-                    return new ReachInfo(Left, ReelPos.Middle);
+                if (m_left == m_middle)
+                    return new ReachInfo(m_left, ReelPos.Right);
+                if (m_middle == m_right)
+                    return new ReachInfo(m_middle, ReelPos.Left);
+                if (m_left == m_right)
+                    return new ReachInfo(m_left, ReelPos.Middle);
 
                 //何も揃っていないならnull
                 return null;

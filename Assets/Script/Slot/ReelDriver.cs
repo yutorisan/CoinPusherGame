@@ -17,82 +17,86 @@ using Cysharp.Threading.Tasks;
 
 namespace MedalPusher.Slot
 {
-    /// <summary>
-    /// 各リールの動きを制御することができる
-    /// </summary>
-    public interface IReelDriver
+    ///// <summary>
+    ///// 各リールの動きを制御することができる
+    ///// </summary>
+    //public interface IReelDriver
+    //{
+    //    /// <summary>
+    //    /// 指定したリールの演出に従って、リールを制御します。
+    //    /// </summary>
+    //    /// <param name="production">リールの演出</param>
+    //    /// <returns>リール制御の完了通知</returns>
+    //    UniTask ControlBy(ReelProduction production);
+    //    UniTask ControlForWinningProduction();
+    //}
+
+    public interface IReelSequenceProvider
     {
         /// <summary>
-        /// 指定したリールの演出に従って、リールを制御します。
+        /// 通常のリール回転シーケンスを取得する
         /// </summary>
-        /// <param name="production">リールの演出</param>
-        /// <returns>リール制御の完了通知</returns>
-        UniTask ControlBy(ReelProduction production);
+        /// <returns></returns>
+        ReelSequence GetNormalRollSequence(RoleValue stopRole, int laps, float maxrps, float accelDutation, float deceleDuration);
+        /// <summary>
+        /// リーチ時の再抽選シーケンスを取得する
+        /// </summary>
+        /// <returns></returns>
+        ReelSequence GetReachReRollSequence(ReelProduction production, float switchDuration, float interval);
+        /// <summary>
+        /// 当たったときの演出シーケンスを取得する
+        /// </summary>
+        /// <returns></returns>
+        Sequence GetWinningProductionSequence(RoleValue target);
     }
+
     /// <summary>
-    /// 各リールの動きを制御する
+    /// 各リールの動きを制御するシーケンスを提供する
     /// </summary>
-    public class ReelDriver : SerializedMonoBehaviour, IReelDriver
+    public class ReelSequenceProvider : IReelSequenceProvider
     {
         /// <summary>
         /// Reelの初期状態から、0を全面に持ってくるまでの補正角度
         /// </summary>
         private static readonly Angle FrontAngle = Angle.FromDegree(-80);
         /// <summary>
-        /// Reelの半径
-        /// </summary>
-        private static readonly UniReadOnly<float> Radius = new UniReadOnly<float>(isOverwriteIgnoreMode: true);
-        /// <summary>
         /// このReelに属するRoleの数
         /// </summary>
-        private readonly UniReadOnly<int> RoleCount = new UniReadOnly<int>();
-
-        [SerializeField]
-        private IReelOperation m_reelOperation;
-        /// <summary>
-        /// スロットの回転半径
-        /// </summary>
-        [SerializeField]
-        private float m_radius;
-
+        private readonly int m_roleCount;
         /// <summary>
         /// 各Roleを動かすモジュール
         /// </summary>
-        private readonly UniReadOnly<IReadOnlyDictionary<RoleValue, RoleDriver>> m_roleDrivers = new UniReadOnly<IReadOnlyDictionary<RoleValue, RoleDriver>>();
+        private readonly IReadOnlyDictionary<RoleValue, RoleDriveTweenProvider> m_roleDrivers;
         /// <summary>
         /// 正面に持ってくる役と各役の角度テーブル
         /// </summary>
-        private readonly UniReadOnly<FrontRoleAndEachAngleTable> m_frontroleAngleTable = new UniReadOnly<FrontRoleAndEachAngleTable>();
+        private readonly FrontRoleAndEachAngleTable m_frontroleAngleTable;
 
-        // Start is called before the first frame update
-        void Start()
+
+        public ReelSequenceProvider(IReadOnlyCollection<IRoleOperation> operations, float reelRadius)
         {
-            RoleCount.Initialize(m_reelOperation.RoleOperations.Count);
+            m_roleCount = operations.Count;
 
-            Radius.Initialize(m_radius);
-            //RoleCount.Initialize(m_reelOperation.Roles.Count);
-            m_frontroleAngleTable.Initialize(new FrontRoleAndEachAngleTable(m_reelOperation.RoleOperations.Select(ope => ope.Value).ToList()));
+            m_frontroleAngleTable = new FrontRoleAndEachAngleTable(operations.Select(ope => ope.Value).ToList());
 
             //このReelが受け持つ各RoleからRoleDriverを生成して格納する
-            m_roleDrivers.Initialize(
-                m_reelOperation.RoleOperations
-                               .Select((ope, index) => new { ope, index })
-                               .ToDictionary(pair => pair.ope.Value,
-                                             pair => new RoleDriver(pair.ope, (Angle.Round / RoleCount * pair.index + FrontAngle).PositiveNormalize())));                //indexの順番に均等に円形配置
-                                                                                                                                                                         //+FrontAngleは正面に何かしらのRoleをもってくるため
+            m_roleDrivers = 
+                operations.Select((ope, index) => new { ope, index })
+                          .ToDictionary(pair => pair.ope.Value,
+                                        pair => new RoleDriveTweenProvider(pair.ope, (Angle.Round / m_roleCount * pair.index + FrontAngle).PositiveNormalize(), reelRadius));                //indexの順番に均等に円形配置
+
         }
 
-
-        public UniTask ControlBy(ReelProduction production)
-        {
-            //各Roleに対するノーマルの回転シーケンスを取得
-            var normalSq = GetRollAndStopNormalSequences(production.ReelScenario.FirstRoleValue, 5, 3, 2, 2);
-            //各Roleに対するリーチ演出シーケンスを取得
-            var reachSq = GetReachSequences(production, 0.5f, 0.5f);
-            //ノーマルシーケンスのあとにリーチ演出シーケンスを合成して再生する。再生完了通知を返す。
-            return UniTask.WhenAll(normalSq.Zip(reachSq, (nSq, rSq) => nSq.Append(rSq))
-                                           .Select(sq => sq.Play().AsyncWaitForCompletion().AsUniTask()));
-        }
+        //public UniTask ControlBy(ReelProduction production)
+        //{
+        //    //各Roleに対するノーマルの回転シーケンスを取得
+        //    var normalSq = GetRollAndStopNormalSequences(production.ReelScenario.FirstRoleValue, 5, 3, 2, 2);
+        //    //各Roleに対するリーチ演出シーケンスを取得
+        //    var reachSq = GetReachSequences(production, 0.5f, 0.5f);
+        //    //ノーマルシーケンスのあとにリーチ演出シーケンスを合成して再生する。再生完了通知を返す。
+        //    return UniTask.WhenAll(normalSq.Zip(reachSq, (nSq, rSq) => nSq.Append(rSq))
+        //                                   .Select(sq => sq.Play().AsyncWaitForCompletion().AsUniTask()));
+        //}
 
         /// <summary>
         /// 停止状態からスロットを回転させ、指定の位置で停止する、通常の各Roleに対するシーケンスを取得する
@@ -103,17 +107,15 @@ namespace MedalPusher.Slot
         /// <param name="accelDutation">加速時間(s)</param>
         /// <param name="deceleDuration">減速時間(s)</param>
         /// <returns>各Roleに対するシーケンス</returns>
-        private IEnumerable<Sequence> GetRollAndStopNormalSequences(RoleValue stopRole, int laps, float maxrps, float accelDutation, float deceleDuration)
+        public ReelSequence GetNormalRollSequence(RoleValue stopRole, int laps, float maxrps, float accelDutation, float deceleDuration)
         {
-            //最終的に表示する状態の各役のAngleを取得
-            var angleTable = m_frontroleAngleTable.Value.GetAngleTable(stopRole);
-            //すべてのRoleの制御完了通知を返す
-            return 
-                m_roleDrivers.Value.Values
-                             .Select(driver => DOTween.Sequence()
-                                                      .Append(driver.AccelerationRotate(accelDutation, maxrps))
-                                                      .Append(driver.LinearRotate(laps, maxrps))
-                                                      .Append(driver.DecelerateAndStopAbsAngle(angleTable[driver.RoleValue], deceleDuration, maxrps)));
+            //すべてのRoleの制御完了通知を返す 
+            return m_roleDrivers.Values
+                                .Select(driver => DOTween.Sequence()
+                                                         .Append(driver.AccelerationRotate(accelDutation, maxrps))
+                                                         .Append(driver.LinearRotate(laps, maxrps))
+                                                         .Append(driver.DecelerateAndStopAbsAngle(m_frontroleAngleTable.GetAngleTable(stopRole)[driver.RoleValue], deceleDuration, maxrps)))
+                                .ToReelSequence();
         }
 
         /// <summary>
@@ -124,21 +126,22 @@ namespace MedalPusher.Slot
         /// <param name="switchDuration">Roleが切り替わるアニメーションの継続時間</param>
         /// <param name="interval">Roleが切り替わるアニメーション同士の待機時間間隔</param>
         /// <returns>各Roleに対するリーチ演出シーケンス</returns>
-        private IEnumerable<Sequence> GetReachSequences(ReelProduction production, float switchDuration, float interval)
+        public ReelSequence GetReachReRollSequence(ReelProduction production, float switchDuration, float interval)
         {
-            //リーチじゃなければ空のシーケンスを返す
-            if (!production.ReelScenario.IsReachReelScenario) return Enumerable.Range(1, RoleCount).Select(_ => DOTween.Sequence());
+            ////リーチじゃなければ空のシーケンスを返す
+            //if (!production.ReelScenario.IsReachReelScenario) return Enumerable.Range(1, m_roleCount).Select(_ => DOTween.Sequence());
 
-            return m_roleDrivers.Value.Values
-                                .Select(driver => GetRoleSequenceOnReachProduction(driver));
+            return m_roleDrivers.Values
+                                .Select(driver => GetRoleSequenceOnReachProduction(driver))
+                                .ToReelSequence();
 
             //各Roleのリーチ演出シーケンスを取得する
-            Sequence GetRoleSequenceOnReachProduction(RoleDriver driver)
+            Sequence GetRoleSequenceOnReachProduction(RoleDriveTweenProvider driver)
             {
                 Sequence sequence = DOTween.Sequence();
                 foreach (var role in RoleValue.ForwardLoops(production.ReelScenario.FirstRoleValue, production.ReelScenario.AfterReachRole.Value))
                 {
-                    var angle = m_frontroleAngleTable.Value.GetAngleTable(role)[driver.RoleValue];
+                    var angle = m_frontroleAngleTable.GetAngleTable(role)[driver.RoleValue];
                     sequence = sequence.Append(driver.RollAbsolutely(angle, switchDuration, AngleTweenDirection.Forward))
                                        .AppendInterval(interval);
                 }
@@ -146,6 +149,12 @@ namespace MedalPusher.Slot
             }
         }
 
+        public Sequence GetWinningProductionSequence(RoleValue target)
+        {
+            return DOTween.Sequence()
+                          .Append(m_roleDrivers[target].WinningRotate());
+                          //.Append(m_roleDrivers[target].WinningZoomUp());
+        }
 
         /// <summary>
         /// 正面に持ってくる役と、そのときの各役がいるべき角度の対応テーブル
@@ -186,7 +195,10 @@ namespace MedalPusher.Slot
             public IReadOnlyDictionary<RoleValue, Angle> GetAngleTable(RoleValue frontRole) => m_frontroleAngleTable[frontRole];
         }
 
-        private class RoleDriver
+        /// <summary>
+        /// Roleを制御する各種Tweenを提供する
+        /// </summary>
+        private class RoleDriveTweenProvider
         {
             /// <summary>
             /// 正面からの表示範囲角度
@@ -201,32 +213,33 @@ namespace MedalPusher.Slot
             /// 初期状態の座標
             /// </summary>
             private readonly Vector3 m_initialPosition;
+            private readonly float m_radius;
             /// <summary>
             /// 現在の角度
             /// </summary>
             private Angle m_nowAngle;
 
-            ///// <summary>
-            ///// 所属するReelにおけるこのRoleの順番
-            ///// </summary>
-            //public int Index { get; }
             /// <summary>
             /// このDriverが操るRoleの値
             /// </summary>
             public RoleValue RoleValue => m_operation.Value;
+            /// <summary>
+            /// Roleの識別子
+            /// </summary>
+            public IRole RoleID => m_operation;
 
             /// <summary>
             /// 
             /// </summary>
             /// <param name="operation"></param>
             /// <param name="initialAngle">初期状態の角度</param>
-            public RoleDriver(IRoleOperation operation, Angle initialAngle)
+            /// <param name="radius">Reelの半径</param>
+            public RoleDriveTweenProvider(IRoleOperation operation, Angle initialAngle, float radius)
             {
                 m_operation = operation;
-                //Index = index;
                 m_initialPosition = operation.transform.position;
-
                 m_initialAngle = initialAngle;
+                m_radius = radius;
 
                 ApplyAngle(m_initialAngle);
             }
@@ -306,6 +319,12 @@ namespace MedalPusher.Slot
                        .OnComplete(PositiveNormalize)
                        .SetOptions(direction);
 
+            public Tween WinningRotate() =>
+                m_operation.transform.DORotate(new Vector3(0, 720, 0), 0.5f).SetRelative();
+
+            public Tween WinningZoomUp() =>
+                m_operation.transform.DOScale(1.2f, 0.5f);
+
             /// <summary>
             /// 指定の角度にRoleを回転移動する
             /// </summary>
@@ -315,14 +334,12 @@ namespace MedalPusher.Slot
                 //Roleのpositionを回転させる
                 m_operation.transform.position = new Vector3(
                     0,
-                    Radius * Mathf.Cos(targetAngle.TotalRadian),
-                    Radius * Mathf.Sin(targetAngle.TotalRadian)) + m_initialPosition;
+                    m_radius * Mathf.Cos(targetAngle.TotalRadian),
+                    m_radius * Mathf.Sin(targetAngle.TotalRadian)) + m_initialPosition;
                 //透明度を更新する
                 m_operation.ChangeOpacity(getOpacity());
                 //テーブルを更新
-                m_nowAngle = targetAngle;
-                if (double.IsNaN(m_nowAngle.TotalDegree)) print("NaNになった！！");
-                
+                m_nowAngle = targetAngle;            
 
                 float getOpacity()
                 {

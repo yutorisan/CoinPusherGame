@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEditor.UIElements;
 
@@ -9,6 +10,8 @@ namespace MedalPusher.Slot
     /// </summary>
     public readonly struct Production
     {
+        private readonly IReadOnlyDictionary<ReelPos, ReelProduction> m_reelProductionTable;
+
         /// <summary>
         /// 通常のスロット演出を新規作成
         /// </summary>
@@ -17,16 +20,17 @@ namespace MedalPusher.Slot
         {
             this.Scenario = scenario;
 
-            this.LeftPart = new ReelProduction(scenario.LeftScenario);
-            this.MiddlePart = new ReelProduction(scenario.MiddleScenario);
-            this.RightPart = new ReelProduction(scenario.RightScenario);
+            m_reelProductionTable = new Dictionary<ReelPos, ReelProduction>()
+            {
+                {ReelPos.Left, new ReelProduction(scenario.GetReelScenario(ReelPos.Left)) },
+                {ReelPos.Middle, new ReelProduction(scenario.GetReelScenario(ReelPos.Middle)) },
+                {ReelPos.Right, new ReelProduction(scenario.GetReelScenario(ReelPos.Right)) }
+            };
         }
 
-        public Scenario Scenario { get; }
+        public ReelProduction GetReelProduction(ReelPos pos) => m_reelProductionTable[pos];
 
-        public ReelProduction LeftPart { get; }
-        public ReelProduction MiddlePart { get; }
-        public ReelProduction RightPart { get; }
+        public Scenario Scenario { get; }
 
    }
 
@@ -42,33 +46,8 @@ namespace MedalPusher.Slot
         public ReelProduction(ReelScenario scenario)
         {
             this.ReelScenario = scenario;
-            //this.FirstStopRole = scenario.FirstRoleValue;
-            //this.ReachToWinRoleValue = null;
         }
 
         public ReelScenario ReelScenario { get; }
-
-        ///// <summary>
-        ///// このリールがリーチのキーとなる場合の演出を新規作成。
-        ///// </summary>
-        ///// <param name="scenario"></param>
-        ///// <param name="reachToWinRoleValue"></param>
-        //public ReelProduction(ReelScenario scenario, RoleValue reachToWinRoleValue)
-        //{
-        //    this.FirstStopRole = roleValue;
-        //    this.ReachToWinRoleValue = reachToWinRoleValue;
-        //}
-        ///// <summary>
-        ///// この演出における最初にストップする出目
-        ///// </summary>
-        //public RoleValue FirstStopRole { get; }
-        ///// <summary>
-        ///// リーチ演出時に、リールが最終的に表示するべき出目
-        ///// </summary>
-        //public RoleValue? ReachToWinRoleValue { get; }
-        ///// <summary>
-        ///// リーチ演出対象のリールかどうか
-        ///// </summary>
-        //public bool IsReachReel => ReachToWinRoleValue.HasValue;
     }
 }
