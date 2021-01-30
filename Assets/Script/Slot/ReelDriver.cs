@@ -152,8 +152,10 @@ namespace MedalPusher.Slot
         public Sequence GetWinningProductionSequence(RoleValue target)
         {
             return DOTween.Sequence()
-                          .Append(m_roleDrivers[target].WinningRotate());
-                          //.Append(m_roleDrivers[target].WinningZoomUp());
+                          .Append(m_roleDrivers[target].WinningRotate())
+                          .Append(m_roleDrivers[target].WinningZoomUp())
+                          .AppendInterval(0.5f)
+                          .Append(m_roleDrivers[target].WinningZoomDown());
         }
 
         /// <summary>
@@ -323,7 +325,12 @@ namespace MedalPusher.Slot
                 m_operation.transform.DORotate(new Vector3(0, 720, 0), 0.5f).SetRelative();
 
             public Tween WinningZoomUp() =>
-                m_operation.transform.DOScale(1.2f, 0.5f);
+                m_operation.transform.DOLocalMoveZ(-0.5f, 0.5f)
+                                     .SetRelative();
+
+            public Tween WinningZoomDown() =>
+                m_operation.transform.DOLocalMoveZ(0.5f, 0.5f)
+                                     .SetRelative();
 
             /// <summary>
             /// 指定の角度にRoleを回転移動する
