@@ -56,7 +56,6 @@ namespace MedalPusher.Item.Payout
                        //払出しを開始するのでステータスを変える
                        .Do(_ => m_status = PayoutStatus.Payouting);
 
-
         public void AddPayoutStock(int medals)
         {
             m_payoutMedalStocks.Value += medals;

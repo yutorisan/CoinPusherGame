@@ -38,7 +38,7 @@ namespace MedalPusher.Item.Payout
 
         private UniReadOnly<IReadOnlyDictionary<MedalPayoutMethod, IMedalPayouter>> _medalPayouterTable = new UniReadOnly<IReadOnlyDictionary<MedalPayoutMethod, IMedalPayouter>>();
 
-        void Start()
+        void Awake()
         {
             _medalPayouterTable.Initialize(new Dictionary<MedalPayoutMethod, IMedalPayouter>()
             {

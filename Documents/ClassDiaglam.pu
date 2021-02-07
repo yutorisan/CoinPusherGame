@@ -13,6 +13,7 @@ namespace Item{
     IFieldItemEvent <|.. FieldItemEvent
     FieldItem *- IFieldItemEvent
 
+
     interface IReadOnlyMedal{
         +Value { get; } : int
         +ValueType { get; } : MedalValue
@@ -118,6 +119,9 @@ namespace Item{
 
         class PayoutInstaller<<Installer>>
     }
+
+    'ゲーム開始時のメダル充填
+    Item.Payout.IMedalPayoutOperation <-- MedalFieldAutoFiller
     
     namespace Inventory{
         interface IObservableMedalInventory{

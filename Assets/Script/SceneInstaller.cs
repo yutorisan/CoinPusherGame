@@ -7,9 +7,6 @@ using Zenject;
 
 public class SceneInstaller : MonoInstaller
 {
-    [SerializeField]
-    private GameObject m_winMedalChecker;
-
     public override void InstallBindings()
     {
         Container.Bind<IMedalPayoutOperation>()
@@ -20,6 +17,5 @@ public class SceneInstaller : MonoInstaller
                  .To<MedalPool>()
                  .FromComponentInHierarchy()
                  .AsCached();
-
     }
 }
