@@ -78,6 +78,12 @@
       },
       "url": "https://packages.unity.com"
     },
+    "com.unity.package-manager-ui": {
+      "version": "2.2.0",
+      "depth": 0,
+      "source": "builtin",
+      "dependencies": {}
+    },
     "com.unity.probuilder": {
       "version": "4.2.3",
       "depth": 0,
