@@ -24,7 +24,7 @@ public class MedalInventory : SerializedMonoBehaviour, IObservableMedalInventory
     /// メダルの獲得通知を受け取る
     /// </summary>
     [SerializeField]
-    private IObservableMedalChecker m_medalChecker;
+    private IObservableMedalChecker m_winMedalChecker;
     /// <summary>
     /// メダル投入時に払出し司令を行う
     /// </summary>
@@ -53,7 +53,7 @@ public class MedalInventory : SerializedMonoBehaviour, IObservableMedalInventory
     private void Start()
     {
         //獲得メダルを購読してインベントリに追加
-        m_medalChecker.Checked
+        m_winMedalChecker.Checked
                       .Subscribe(medal => m_inventoryMedalCount.Value += medal.Value);
         //メダル投入コマンドを受け取ったらメダルを投入
         GameCommandFormatter.Instance

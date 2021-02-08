@@ -17,7 +17,7 @@ namespace MedalPusher.Slot.Stock
         // Start is called before the first frame update
         void Start()
         {
-            _stockCount.StockCount.Subscribe(stock => m_stockText.text = $"Stocks:{stock}");
+            _stockCount.StockCount.Subscribe(stock => m_stockText.text = stock.ToString());
         }
     }
 }

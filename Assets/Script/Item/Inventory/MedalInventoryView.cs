@@ -15,7 +15,7 @@ public class MedalInventoryView : MonoBehaviour
     void Start()
     {
         m_medalInventory.ObservableMedalInventoryCount
-                        .Subscribe(medals => m_target.text = $"Medals:{medals}");
+                        .Subscribe(medals => m_target.text = medals.ToString());
     }
 }
 
