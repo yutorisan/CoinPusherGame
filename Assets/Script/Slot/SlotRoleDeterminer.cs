@@ -165,7 +165,7 @@ namespace MedalPusher.Slot
                         case 2:
                             return Scenario.Reach(new RoleSet(reachRole, reachRole, loseRole), afterReachRole);
                         default:
-                            throw new System.Exception("リーチの位置を決定できませんでした");
+                            throw new Exception("リーチの位置を決定できませんでした");
                     }
                 }
             }

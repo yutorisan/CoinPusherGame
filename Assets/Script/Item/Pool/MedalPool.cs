@@ -7,6 +7,7 @@ using UniRx;
 using UnityEngine;
 using UnityUtility;
 using UniRx.Diagnostics;
+using MedalPusher.GameSystem.Facade;
 
 namespace MedalPusher.Item.Pool
 {
@@ -38,7 +39,7 @@ namespace MedalPusher.Item.Pool
         IReadOnlyDictionary<MedalValue, ObservableMedalPoolInfo> ObservableCountInfo { get; }
     }
 
-    public class MedalPool : MonoBehaviour, IMedalPool, IObservableMedalPoolInfo
+    public class MedalPool : FacadeTargetMonoBehaviour, IMedalPool, IObservableMedalPoolInfo, IInitialInstantiateMedalCountSetterFacade
     {
         /// <summary>
         /// メダルプール本体
@@ -57,8 +58,10 @@ namespace MedalPusher.Item.Pool
         /// </summary>
         public IReadOnlyDictionary<MedalValue, ObservableMedalPoolInfo> ObservableCountInfo => _couter.GetObservableInfo();
 
-        private void Awake()
+        private async void Start()
         {
+            await this.FacadeAlreadyOKAsync;
+
             //SerializeFieldで設定された数だけメダルオブジェクトを生成する
             foreach (var set in m_poolList)
             {
@@ -98,6 +101,11 @@ namespace MedalPusher.Item.Pool
             }
         }
 
+        public void SetInitialInstantiateMedalCount(int count)
+        {
+            this.m_poolList.Find(n => n.ValueType == MedalValue.Value1).Capacity = count;
+        }
+
         [Serializable]
         private class TypePrefabInitCapaSet
         {
@@ -110,7 +118,7 @@ namespace MedalPusher.Item.Pool
 
             public MedalValue ValueType => valueType;
             public Medal Prefab => prefab;
-            public int Capacity => initCapacity;
+            public int Capacity { get => initCapacity; set => initCapacity = value; }
         }
 
         /// <summary>
