@@ -17,6 +17,8 @@ namespace MedalPusher.Effects
         [SerializeField]
         private Image m_medalImage;
         [SerializeField]
+        private AudioSource m_audioSource;
+        [SerializeField]
         private IObservableMedalChecker m_winMedalChecker;
         /// <summary>
         /// メダルエフェクトが上がる高さ
@@ -68,7 +70,11 @@ namespace MedalPusher.Effects
                                                        img.color = Color.white; //透明にした色をもとに戻す
                                                        m_pool.Return(img);
                                                    }))
-                             .Subscribe(sq => sq.Play());
+                             .Subscribe(sq =>
+                             {
+                                 sq.Play();
+                                 m_audioSource.Play();
+                             });
         }
 
         private class MedalImagePool : ObjectPool<Image>
