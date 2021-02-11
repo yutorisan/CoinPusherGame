@@ -45,7 +45,7 @@ namespace MedalPusher.Effects
         // Start is called before the first frame update
         void Start()
         {
-            m_pool = new MedalImagePool(m_medalImage);
+            m_pool = new MedalImagePool(this);
             m_pool.PreloadAsync(20, 1).Subscribe();
             m_mainCamera = Camera.main;
 
@@ -54,8 +54,6 @@ namespace MedalPusher.Effects
                              .Select(medal => RectTransformUtility.WorldToScreenPoint(m_mainCamera, medal.position).x)
                              //プールからImageオブジェクトを取得して出現座標を設定
                              .Select(x => m_pool.RentAndSetPositionX(x))
-                             //Canvasに乗せる
-                             .Do(img =>img.transform.SetParent(transform))
                              //Tweenに乗せる
                              .Select(img => DOTween.Sequence()
                                                    //画面下から上がってくるTween
@@ -75,11 +73,11 @@ namespace MedalPusher.Effects
 
         private class MedalImagePool : ObjectPool<Image>
         {
-            private readonly Image m_image;
+            private readonly WinMedalEffect m_parent;
 
-            public MedalImagePool(Image image)
+            public MedalImagePool(WinMedalEffect parent)
             {
-                this.m_image = image;
+                this.m_parent = parent;
             }
 
             public Image RentAndSetPositionX(float x)
@@ -91,7 +89,10 @@ namespace MedalPusher.Effects
 
             protected override Image CreateInstance()
             {
-                return Instantiate(m_image);
+                //生成時にcanvasに乗せる
+                var img = Instantiate(m_parent.m_medalImage);
+                img.transform.SetParent(m_parent.transform);
+                return img;
             }
         }
     }
