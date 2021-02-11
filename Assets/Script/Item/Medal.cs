@@ -17,7 +17,7 @@ namespace MedalPusher.Item
     }
     public interface IMedal : IFieldObject, IReadOnlyMedal, IReturnOnlyPoolObject
     {
-
+        Vector3 position { get; }
     }
     public class Medal : PoolObject, IMedal
     {
@@ -26,7 +26,7 @@ namespace MedalPusher.Item
 
         public int Value => (int)m_value;
         public MedalValue ValueType => m_value;
-
+        public Vector3 position => transform.position;
     }
 
     public enum MedalValue
