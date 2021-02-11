@@ -3121,6 +3121,7 @@ MonoBehaviour:
   m_audioSource: {fileID: 7148623803032391468, guid: 6efc36171a8f14d06aba7ef693efbc5d,
     type: 3}
   m_effectMaxHeight: 270
+  m_effectHeightCoefficient: {x: 0.80528957, y: 1.2065663}
   m_riseDuration: 0.7
   m_rotateDuration: 0.5
   m_disappearanceDuration: 0.4

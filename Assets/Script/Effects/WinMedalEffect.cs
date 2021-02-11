@@ -26,6 +26,11 @@ namespace MedalPusher.Effects
         [SerializeField]
         private float m_effectMaxHeight;
         /// <summary>
+        /// メダルエフェクトの高さの振れ幅係数
+        /// </summary>
+        [SerializeField, MinMaxSlider(0, 2)]
+        private Vector2 m_effectHeightCoefficient = new Vector2(0.8f, 1.2f);
+        /// <summary>
         /// 上昇エフェクトのduration
         /// </summary>
         [SerializeField]
@@ -59,7 +64,7 @@ namespace MedalPusher.Effects
                              //Tweenに乗せる
                              .Select(img => DOTween.Sequence()
                                                    //画面下から上がってくるTween
-                                                   .Append(img.rectTransform.DOAnchorPosY(m_effectMaxHeight, m_riseDuration))
+                                                   .Append(img.rectTransform.DOAnchorPosY(m_effectMaxHeight * Random.Range(m_effectHeightCoefficient.x, m_effectHeightCoefficient.y), m_riseDuration).SetEase(Ease.OutCubic))
                                                    //上がった後にくるっと回るTween
                                                    .Append(img.rectTransform.DORotate(new Vector3(0, 360, 0), m_rotateDuration, RotateMode.FastBeyond360))
                                                    //透明になってフェードアウト
