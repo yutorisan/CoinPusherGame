@@ -16,8 +16,8 @@ public class MedalCheckerIndicator : MonoBehaviour
     {
         Material material = this.GetComponent<Renderer>().material;
 
-        this.GetComponentInChildren<IObservableMedalChecker>()
-            .Count
+        this.GetComponentInChildren<IObservableInColliderCountableMedalChecker>()
+            .InColliderCount
             .Select(count => count > 0 ? Color.red : Color.gray)
             .Subscribe(color => material.color = color);
     }

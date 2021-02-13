@@ -6,7 +6,7 @@ using UniRx.Triggers;
 
 namespace MedalPusher.Item.Checker
 {
-    public class MedalChecker : MonoBehaviour, IObservableMedalChecker
+    public class MedalChecker : MonoBehaviour, IObservableInColliderCountableMedalChecker, IObservableMedalChecker
     {
         [SerializeField]
         private bool m_isDestroyOnChecked;
@@ -38,6 +38,6 @@ namespace MedalPusher.Item.Checker
         }
 
         public IObservable<IMedal> Checked { get; private set; }
-        public IObservable<int> Count => _stayInCount.AsObservable();
+        public IObservable<int> InColliderCount => _stayInCount.AsObservable();
     }
 }

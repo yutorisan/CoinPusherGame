@@ -9,10 +9,11 @@ using UniRx.Diagnostics;
 using UniRx.Toolkit;
 using UnityUtility;
 using DG.Tweening;
+using MedalPusher.Item;
 
 namespace MedalPusher.Effects
 {
-    public class WinMedalEffect : SerializedMonoBehaviour
+    public class WinMedalEffect : SerializedMonoBehaviour, IObservableMedalChecker
     {
         [SerializeField]
         private Image m_medalImage;
@@ -28,7 +29,7 @@ namespace MedalPusher.Effects
         /// <summary>
         /// メダルエフェクトの高さの振れ幅係数
         /// </summary>
-        [SerializeField, MinMaxSlider(0, 2)]
+        [SerializeField, MinMaxSlider(0.5f, 1.5f)]
         private Vector2 m_effectHeightCoefficient = new Vector2(0.8f, 1.2f);
         /// <summary>
         /// 上昇エフェクトのduration
@@ -45,9 +46,17 @@ namespace MedalPusher.Effects
         /// </summary>
         [SerializeField]
         private float m_disappearanceDuration;
+        /// <summary>
+        /// 
+        /// </summary>
+        [SerializeField]
+        private RectTransform m_medalInventoryUITarget;
 
         private MedalImagePool m_pool;
         private Camera m_mainCamera;
+        private Subject<IMedal> m_effectDoneSubject = new Subject<IMedal>();
+
+        public System.IObservable<IMedal> Checked => m_effectDoneSubject.AsObservable();
 
         // Start is called before the first frame update
         void Start()
@@ -58,23 +67,30 @@ namespace MedalPusher.Effects
 
             m_winMedalChecker.Checked
                              //落ちたメダルの画面上のx座標を取得
-                             .Select(medal => RectTransformUtility.WorldToScreenPoint(m_mainCamera, medal.position).x)
+                             .Select(medal => (RectTransformUtility.WorldToScreenPoint(m_mainCamera, medal.position).x, medal))
                              //プールからImageオブジェクトを取得して出現座標を設定
-                             .Select(x => m_pool.RentAndSetPositionX(x))
+                             .Select(pair => (img: m_pool.RentAndSetPositionX(pair.x), pair.medal))
                              //Tweenに乗せる
-                             .Select(img => DOTween.Sequence()
-                                                   //画面下から上がってくるTween
-                                                   .Append(img.rectTransform.DOAnchorPosY(m_effectMaxHeight * Random.Range(m_effectHeightCoefficient.x, m_effectHeightCoefficient.y), m_riseDuration).SetEase(Ease.OutCubic))
-                                                   //上がった後にくるっと回るTween
-                                                   .Append(img.rectTransform.DORotate(new Vector3(0, 360, 0), m_rotateDuration, RotateMode.FastBeyond360))
-                                                   //透明になってフェードアウト
-                                                   .Append(img.DOColor(Color.clear, m_disappearanceDuration))
-                                                   //終わったらオブジェクトをプールに返す
-                                                   .OnComplete(() =>
-                                                   {
-                                                       img.color = Color.white; //透明にした色をもとに戻す
-                                                       m_pool.Return(img);
-                                                   }))
+                             .Select(pair => DOTween.Sequence()
+                                                    //画面下から上がってくるTween
+                                                    .Append(pair.img.rectTransform.DOMoveY(m_effectMaxHeight * Random.Range(m_effectHeightCoefficient.x, m_effectHeightCoefficient.y), m_riseDuration).SetEase(Ease.OutCubic))
+                                                    //上がった後にくるっと回るTween
+                                                    .Append(pair.img.rectTransform.DORotate(new Vector3(0, 360, 0), m_rotateDuration, RotateMode.FastBeyond360))
+                                                    //透明にして、
+                                                    .Append(pair.img.DOColor(Color.clear, m_disappearanceDuration).SetEase(Ease.InQuad))
+                                                    //小さくしながら、
+                                                    .Join(pair.img.rectTransform.DOScale(0.3f, m_disappearanceDuration).SetEase(Ease.InQuad))
+                                                    //メダルインベントリのUIに吸い込まれながらフェードアウト
+                                                    .Join(pair.img.rectTransform.DOMove(m_medalInventoryUITarget.position, m_disappearanceDuration))
+                                                    //終わったらオブジェクトをプールに返す
+                                                    .OnComplete(() =>
+                                                    {
+                                                        m_effectDoneSubject.OnNext(pair.medal); //エフェクト完了通知を送信
+                                                        pair.img.color = Color.white; //透明にした色をもとに戻す
+                                                        pair.img.rectTransform.localScale = Vector3.one;
+                                                        m_pool.Return(pair.img);
+                                                    }))
+                             //SequenceとSEを再生する
                              .Subscribe(sq =>
                              {
                                  sq.Play();
@@ -94,7 +110,7 @@ namespace MedalPusher.Effects
             public Image RentAndSetPositionX(float x)
             {
                 var img = Rent();
-                img.transform.position = new Vector3(x, 0, 0);
+                img.rectTransform.position = new Vector2(x, 0);
                 return img;
             }
 
