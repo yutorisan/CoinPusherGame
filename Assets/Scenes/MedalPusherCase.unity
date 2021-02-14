@@ -3019,75 +3019,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_value:
     _value: 6
---- !u!1001 &210856533
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 535884256319645595, guid: a856e2eb178c84550b644b675f431a02,
-        type: 3}
-      propertyPath: m_RootOrder
-      value: 21
-      objectReference: {fileID: 0}
-    - target: {fileID: 535884256319645595, guid: a856e2eb178c84550b644b675f431a02,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 535884256319645595, guid: a856e2eb178c84550b644b675f431a02,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 535884256319645595, guid: a856e2eb178c84550b644b675f431a02,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 535884256319645595, guid: a856e2eb178c84550b644b675f431a02,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 535884256319645595, guid: a856e2eb178c84550b644b675f431a02,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 535884256319645595, guid: a856e2eb178c84550b644b675f431a02,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 535884256319645595, guid: a856e2eb178c84550b644b675f431a02,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 535884256319645595, guid: a856e2eb178c84550b644b675f431a02,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 535884256319645595, guid: a856e2eb178c84550b644b675f431a02,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 535884256319645595, guid: a856e2eb178c84550b644b675f431a02,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 874832236792806689, guid: a856e2eb178c84550b644b675f431a02,
-        type: 3}
-      propertyPath: m_Name
-      value: NewMedal1 1
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: a856e2eb178c84550b644b675f431a02, type: 3}
 --- !u!1 &224763674
 GameObject:
   m_ObjectHideFlags: 0
@@ -29133,7 +29064,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!64 &856754358
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -30533,7 +30464,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed8a4530bab1b4a16aab31055e02e24c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_isEnabled: 1
+  m_isEnabled: 0
   m_instantiateMedals: 1000
   m_fillMedals: 1000
 --- !u!114 &993862547
@@ -41515,7 +41446,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4703f7d7e55c54535b887afc82819642, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_payoutPoint: {fileID: 1500994054}
+  m_payoutPoint: {fileID: 1143233849}
 --- !u!1 &1386674461
 GameObject:
   m_ObjectHideFlags: 0
@@ -44969,6 +44900,10 @@ MonoBehaviour:
   m_leftReel: {fileID: 1389777753}
   m_middleReel: {fileID: 1929555134}
   m_rightReel: {fileID: 624576061}
+  m_normalRollLaps: 0
+  m_normalRollMaxRps: 0
+  m_normalRollAccelDuration: 0
+  m_normalRollDeceleDuration: 0
 --- !u!1 &1462038805
 GameObject:
   m_ObjectHideFlags: 0
@@ -45753,6 +45688,17 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
+  m_normalProp:
+    Laps: 5
+    MaxRps: 4
+    AccelDuration: 3.5
+    DeceleDuration: 2
+  m_reachProp:
+    SwitchingDuraion: 0.5
+    FastSwitchingDuration: 0.2
+    SwitchInterval: 0.5
+    FastSwitchInterval: 0.1
+    FastModeThreshold: 2
 --- !u!43 &1538359408
 Mesh:
   m_ObjectHideFlags: 0

@@ -30,22 +30,14 @@ namespace MedalPusher.Slot
         [Inject]
         private ISlotDriver m_slotDriver;
 
+        [SerializeField]
+        private NormalRollProductionProperty m_normalProp;
+        [SerializeField]
+        private ReachProductionProperty m_reachProp;
+
         public UniTask DetermineProduction(Scenario scenario)
         {
-            Production production = new Production(scenario);
-
-            //if (scenario.FirstRoleset.IsReach)
-            //{ //リーチである
-            //    //リーチ後に当たりにするかどうかによって、リーチのリールの最終的な出目を決定する
-            //    RoleValue finalReachRoleValue = scenario.IsWinIfReach ?
-            //        scenario.FirstRoleset.ReachStatus.Value.ReachedRole :
-            //        scenario.FirstRoleset.ReachStatus.Value.ReachedRole.NextRoleValue;
-            //    production = new Production(firstRoleSet, finalReachRoleValue);
-            //}
-            //else
-            //{ //リーチではない
-            //    production = new Production(firstRoleSet);
-            //}
+            Production production = new Production(scenario, m_normalProp, m_reachProp);
 
             return m_slotDriver.ControlBy(production);
         }

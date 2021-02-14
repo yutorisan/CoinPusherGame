@@ -7,6 +7,7 @@ using System;
 using Cysharp.Threading.Tasks;
 using System.Linq;
 using DG.Tweening;
+using Sirenix.OdinInspector;
 
 namespace MedalPusher.Slot
 {
@@ -21,12 +22,21 @@ namespace MedalPusher.Slot
     }
     public class SlotDriver : MonoBehaviour, ISlotDriver
     {
-        [SerializeField]
+        [SerializeField, TitleGroup("ReelObjects")]
         private GameObject m_leftReel;
-        [SerializeField]
+        [SerializeField, TitleGroup("ReelObjects")]
         private GameObject m_middleReel;
-        [SerializeField]
+        [SerializeField, TitleGroup("ReelObjects")]
         private GameObject m_rightReel;
+
+        [SerializeField, TitleGroup("NormalRollProperty"), LabelText("周回数")]
+        private int m_normalRollLaps;
+        [SerializeField, TitleGroup("NormalRollProperty"), LabelText("最大回転速度(rps)")]
+        private float m_normalRollMaxRps;
+        [SerializeField, TitleGroup("NormalRollProperty"), LabelText("加速時間")]
+        private float m_normalRollAccelDuration;
+        [SerializeField, TitleGroup("NormalRollProperty"), LabelText("減速時間")]
+        private float m_normalRollDeceleDuration;
 
         private IReadOnlyDictionary<ReelPos, IReelSequenceProvider> m_sequenceProviderTable;
 
@@ -50,10 +60,16 @@ namespace MedalPusher.Slot
             List<UniTask> tasks = new List<UniTask>();
             foreach (var item in m_sequenceProviderTable.Select(kvp => new { pos = kvp.Key, provider = kvp.Value }))
             {
-                var sq = item.provider.GetNormalRollSequence(production.Scenario.GetReelScenario(item.pos).FirstRoleValue, 5, 3, 2, 2);
+                //通常の回転シーケンスを取得
+                var sq = item.provider.GetNormalRollSequence(production.Scenario.GetReelScenario(item.pos).FirstRoleValue,
+                                                             production.NormalProperty);
+                //リーチの場合はリーチシーケンスを追加
                 if (production.GetReelProduction(item.pos).ReelScenario.IsReachReelScenario)
                 {
-                    sq.Append(item.provider.GetReachReRollSequence(production.GetReelProduction(item.pos), 0.5f, 0.5f));
+                    var reelProduction = production.GetReelProduction(item.pos);
+                    sq.Append(item.provider.GetReachReRollSequence(reelProduction.ReelScenario.FirstRoleValue,
+                                                                   reelProduction.ReelScenario.AfterReachRole.Value,
+                                                                   production.ReachProperty));
                 }
 
                 var task = sq.Play();

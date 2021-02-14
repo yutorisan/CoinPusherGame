@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace MedalPusher.Slot
@@ -53,6 +54,18 @@ namespace MedalPusher.Slot
             } while (now != end);
         }
 
+        /// <summary>
+        /// リールの並び順において、Role間の差分の個数を算出する
+        /// fromからtargetまで何個Roleがあるか（targetを含む個数）
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        public static int RemainCount(RoleValue from, RoleValue target)
+        {
+            int diff = target.Index - from.Index;
+            return diff >= 0 ? diff : diff + TotalTypes;
+        }
         /// <summary>
         /// 次の役柄を取得する
         /// </summary>

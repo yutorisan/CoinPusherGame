@@ -17,32 +17,18 @@ using Cysharp.Threading.Tasks;
 
 namespace MedalPusher.Slot
 {
-    ///// <summary>
-    ///// 各リールの動きを制御することができる
-    ///// </summary>
-    //public interface IReelDriver
-    //{
-    //    /// <summary>
-    //    /// 指定したリールの演出に従って、リールを制御します。
-    //    /// </summary>
-    //    /// <param name="production">リールの演出</param>
-    //    /// <returns>リール制御の完了通知</returns>
-    //    UniTask ControlBy(ReelProduction production);
-    //    UniTask ControlForWinningProduction();
-    //}
-
     public interface IReelSequenceProvider
     {
         /// <summary>
         /// 通常のリール回転シーケンスを取得する
         /// </summary>
         /// <returns></returns>
-        ReelSequence GetNormalRollSequence(RoleValue stopRole, int laps, float maxrps, float accelDutation, float deceleDuration);
+        ReelSequence GetNormalRollSequence(RoleValue stopRole, NormalRollProductionProperty prop);
         /// <summary>
         /// リーチ時の再抽選シーケンスを取得する
         /// </summary>
         /// <returns></returns>
-        ReelSequence GetReachReRollSequence(ReelProduction production, float switchDuration, float interval);
+        ReelSequence GetReachReRollSequence(RoleValue startRole, RoleValue endValue, ReachProductionProperty prop);
         /// <summary>
         /// 当たったときの演出シーケンスを取得する
         /// </summary>
@@ -87,17 +73,6 @@ namespace MedalPusher.Slot
 
         }
 
-        //public UniTask ControlBy(ReelProduction production)
-        //{
-        //    //各Roleに対するノーマルの回転シーケンスを取得
-        //    var normalSq = GetRollAndStopNormalSequences(production.ReelScenario.FirstRoleValue, 5, 3, 2, 2);
-        //    //各Roleに対するリーチ演出シーケンスを取得
-        //    var reachSq = GetReachSequences(production, 0.5f, 0.5f);
-        //    //ノーマルシーケンスのあとにリーチ演出シーケンスを合成して再生する。再生完了通知を返す。
-        //    return UniTask.WhenAll(normalSq.Zip(reachSq, (nSq, rSq) => nSq.Append(rSq))
-        //                                   .Select(sq => sq.Play().AsyncWaitForCompletion().AsUniTask()));
-        //}
-
         /// <summary>
         /// 停止状態からスロットを回転させ、指定の位置で停止する、通常の各Roleに対するシーケンスを取得する
         /// </summary>
@@ -107,14 +82,14 @@ namespace MedalPusher.Slot
         /// <param name="accelDutation">加速時間(s)</param>
         /// <param name="deceleDuration">減速時間(s)</param>
         /// <returns>各Roleに対するシーケンス</returns>
-        public ReelSequence GetNormalRollSequence(RoleValue stopRole, int laps, float maxrps, float accelDutation, float deceleDuration)
+        public ReelSequence GetNormalRollSequence(RoleValue stopRole, NormalRollProductionProperty prop)
         {
             //すべてのRoleの制御完了通知を返す 
             return m_roleDrivers.Values
                                 .Select(driver => DOTween.Sequence()
-                                                         .Append(driver.AccelerationRotate(accelDutation, maxrps))
-                                                         .Append(driver.LinearRotate(laps, maxrps))
-                                                         .Append(driver.DecelerateAndStopAbsAngle(m_frontroleAngleTable.GetAngleTable(stopRole)[driver.RoleValue], deceleDuration, maxrps)))
+                                                         .Append(driver.AccelerationRotate(prop.AccelDuration, prop.MaxRps))
+                                                         .Append(driver.LinearRotate(prop.Laps, prop.MaxRps))
+                                                         .Append(driver.DecelerateAndStopAbsAngle(m_frontroleAngleTable.GetAngleTable(stopRole)[driver.RoleValue], prop.DeceleDuration, prop.MaxRps)))
                                 .ToReelSequence();
         }
 
@@ -126,11 +101,8 @@ namespace MedalPusher.Slot
         /// <param name="switchDuration">Roleが切り替わるアニメーションの継続時間</param>
         /// <param name="interval">Roleが切り替わるアニメーション同士の待機時間間隔</param>
         /// <returns>各Roleに対するリーチ演出シーケンス</returns>
-        public ReelSequence GetReachReRollSequence(ReelProduction production, float switchDuration, float interval)
+        public ReelSequence GetReachReRollSequence(RoleValue startRole, RoleValue endRole, ReachProductionProperty prop)
         {
-            ////リーチじゃなければ空のシーケンスを返す
-            //if (!production.ReelScenario.IsReachReelScenario) return Enumerable.Range(1, m_roleCount).Select(_ => DOTween.Sequence());
-
             return m_roleDrivers.Values
                                 .Select(driver => GetRoleSequenceOnReachProduction(driver))
                                 .ToReelSequence();
@@ -139,10 +111,24 @@ namespace MedalPusher.Slot
             Sequence GetRoleSequenceOnReachProduction(RoleDriveTweenProvider driver)
             {
                 Sequence sequence = DOTween.Sequence();
-                foreach (var role in RoleValue.ForwardLoops(production.ReelScenario.FirstRoleValue, production.ReelScenario.AfterReachRole.Value))
+                foreach (var role in RoleValue.ForwardLoops(startRole, endRole))
                 {
                     var angle = m_frontroleAngleTable.GetAngleTable(role)[driver.RoleValue];
-                    sequence = sequence.Append(driver.RollAbsolutely(angle, switchDuration, AngleTweenDirection.Forward))
+
+                    float duration, interval;
+                    //残り切り替わり回数によって各種間隔を切り替える
+                    if(RoleValue.RemainCount(role, endRole) > prop.FastModeThreshold)
+                    { //残り切り替わり回数がしきい値より多い
+                        duration = prop.FastSwitchingDuration;
+                        interval = prop.FastSwitchInterval;
+                    }
+                    else
+                    { //残り切り替わり回数がしきい値を切った
+                        duration = prop.SwitchingDuraion;
+                        interval = prop.SwitchInterval;
+                    }
+
+                    sequence = sequence.Append(driver.RollAbsolutely(angle, duration, AngleTweenDirection.Forward))
                                        .AppendInterval(interval);
                 }
                 return sequence;
