@@ -33,7 +33,7 @@ namespace MedalPusher.Slot
         /// 当たったときの演出シーケンスを取得する
         /// </summary>
         /// <returns></returns>
-        Sequence GetWinningProductionSequence(RoleValue target);
+        ReelSequence GetWinningProductionSequence(RoleValue target);
     }
 
     /// <summary>
@@ -52,7 +52,7 @@ namespace MedalPusher.Slot
         /// <summary>
         /// 各Roleを動かすモジュール
         /// </summary>
-        private readonly IReadOnlyDictionary<RoleValue, RoleDriveTweenProvider> m_roleDrivers;
+        private readonly IReadOnlyDictionary<RoleValue, RoleTweenProvider> m_tweenProvider;
         /// <summary>
         /// 正面に持ってくる役と各役の角度テーブル
         /// </summary>
@@ -66,10 +66,10 @@ namespace MedalPusher.Slot
             m_frontroleAngleTable = new FrontRoleAndEachAngleTable(operations.Select(ope => ope.Value).ToList());
 
             //このReelが受け持つ各RoleからRoleDriverを生成して格納する
-            m_roleDrivers = 
+            m_tweenProvider = 
                 operations.Select((ope, index) => new { ope, index })
                           .ToDictionary(pair => pair.ope.Value,
-                                        pair => new RoleDriveTweenProvider(pair.ope, (Angle.Round / m_roleCount * pair.index + FrontAngle).PositiveNormalize(), reelRadius));                //indexの順番に均等に円形配置
+                                        pair => new RoleTweenProvider(pair.ope, (Angle.Round / m_roleCount * pair.index + FrontAngle).PositiveNormalize(), reelRadius));                //indexの順番に均等に円形配置
 
         }
 
@@ -82,16 +82,13 @@ namespace MedalPusher.Slot
         /// <param name="accelDutation">加速時間(s)</param>
         /// <param name="deceleDuration">減速時間(s)</param>
         /// <returns>各Roleに対するシーケンス</returns>
-        public ReelSequence GetNormalRollSequence(RoleValue stopRole, NormalRollProductionProperty prop)
-        {
+        public ReelSequence GetNormalRollSequence(RoleValue stopRole, NormalRollProductionProperty prop) =>
             //すべてのRoleの制御完了通知を返す 
-            return m_roleDrivers.Values
-                                .Select(driver => DOTween.Sequence()
-                                                         .Append(driver.AccelerationRotate(prop.AccelDuration, prop.MaxRps))
-                                                         .Append(driver.LinearRotate(prop.Laps, prop.MaxRps))
-                                                         .Append(driver.DecelerateAndStopAbsAngle(m_frontroleAngleTable.GetAngleTable(stopRole)[driver.RoleValue], prop.DeceleDuration, prop.MaxRps)))
-                                .ToReelSequence();
-        }
+            m_tweenProvider.DictionarySelect(provider => DOTween.Sequence()
+                                                                .Append(provider.AccelerationRotate(prop.AccelDuration, prop.MaxRps))
+                                                                .Append(provider.LinearRotate(prop.Laps, prop.MaxRps))
+                                                                .Append(provider.DecelerateAndStopAbsAngle(m_frontroleAngleTable.GetAngleTable(stopRole)[provider.RoleValue], prop.DeceleDuration, prop.MaxRps)))
+                           .ToReelSequence();
 
         /// <summary>
         /// リーチ演出を行う、各Roleに対するシーケンスを取得する
@@ -103,17 +100,16 @@ namespace MedalPusher.Slot
         /// <returns>各Roleに対するリーチ演出シーケンス</returns>
         public ReelSequence GetReachReRollSequence(RoleValue startRole, RoleValue endRole, ReachProductionProperty prop)
         {
-            return m_roleDrivers.Values
-                                .Select(driver => GetRoleSequenceOnReachProduction(driver))
-                                .ToReelSequence();
+            return m_tweenProvider.DictionarySelect(provider => GetRoleSequenceOnReachProduction(provider))
+                                  .ToReelSequence();
 
             //各Roleのリーチ演出シーケンスを取得する
-            Sequence GetRoleSequenceOnReachProduction(RoleDriveTweenProvider driver)
+            Sequence GetRoleSequenceOnReachProduction(RoleTweenProvider provider)
             {
                 Sequence sequence = DOTween.Sequence();
                 foreach (var role in RoleValue.ForwardLoops(startRole, endRole))
                 {
-                    var angle = m_frontroleAngleTable.GetAngleTable(role)[driver.RoleValue];
+                    var angle = m_frontroleAngleTable.GetAngleTable(role)[provider.RoleValue];
 
                     float duration, interval;
                     //残り切り替わり回数によって各種間隔を切り替える
@@ -128,21 +124,28 @@ namespace MedalPusher.Slot
                         interval = prop.SwitchInterval;
                     }
 
-                    sequence = sequence.Append(driver.RollAbsolutely(angle, duration, AngleTweenDirection.Forward))
+                    sequence = sequence.Append(provider.RollAbsolutely(angle, duration, AngleTweenDirection.Forward))
                                        .AppendInterval(interval);
                 }
                 return sequence;
             }
+
+            //Sequence GetAntagonistSequence(RoleTweenProvider privider)
+            //{
+            //    //m_tweenProvider.DictionarySelect(prov => prov)
+                                                                
+            //}
         }
 
-        public Sequence GetWinningProductionSequence(RoleValue target)
+        public ReelSequence GetWinningProductionSequence(RoleValue target)
         {
-            return DOTween.Sequence()
-                          .Append(m_roleDrivers[target].WinningRotate())
-                          .Append(m_roleDrivers[target].WinningZoomUp())
-                          .AppendInterval(0.5f)
-                          .Append(m_roleDrivers[target].WinningZoomDown());
+            return m_tweenProvider[target].GetWinningProductionSequence().AsReelSequence(target);
         }
+
+        public ReelSequence RelativeRollSequence(Angle rollAngle, float duration) =>
+            m_tweenProvider.DictionarySelect(provider => DOTween.Sequence()
+                                                                .Append(provider.RollRelatively(rollAngle, duration)))
+                           .ToReelSequence();
 
         /// <summary>
         /// 正面に持ってくる役と、そのときの各役がいるべき角度の対応テーブル
@@ -186,7 +189,7 @@ namespace MedalPusher.Slot
         /// <summary>
         /// Roleを制御する各種Tweenを提供する
         /// </summary>
-        private class RoleDriveTweenProvider
+        private class RoleTweenProvider
         {
             /// <summary>
             /// 正面からの表示範囲角度
@@ -222,7 +225,7 @@ namespace MedalPusher.Slot
             /// <param name="operation"></param>
             /// <param name="initialAngle">初期状態の角度</param>
             /// <param name="radius">Reelの半径</param>
-            public RoleDriveTweenProvider(IRoleOperation operation, Angle initialAngle, float radius)
+            public RoleTweenProvider(IRoleOperation operation, Angle initialAngle, float radius)
             {
                 m_operation = operation;
                 m_initialPosition = operation.transform.position;
@@ -306,6 +309,19 @@ namespace MedalPusher.Slot
                            duration)
                        .OnComplete(PositiveNormalize)
                        .SetOptions(direction);
+
+            /// <summary>
+            /// 揃ったときの演出シーケンスを取得する
+            /// </summary>
+            /// <returns></returns>
+            public Sequence GetWinningProductionSequence()
+            {
+                return DOTween.Sequence()
+                              .Append(WinningRotate())
+                              .Append(WinningZoomUp())
+                              .AppendInterval(0.5f)
+                              .Append(WinningZoomDown());
+            }
 
             public Tween WinningRotate() =>
                 m_operation.transform.DORotate(new Vector3(0, 720, 0), 0.5f).SetRelative();

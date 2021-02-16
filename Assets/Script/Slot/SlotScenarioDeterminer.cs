@@ -16,18 +16,18 @@ namespace MedalPusher.Slot
     /// <summary>
     /// スロットの出目を決定できる
     /// </summary>
-    public interface ISlotRoleDeterminer
+    public interface ISlotScenarioDeterminer
     {
         /// <summary>
-        /// 出目の決定を依頼する
+        /// シナリオの決定を依頼する
         /// </summary>
-        /// <returns>依頼した出目決定によってスロットが回転し、その出目がでたことの通知</returns>
-        UniTask DetermineRole();
+        /// <returns>決定したシナリオ通りにスロットが動作し、そのシナリオが完了したことを示す通知</returns>
+        UniTask DetermineScenario();
     }
     /// <summary>
-    /// スロットの出目を決定する
+    /// スロットのシナリオを決定する
     /// </summary>
-    public class SlotRoleDeterminer : MonoBehaviour, ISlotRoleDeterminer
+    public class SlotScenarioDeterminer : MonoBehaviour, ISlotScenarioDeterminer
     {
         [Inject]
         private ISlotProductionDeterminer m_productionDeterminer;
@@ -64,7 +64,7 @@ namespace MedalPusher.Slot
             m_generatorSelector = new SlotScenarioGeneratorSelector(this);
         }
 
-        public UniTask DetermineRole()
+        public UniTask DetermineScenario()
         {
             //出目を決定
             var scenario = m_generatorSelector.Select().GenerateScenario();
@@ -85,8 +85,8 @@ namespace MedalPusher.Slot
         /// </summary>
         private class SlotScenarioGeneratorSelector
         {
-            private SlotRoleDeterminer _parent;
-            public SlotScenarioGeneratorSelector(SlotRoleDeterminer parent) => _parent = parent;
+            private SlotScenarioDeterminer _parent;
+            public SlotScenarioGeneratorSelector(SlotScenarioDeterminer parent) => _parent = parent;
 
             /// <summary>
             /// 設定された確率に応じて抽選されたSlotRoleSetGeneratorを選択する

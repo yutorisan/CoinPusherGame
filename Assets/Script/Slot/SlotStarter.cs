@@ -17,7 +17,7 @@ namespace MedalPusher.Slot
     public class SlotStarter : MonoBehaviour
     {
         [Inject]
-        private ISlotRoleDeterminer m_roleDeterminer;
+        private ISlotScenarioDeterminer m_roleDeterminer;
         [Inject]
         private IStockCounter m_stockCounter;
         /// <summary>
@@ -41,7 +41,7 @@ namespace MedalPusher.Slot
                           { //ならば、ストックを消費してスロットの回転を開始させる
                               m_stockCounter.SpendStock();
                               m_isAllowedStart = false;
-                              await m_roleDeterminer.DetermineRole();
+                              await m_roleDeterminer.DetermineScenario();
                               m_isAllowedStart = true;
                               m_slotOnCompletedSubject.OnNext(Unit.Default);
                           });

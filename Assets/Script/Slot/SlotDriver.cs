@@ -57,39 +57,38 @@ namespace MedalPusher.Slot
 
         public UniTask ControlBy(Production production)
         {
-            List<UniTask> tasks = new List<UniTask>();
-            foreach (var item in m_sequenceProviderTable.Select(kvp => new { pos = kvp.Key, provider = kvp.Value }))
+            List<UniTask> rollAndReachSqTasks = new List<UniTask>();
+            foreach (var item in m_sequenceProviderTable)
             {
+                var reelPos = item.Key;
+                var provider = item.Value;
                 //通常の回転シーケンスを取得
-                var sq = item.provider.GetNormalRollSequence(production.Scenario.GetReelScenario(item.pos).FirstRoleValue,
+                var sq = provider.GetNormalRollSequence(production.Scenario.GetReelScenario(reelPos).FirstRoleValue,
                                                              production.NormalProperty);
                 //リーチの場合はリーチシーケンスを追加
-                if (production.GetReelProduction(item.pos).ReelScenario.IsReachReelScenario)
+                if (production.GetReelProduction(reelPos).ReelScenario.IsReachReelScenario)
                 {
-                    var reelProduction = production.GetReelProduction(item.pos);
-                    sq.Append(item.provider.GetReachReRollSequence(reelProduction.ReelScenario.FirstRoleValue,
+                    var reelProduction = production.GetReelProduction(reelPos);
+                    sq.Append(provider.GetReachReRollSequence(reelProduction.ReelScenario.FirstRoleValue,
                                                                    reelProduction.ReelScenario.AfterReachRole.Value,
                                                                    production.ReachProperty));
                 }
-
-                var task = sq.Play();
-
-                tasks.Add(task);
+                rollAndReachSqTasks.Add(sq.PlayAsync());
             }
 
-
-
-            return UniTask.WhenAll(tasks).ContinueWith(() =>
+            return UniTask.WhenAll(rollAndReachSqTasks).ContinueWith(() =>
             {
-                List<UniTask> wintasks = new List<UniTask>();
-                foreach (var item in m_sequenceProviderTable.Select(kvp => new { pos = kvp.Key, provider = kvp.Value }))
+                //当たりじゃなければここで終了
+                if (!production.Scenario.IsWinScenario) return UniTask.CompletedTask;
+                //当たりなら当たり演出を追加
+                List<UniTask> winTasks = new List<UniTask>();
+                foreach (var item in m_sequenceProviderTable)
                 {
-                    if (production.Scenario.IsWinScenario)
-                    {
-                        wintasks.Add(item.provider.GetWinningProductionSequence(production.Scenario.FinalRoleset[item.pos]).Play().AsyncWaitForCompletion().AsUniTask());
-                    }
+                    var reelPos = item.Key;
+                    var provider = item.Value;
+                    winTasks.Add(provider.GetWinningProductionSequence(production.Scenario.FinalRoleset[reelPos]).PlayAsync());
                 }
-                return UniTask.WhenAll(wintasks);
+                return UniTask.WhenAll(winTasks);
             });
         }
     }

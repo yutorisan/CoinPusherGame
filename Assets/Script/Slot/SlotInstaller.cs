@@ -17,8 +17,8 @@ namespace MedalPusher.Slot
                      .To<StockCounter>()
                      .FromComponentsInHierarchy()
                      .AsCached();
-            Container.Bind<ISlotRoleDeterminer>()
-                     .To<SlotRoleDeterminer>()
+            Container.Bind<ISlotScenarioDeterminer>()
+                     .To<SlotScenarioDeterminer>()
                      .FromComponentInHierarchy()
                      .AsCached();
             Container.Bind<ISlotProductionDeterminer>()

@@ -37,7 +37,10 @@ namespace MedalPusher.Slot
 
         public UniTask DetermineProduction(Scenario scenario)
         {
-            Production production = new Production(scenario, m_normalProp, m_reachProp);
+            ReachProductionProperty reachProp = m_reachProp;
+            reachProp.AntagonismType = ReachAntagonismProduction.Antagonism;
+
+            Production production = new Production(scenario, m_normalProp, reachProp);
 
             return m_slotDriver.ControlBy(production);
         }

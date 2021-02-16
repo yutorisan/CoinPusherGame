@@ -9,6 +9,10 @@ namespace MedalPusher.Slot
     [Serializable]
     public struct RoleValue : IEquatable<RoleValue>, IComparable<RoleValue>
     {
+        private static readonly IReadOnlyList<RoleValue> _all = Enum.GetValues(typeof(RoleEnum))
+                                                                    .Cast<RoleEnum>()
+                                                                    .Select(e => new RoleValue(e))
+                                                                    .ToList();
         [SerializeField]
         private RoleEnum _value;
 
@@ -20,7 +24,8 @@ namespace MedalPusher.Slot
         /// <summary>
         /// 役の種類数
         /// </summary>
-        public static readonly int TotalTypes = Enum.GetValues(typeof(RoleEnum)).Length;
+        public static readonly int TotalTypes = _all.Count;
+        public static readonly IReadOnlyList<RoleValue> Every = _all;
         /// <summary>
         /// startからendまで正転するときのRole順リストを取得する
         /// </summary>
