@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Cysharp.Threading.Tasks;
+using MedalPusher.Slot.Stock;
 using Sirenix.OdinInspector;
 using UniRx;
 using UnityEngine;
@@ -29,18 +30,29 @@ namespace MedalPusher.Slot
     {
         [Inject]
         private ISlotDriver m_slotDriver;
+        [Inject]
+        private IObservableStockCount m_stockCount;
 
-        [SerializeField]
+        [SerializeField, LabelText("通常モード"), TitleGroup("通常回転シーケンス")]
         private NormalRollProductionProperty m_normalProp;
-        [SerializeField]
+        [SerializeField, LabelText("高速モード"), TitleGroup("通常回転シーケンス")]
+        private NormalRollProductionProperty m_normalPropFast;
+        [SerializeField, LabelText("高速モードストック残数閾値"), TitleGroup("通常回転シーケンス")]
+        private int m_fastModeThreshold;
+        [SerializeField, TitleGroup("リーチシーケンス")]
         private ReachProductionProperty m_reachProp;
 
         public UniTask DetermineProduction(Scenario scenario)
         {
-            ReachProductionProperty reachProp = m_reachProp;
-            reachProp.AntagonismType = ReachAntagonismProduction.Antagonism;
-
-            Production production = new Production(scenario, m_normalProp, reachProp);
+            Production production;
+            if (m_stockCount.StockCount.Value < m_fastModeThreshold)
+            {
+                production = new Production(scenario, m_normalProp, m_reachProp);
+            }
+            else
+            {
+                production = new Production(scenario, m_normalPropFast, m_reachProp);
+            }
 
             return m_slotDriver.ControlBy(production);
         }

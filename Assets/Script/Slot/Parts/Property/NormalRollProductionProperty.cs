@@ -3,7 +3,7 @@ using Sirenix.OdinInspector;
 
 namespace MedalPusher.Slot
 {
-    [Serializable, LabelText("通常回転シーケンス")]
+    [Serializable]
     public struct NormalRollProductionProperty
     {
         /// <su mmary>
