@@ -5750,9 +5750,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6323d1f09ffa54f91adc1f84444ba7a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_directWinningProbability: 0.1
-  m_reachProbability: 0.8
-  m_reachWinningProbability: 0.7
+  m_directWinningProbability: 0
+  m_reachProbability: 1
+  m_reachWinningProbability: 0.51
 --- !u!1 &546105400
 GameObject:
   m_ObjectHideFlags: 0
@@ -30464,8 +30464,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_isEnabled: 0
-  m_instantiateMedals: 1000
-  m_fillMedals: 1000
+  m_instantiateMedals: 100
+  m_fillMedals: 0
 --- !u!114 &993862547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -44899,10 +44899,6 @@ MonoBehaviour:
   m_leftReel: {fileID: 1389777753}
   m_middleReel: {fileID: 1929555134}
   m_rightReel: {fileID: 624576061}
-  m_normalRollLaps: 0
-  m_normalRollMaxRps: 0
-  m_normalRollAccelDuration: 0
-  m_normalRollDeceleDuration: 0
 --- !u!1 &1462038805
 GameObject:
   m_ObjectHideFlags: 0

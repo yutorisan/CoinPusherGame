@@ -38,7 +38,7 @@ namespace MedalPusher.Slot
             yield return now;
             do
             {
-                now = now.NextRoleValue;
+                now = now.Next;
                 yield return now;
             } while (now != end);
         }
@@ -54,7 +54,7 @@ namespace MedalPusher.Slot
             yield return now;
             do
             {
-                now = now.PreviousRoleValue;
+                now = now.Previous;
                 yield return now;
             } while (now != end);
         }
@@ -74,7 +74,7 @@ namespace MedalPusher.Slot
         /// <summary>
         /// 次の役柄を取得する
         /// </summary>
-        public RoleValue NextRoleValue
+        public RoleValue Next
         {
             get
             {
@@ -91,7 +91,7 @@ namespace MedalPusher.Slot
         /// <summary>
         /// 前の役柄を取得する
         /// </summary>
-        public RoleValue PreviousRoleValue
+        public RoleValue Previous
         {
             get
             {
@@ -257,7 +257,12 @@ namespace MedalPusher.Slot
                 }
             }
         }
- 
+
+        public override string ToString()
+        {
+            return $"{m_left}, {m_middle}, {m_right}";
+        }
+
 
         /// <summary>
         /// ビンゴになっている役を取得する

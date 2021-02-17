@@ -8,6 +8,7 @@ using Cysharp.Threading.Tasks;
 using System.Linq;
 using DG.Tweening;
 using Sirenix.OdinInspector;
+using MedalPusher.Slot.Sequences;
 
 namespace MedalPusher.Slot
 {
@@ -29,15 +30,6 @@ namespace MedalPusher.Slot
         [SerializeField, TitleGroup("ReelObjects")]
         private GameObject m_rightReel;
 
-        [SerializeField, TitleGroup("NormalRollProperty"), LabelText("周回数")]
-        private int m_normalRollLaps;
-        [SerializeField, TitleGroup("NormalRollProperty"), LabelText("最大回転速度(rps)")]
-        private float m_normalRollMaxRps;
-        [SerializeField, TitleGroup("NormalRollProperty"), LabelText("加速時間")]
-        private float m_normalRollAccelDuration;
-        [SerializeField, TitleGroup("NormalRollProperty"), LabelText("減速時間")]
-        private float m_normalRollDeceleDuration;
-
         private IReadOnlyDictionary<ReelPos, IReelSequenceProvider> m_sequenceProviderTable;
 
         private void Start()
@@ -57,21 +49,28 @@ namespace MedalPusher.Slot
 
         public UniTask ControlBy(Production production)
         {
+            print(production.Scenario.FinalRoleset);
             List<UniTask> rollAndReachSqTasks = new List<UniTask>();
             foreach (var item in m_sequenceProviderTable)
             {
                 var reelPos = item.Key;
                 var provider = item.Value;
                 //通常の回転シーケンスを取得
-                var sq = provider.GetNormalRollSequence(production.Scenario.GetReelScenario(reelPos).FirstRoleValue,
+                var sq = provider.CreateFirstRollSequence(production.Scenario.GetReelScenario(reelPos).FirstRoleValue,
                                                              production.NormalProperty);
                 //リーチの場合はリーチシーケンスを追加
                 if (production.GetReelProduction(reelPos).ReelScenario.IsReachReelScenario)
                 {
                     var reelProduction = production.GetReelProduction(reelPos);
-                    sq.Append(provider.GetReachReRollSequence(reelProduction.ReelScenario.FirstRoleValue,
-                                                                   reelProduction.ReelScenario.AfterReachRole.Value,
-                                                                   production.ReachProperty));
+
+                    var justBeforeAntagonismRole = production.Scenario.IsWinScenario ?
+                                                   reelProduction.ReelScenario.AfterReachRole.Value.Previous :
+                                                   reelProduction.ReelScenario.AfterReachRole.Value;
+
+                    sq.Append(provider.CreateReachReRollSequence(reelProduction.ReelScenario.FirstRoleValue,
+                                                                 justBeforeAntagonismRole,
+                                                                 production.ReachProperty));
+                    sq.Append(provider.CreateAntagonistSequence(AntagonistType.Type1, production.Scenario.IsWinScenario));
                 }
                 rollAndReachSqTasks.Add(sq.PlayAsync());
             }
@@ -86,7 +85,7 @@ namespace MedalPusher.Slot
                 {
                     var reelPos = item.Key;
                     var provider = item.Value;
-                    winTasks.Add(provider.GetWinningProductionSequence(production.Scenario.FinalRoleset[reelPos]).PlayAsync());
+                    winTasks.Add(provider.CreateWinningProductionSequence(production.Scenario.FinalRoleset[reelPos]).PlayAsync());
                 }
                 return UniTask.WhenAll(winTasks);
             });

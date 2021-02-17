@@ -10,12 +10,20 @@ namespace MedalPusher.Slot
 {
     public class ReelSequence
     {
-        private IReadOnlyDictionary<RoleValue, Sequence> m_sequences;
+        private IDictionary<RoleValue, Sequence> m_sequences;
 
+        public static ReelSequence Empty =>
+            new ReelSequence(RoleValue.Every.ToDictionary<RoleValue, RoleValue, Sequence>(role => role, _ => null));
 
-        public ReelSequence(IReadOnlyDictionary<RoleValue, Sequence> sequences)
+        public ReelSequence(IDictionary<RoleValue, Sequence> sequences)
         {
             m_sequences = sequences;
+        }
+
+        public Sequence this[RoleValue index]
+        {
+            get => m_sequences[index];
+            set => m_sequences[index] = value;
         }
 
         public UniTask PlayAsync()
@@ -35,17 +43,22 @@ namespace MedalPusher.Slot
                                                         if (sq1 == null && sq2 == null) return null; //null同士のAppendはnull
                                                         if (sq1 != null && sq2 == null) return sq1;  //一方だけnullでないなら   
                                                         if (sq1 == null && sq2 != null) return sq2;  //nullでない方を返す
-                                                        else return sq1.Append(sq2);                 //両方ともSqなら普通にAppend
+                                                        return sq1.Append(sq2);                      //両方ともSqなら普通にAppend
                                                     })
                                      .ToDictionary();
             return this;
         }
 
+        public ReelSequence AppendInterval(float interval)
+        {
+            m_sequences = m_sequences.DictionarySelect(sq => sq.AppendInterval(interval)).ToDictionary();
+            return this;
+        }
     }
 
     public static class ReelSequenceExtensions
     {
-        public static ReelSequence ToReelSequence(this IReadOnlyDictionary<RoleValue, Sequence> sequences) =>
+        public static ReelSequence ToReelSequence(this IDictionary<RoleValue, Sequence> sequences) =>
             new ReelSequence(sequences);
         public static ReelSequence ToReelSequence(this IEnumerable<KeyValuePair<RoleValue, Sequence>> sequences) =>
             sequences.ToDictionary().ToReelSequence();
@@ -58,9 +71,9 @@ namespace MedalPusher.Slot
         /// <returns></returns>
         public static ReelSequence AsReelSequence(this Sequence sequence, RoleValue roleAs)
         {
-            var dic = RoleValue.Every.ToDictionary<RoleValue, RoleValue, Sequence>(role => role, _ => null);
+            var dic = ReelSequence.Empty;
             dic[roleAs] = sequence;
-            return new ReelSequence(dic);
+            return dic;
         }
     }
 }

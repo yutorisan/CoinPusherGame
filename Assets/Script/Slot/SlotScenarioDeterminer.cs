@@ -152,8 +152,8 @@ namespace MedalPusher.Slot
                     RoleValue afterReachRole;
                     //あたりなら揃える
                     if (isWin) afterReachRole = reachRole;
-                    //ハズレならその前後の役にする（ランダム）
-                    else afterReachRole = UnityEngine.Random.value < 0.5 ? reachRole.NextRoleValue : reachRole.PreviousRoleValue;
+                    //ハズレならその前の役にする
+                    else afterReachRole = reachRole.Previous;
 
                     //はずれる位置を決定
                     switch (UnityEngine.Random.Range(0,3))
