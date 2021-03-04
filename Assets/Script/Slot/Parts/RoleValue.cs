@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -236,12 +237,16 @@ namespace MedalPusher.Slot
     /// </summary>
     public readonly struct RoleSet
     {
-        private readonly RoleValue m_left, m_middle, m_right;
-        public RoleSet(RoleValue left, RoleValue center, RoleValue right)
+        public RoleSet(RoleValue left, RoleValue middle, RoleValue right)
         {
-            this.m_left = left;
-            this.m_middle = center;
-            this.m_right = right;
+            this.Left = left;
+            this.Middle = middle;
+            this.Right = right;
+        }
+
+        public override string ToString()
+        {
+            return $"{Left}, {Middle}, {Right}";
         }
 
         public RoleValue this[ReelPos index]
@@ -250,19 +255,17 @@ namespace MedalPusher.Slot
             {
                 switch (index)
                 {
-                    case ReelPos.Left: return m_left;
-                    case ReelPos.Middle: return m_middle;
-                    case ReelPos.Right: return m_right;
-                    default: throw new Exception();
+                    case ReelPos.Left: return Left;
+                    case ReelPos.Middle: return Middle;
+                    case ReelPos.Right: return Right;
+                    default: throw new InvalidEnumArgumentException();
                 }
             }
         }
 
-        public override string ToString()
-        {
-            return $"{m_left}, {m_middle}, {m_right}";
-        }
-
+        public RoleValue Left { get; }
+        public RoleValue Middle { get; }
+        public RoleValue Right { get; }
 
         /// <summary>
         /// ビンゴになっている役を取得する
@@ -272,14 +275,14 @@ namespace MedalPusher.Slot
         {
             get
             {
-                if (m_left == m_middle && m_middle == m_right) return m_left;
+                if (Left == Middle && Middle == Right) return Left;
                 else return null;
             }
         }
         /// <summary>
         /// 揃っているかどうかを取得する
         /// </summary>
-        public bool IsBingo => BingoRole != null;
+        public bool IsBingo => BingoRole.HasValue;
 
         /// <summary>
         /// リーチ情報を取得する
@@ -293,12 +296,12 @@ namespace MedalPusher.Slot
                 if (IsBingo) return null;
 
                 //いずれかリーチならその情報を返す
-                if (m_left == m_middle)
-                    return new ReachInfo(m_left, ReelPos.Right);
-                if (m_middle == m_right)
-                    return new ReachInfo(m_middle, ReelPos.Left);
-                if (m_left == m_right)
-                    return new ReachInfo(m_left, ReelPos.Middle);
+                if (Left == Middle)
+                    return new ReachInfo(Left, ReelPos.Right);
+                if (Middle == Right)
+                    return new ReachInfo(Middle, ReelPos.Left);
+                if (Left == Right)
+                    return new ReachInfo(Right, ReelPos.Middle);
 
                 //何も揃っていないならnull
                 return null;

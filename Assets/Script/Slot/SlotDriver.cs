@@ -49,28 +49,43 @@ namespace MedalPusher.Slot
 
         public UniTask ControlBy(Production production)
         {
-            print(production.Scenario.FinalRoleset);
+            print(production.FinallyRoleset);
             List<UniTask> rollAndReachSqTasks = new List<UniTask>();
             foreach (var item in m_sequenceProviderTable)
             {
                 var reelPos = item.Key;
                 var provider = item.Value;
                 //通常の回転シーケンスを取得
-                var sq = provider.CreateFirstRollSequence(production.Scenario.GetReelScenario(reelPos).FirstRoleValue,
-                                                             production.NormalProperty);
+                var sq = ReelSequence.Empty().Append( provider.CreateFirstRollSequence(production[reelPos].FirstRole,
+                                                           production.NormalProperty));
                 //リーチの場合はリーチシーケンスを追加
-                if (production.GetReelProduction(reelPos).ReelScenario.IsReachReelScenario)
+                if (production[reelPos].IsReachProduction)
                 {
-                    var reelProduction = production.GetReelProduction(reelPos);
+                    ReelProduction reelProduction = production[reelPos];
+                    RoleValue defenser, offenser;
 
-                    var justBeforeAntagonismRole = production.Scenario.IsWinScenario ?
-                                                   reelProduction.ReelScenario.AfterReachRole.Value.Previous :
-                                                   reelProduction.ReelScenario.AfterReachRole.Value;
+                    if (production.IsWinProduction)
+                    {
+                        defenser = reelProduction.FinallyRole.Previous;
+                        offenser = reelProduction.FinallyRole;
+                    }
+                    else
+                    {
+                        defenser = reelProduction.FinallyRole;
+                        offenser = reelProduction.FinallyRole.Next;
+                    }
 
-                    sq.Append(provider.CreateReachReRollSequence(reelProduction.ReelScenario.FirstRoleValue,
-                                                                 justBeforeAntagonismRole,
-                                                                 production.ReachProperty));
-                    sq.Append(provider.CreateAntagonistSequence(AntagonistType.Type1, production.Scenario.IsWinScenario));
+                    sq = sq.Append(provider.CreateReachReRollSequence(startRole: reelProduction.FirstRole,
+                                                                 endValue: defenser,
+                                                                 prop: production.ReachProperty));
+                    AntagonistType antagonistType = UnityEngine.Random.value < .5f ? AntagonistType.Type1 : AntagonistType.Type2;
+
+                    sq.Append(provider.CreateAntagonistSequence(antagonistType, new AntagonistSequenceProperty()
+                    {
+                        Defenser = defenser,
+                        Offenser = offenser,
+                        IsOffenserWin = production.IsWinProduction
+                    }));
                 }
                 rollAndReachSqTasks.Add(sq.PlayAsync());
             }
@@ -78,14 +93,14 @@ namespace MedalPusher.Slot
             return UniTask.WhenAll(rollAndReachSqTasks).ContinueWith(() =>
             {
                 //当たりじゃなければここで終了
-                if (!production.Scenario.IsWinScenario) return UniTask.CompletedTask;
+                if (!production.IsWinProduction) return UniTask.CompletedTask;
                 //当たりなら当たり演出を追加
                 List<UniTask> winTasks = new List<UniTask>();
                 foreach (var item in m_sequenceProviderTable)
                 {
                     var reelPos = item.Key;
                     var provider = item.Value;
-                    winTasks.Add(provider.CreateWinningProductionSequence(production.Scenario.FinalRoleset[reelPos]).PlayAsync());
+                    winTasks.Add(provider.CreateWinningProductionSequence(production.FinallyRoleset[reelPos]).PlayAsync());
                 }
                 return UniTask.WhenAll(winTasks);
             });

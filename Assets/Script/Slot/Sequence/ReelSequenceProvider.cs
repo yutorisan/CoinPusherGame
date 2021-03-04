@@ -24,19 +24,19 @@ namespace MedalPusher.Slot.Sequences
         /// 通常のリール回転シーケンスを取得する
         /// </summary>
         /// <returns></returns>
-        ReelSequence CreateFirstRollSequence(RoleValue stopRole, NormalRollProductionProperty prop);
+        IReelSequence CreateFirstRollSequence(RoleValue stopRole, NormalRollProductionProperty prop);
         /// <summary>
         /// リーチ時の再抽選シーケンスを取得する
         /// </summary>
         /// <returns></returns>
-        ReelSequence CreateReachReRollSequence(RoleValue startRole, RoleValue endValue, ReachProductionProperty prop);
+        IReelSequence CreateReachReRollSequence(RoleValue startRole, RoleValue endValue, ReachProductionProperty prop);
         /// <summary>
         /// 当たったときの演出シーケンスを取得する
         /// </summary>
         /// <returns></returns>
-        ReelSequence CreateWinningProductionSequence(RoleValue target);
+        IReelSequence CreateWinningProductionSequence(RoleValue target);
 
-        ReelSequence CreateAntagonistSequence(AntagonistType antagonist, bool isNextWin);
+        IReelSequence CreateAntagonistSequence(AntagonistType antagonist, AntagonistSequenceProperty property);
     }
 
     /// <summary>
@@ -93,7 +93,7 @@ namespace MedalPusher.Slot.Sequences
         /// <param name="accelDutation">加速時間(s)</param>
         /// <param name="deceleDuration">減速時間(s)</param>
         /// <returns>各Roleに対するシーケンス</returns>
-        public ReelSequence CreateFirstRollSequence(RoleValue stopRole, NormalRollProductionProperty prop) =>
+        public IReelSequence CreateFirstRollSequence(RoleValue stopRole, NormalRollProductionProperty prop) =>
             //すべてのRoleの制御完了通知を返す 
             m_tweenProvider.DictionarySelect(provider => DOTween.Sequence()
                                                                 .Append(provider.AccelerationRotate(prop.AccelDuration, prop.MaxRps))
@@ -109,7 +109,7 @@ namespace MedalPusher.Slot.Sequences
         /// <param name="switchDuration">Roleが切り替わるアニメーションの継続時間</param>
         /// <param name="interval">Roleが切り替わるアニメーション同士の待機時間間隔</param>
         /// <returns>各Roleに対するリーチ演出シーケンス</returns>
-        public ReelSequence CreateReachReRollSequence(RoleValue startRole, RoleValue endRole, ReachProductionProperty prop)
+        public IReelSequence CreateReachReRollSequence(RoleValue startRole, RoleValue endRole, ReachProductionProperty prop)
         {
             return m_tweenProvider.DictionarySelect(provider => GetRoleSequenceOnReachProduction(provider))
                                   .ToReelSequence();
@@ -141,17 +141,17 @@ namespace MedalPusher.Slot.Sequences
             }
         }
 
-        public ReelSequence CreateAntagonistSequence(AntagonistType antagonist, bool isNextWin)
+        public IReelSequence CreateAntagonistSequence(AntagonistType antagonist, AntagonistSequenceProperty property)
         {
-            return m_antagonistProvider.GetAntagonistSequence(antagonist, isNextWin);
+            return m_antagonistProvider.GetAntagonistSequence(antagonist, property);
         }
 
-        public ReelSequence CreateWinningProductionSequence(RoleValue target)
+        public IReelSequence CreateWinningProductionSequence(RoleValue target)
         {
             return m_tweenProvider[target].GetWinningProductionSequence().AsReelSequence(target);
         }
 
-        public ReelSequence RelativeRollSequence(Angle rollAngle, float duration)
+        public IReelSequence CreateRollSequence(Angle rollAngle, float duration)
         {
             IEnumerable<KeyValuePair<RoleValue, Tween>> tweens;
             if (rollAngle.IsPositive)
@@ -164,6 +164,44 @@ namespace MedalPusher.Slot.Sequences
             }
 
             return tweens.DictionarySelect(tw => DOTween.Sequence().Append(tw)).ToReelSequence();
+        }
+
+        /// <summary>
+        /// すべてのRoleで同じ動きをする任意のReelSequenceを生成します
+        /// </summary>
+        /// <param name="sequenceSelector">動きの見本</param>
+        /// <returns></returns>
+        public IReelSequence Create(Func<Transform, Sequence> sequenceSelector) =>
+            m_tweenProvider.DictionarySelect(provider => provider.Create(sequenceSelector))
+                           .ToReelSequence();
+
+        /// <summary>
+        /// 任意のRoleに任意のTweenを当てはめたReelaSequenceを生成します
+        /// </summary>
+        /// <param name="sequenceSelector"></param>
+        /// <param name="targets">適用するRoleValue</param>
+        /// <returns></returns>
+        public IReelSequence Create(Func<Transform, Sequence> sequenceSelector, params RoleValue[] targets)
+        {
+            var sqTable = targets.ToDictionary(role => role, role => m_tweenProvider[role].Create(sequenceSelector));
+            return ReelSequence.Empty()
+                               .DictionaryCombine(sqTable, (_, sq) => sq, DOTween.Sequence(), DOTween.Sequence())
+                               .ToReelSequence();
+        }
+
+        /// <summary>
+        /// 各Roleで異なる任意の動きをする任意のReelSequenceを生成します
+        /// </summary>
+        /// <param name="sequenceSelectorTable">各Roleに対するシーケンス取得方法 キーは必要なRoleに対してのみでOK</param>
+        /// <returns></returns>
+        public IReelSequence Create(IDictionary<RoleValue, Func<Transform, Sequence>> sequenceSelectorTable)
+        {
+            //入力されたテーブルに則って各Roleに対するSequenceを作成
+            var sqTable = sequenceSelectorTable.DictionarySelect((selector, role) => m_tweenProvider[role].Create(selector));
+            //ReelSequenceに変換するために、入力されなかったRoleのキーも作成して返す
+            return ReelSequence.Empty()
+                               .DictionaryCombine(sqTable, (template, created) => created)
+                               .ToReelSequence();
         }
 
         /// <summary>
@@ -204,6 +242,5 @@ namespace MedalPusher.Slot.Sequences
             /// <returns></returns>
             public IReadOnlyDictionary<RoleValue, Angle> GetAngleTable(RoleValue frontRole) => m_frontroleAngleTable[frontRole];
         }
-
     }
 }

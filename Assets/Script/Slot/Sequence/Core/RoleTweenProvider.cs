@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using DG.Tweening.Core;
@@ -152,18 +153,27 @@ namespace MedalPusher.Slot.Sequences.Core
                             .Append(WinningZoomUp())
                             .AppendInterval(0.5f)
                             .Append(WinningZoomDown());
+
+            Tween WinningRotate() =>
+                m_operation.transform.DORotate(new Vector3(0, 720, 0), 0.5f).SetRelative();
+
+            Tween WinningZoomUp() =>
+                m_operation.transform.DOLocalMoveZ(-0.5f, 0.5f)
+                                     .SetRelative();
+            Tween WinningZoomDown() =>
+                m_operation.transform.DOLocalMoveZ(0.5f, 0.5f)
+                                     .SetRelative();
         }
 
-        public Tween WinningRotate() =>
-            m_operation.transform.DORotate(new Vector3(0, 720, 0), 0.5f).SetRelative();
-
-        public Tween WinningZoomUp() =>
-            m_operation.transform.DOLocalMoveZ(-0.5f, 0.5f)
-                                    .SetRelative();
-
-        public Tween WinningZoomDown() =>
-            m_operation.transform.DOLocalMoveZ(0.5f, 0.5f)
-                                    .SetRelative();
+        /// <summary>
+        /// Transformを使った任意のSequenceを生成します
+        /// </summary>
+        /// <param name="sequenceSelector"></param>
+        /// <returns></returns>
+        public Sequence Create(Func<Transform, Sequence> sequenceSelector)
+        {
+            return sequenceSelector(m_operation.transform);
+        }
 
         /// <summary>
         /// 指定の角度にRoleを回転移動する
@@ -177,7 +187,7 @@ namespace MedalPusher.Slot.Sequences.Core
                 m_radius * Mathf.Cos(targetAngle.TotalRadian),
                 m_radius * Mathf.Sin(targetAngle.TotalRadian)) + m_initialPosition;
             //透明度を更新する
-            //m_operation.ChangeOpacity(getOpacity());
+            m_operation.ChangeOpacity(getOpacity());
             //テーブルを更新
             m_nowAngle = targetAngle;
 

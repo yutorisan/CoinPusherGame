@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace MedalPusher.Slot
@@ -8,53 +9,51 @@ namespace MedalPusher.Slot
     /// </summary>
     public readonly struct Scenario
     {
-        private readonly ReelScenario m_leftScenario, m_milldeScenario, m_rightScenario;
-
         /// <summary>
         /// ノーマルのシナリオを新規作成
         /// </summary>
         /// <param name="roleset"></param>
         private Scenario(RoleSet roleset)
         {
-            this.FirstRoleset = roleset;
-            this.FinalRoleset = roleset;
+            this.First = roleset;
+            this.Finally = roleset;
 
-            m_leftScenario = new ReelScenario(roleset[ReelPos.Left]);
-            m_milldeScenario = new ReelScenario(roleset[ReelPos.Middle]);
-            m_rightScenario = new ReelScenario(roleset[ReelPos.Right]);
+            this.Left = ReelScenario.Normal(roleset.Left);
+            this.Middle = ReelScenario.Normal(roleset.Middle);
+            this.Right = ReelScenario.Normal(roleset.Right);
         }
         /// <summary>
         /// リーチのシナリオを新規作成
         /// </summary>
         /// <param name="reachedRoleSet">リーチになっているセット</param>
-        /// <param name="afterReachRole">リーチ再抽選後にキーとなるリールが示すRole</param>
-        private Scenario(RoleSet reachedRoleSet, RoleValue afterReachRole)
+        /// <param name="finally">リーチ再抽選後にキーとなるリールが示すRole</param>
+        private Scenario(RoleSet reachedRoleSet, RoleValue @finally)
         {
             if (!reachedRoleSet.IsReach) throw new InvalidOperationException("入力されたセットはリーチではありません");
 
-            this.FirstRoleset = reachedRoleSet;
-            switch (FirstRoleset.ReachStatus.Value.ReachReelPos)
+            this.First = reachedRoleSet;
+            switch (First.ReachStatus.Value.ReachReelPos)
             {
                 case ReelPos.Left:
-                    m_leftScenario = new ReelScenario(reachedRoleSet[ReelPos.Left], afterReachRole);
-                    m_milldeScenario = new ReelScenario(reachedRoleSet[ReelPos.Middle]);
-                    m_rightScenario = new ReelScenario(reachedRoleSet[ReelPos.Right]);
-                    FinalRoleset = new RoleSet(afterReachRole, reachedRoleSet[ReelPos.Middle], reachedRoleSet[ReelPos.Right]);
+                    Left = ReelScenario.ReachKey(reachedRoleSet.Left, @finally);
+                    Middle = ReelScenario.Normal(reachedRoleSet.Middle);
+                    Right = ReelScenario.Normal(reachedRoleSet.Right);
+                    Finally = new RoleSet(@finally, reachedRoleSet.Middle, reachedRoleSet.Right);
                     break;
                 case ReelPos.Middle:
-                    m_leftScenario = new ReelScenario(reachedRoleSet[ReelPos.Left]);
-                    m_milldeScenario = new ReelScenario(reachedRoleSet[ReelPos.Middle], afterReachRole);
-                    m_rightScenario = new ReelScenario(reachedRoleSet[ReelPos.Right]);
-                    FinalRoleset = new RoleSet(reachedRoleSet[ReelPos.Left], afterReachRole, reachedRoleSet[ReelPos.Right]);
+                    Left = ReelScenario.Normal(reachedRoleSet.Left);
+                    Middle = ReelScenario.ReachKey(reachedRoleSet.Middle, @finally);
+                    Right = ReelScenario.Normal(reachedRoleSet.Right);
+                    Finally = new RoleSet(reachedRoleSet.Left, @finally, reachedRoleSet.Right);
                     break;
                 case ReelPos.Right:
-                    m_leftScenario = new ReelScenario(reachedRoleSet[ReelPos.Left]);
-                    m_milldeScenario = new ReelScenario(reachedRoleSet[ReelPos.Middle]);
-                    m_rightScenario = new ReelScenario(reachedRoleSet[ReelPos.Right], afterReachRole);
-                    FinalRoleset = new RoleSet(reachedRoleSet[ReelPos.Left], reachedRoleSet[ReelPos.Middle], afterReachRole);
+                    Left = ReelScenario.Normal(reachedRoleSet.Left);
+                    Middle = ReelScenario.Normal(reachedRoleSet.Middle);
+                    Right = ReelScenario.ReachKey(reachedRoleSet.Right, @finally);
+                    Finally = new RoleSet(reachedRoleSet.Left, reachedRoleSet.Middle, @finally);
                     break;
                 default:
-                    throw new InvalidOperationException();
+                    throw new InvalidEnumArgumentException();
             }
 
         }
@@ -88,30 +87,37 @@ namespace MedalPusher.Slot
             return new Scenario(new RoleSet(winRole, winRole, winRole));
         }
 
-        public ReelScenario GetReelScenario(ReelPos pos)
+        public ReelScenario this[ReelPos index]
         {
-            switch (pos)
+            get
             {
-                case ReelPos.Left: return m_leftScenario;
-                case ReelPos.Middle: return m_milldeScenario;
-                case ReelPos.Right: return m_rightScenario;
-                default: throw new Exception();
+                switch (index)
+                {
+                    case ReelPos.Left: return Left;
+                    case ReelPos.Middle: return Middle;
+                    case ReelPos.Right: return Right;
+                    default: throw new InvalidEnumArgumentException();
+                }
             }
         }
+
+        public ReelScenario Left { get; }
+        public ReelScenario Middle { get; }
+        public ReelScenario Right { get; }
 
         /// <summary>
         /// 最初に表示する出目
         /// </summary>
-        public RoleSet FirstRoleset { get; }
+        public RoleSet First { get; }
         /// <summary>
         /// 最終的に表示する出目
         /// </summary>
-        public RoleSet FinalRoleset { get; }
+        public RoleSet Finally { get; }
 
         public SlotResult Result =>
-            new SlotResult(new RoleSet(m_leftScenario.FinallyRole, m_milldeScenario.FinallyRole, m_rightScenario.FinallyRole));
-        public bool IsReachScenario => FirstRoleset.IsReach;
-        public bool IsWinScenario => FinalRoleset.IsBingo;
+            new SlotResult(new RoleSet(Left.Finally, Middle.Finally, Right.Finally));
+        public bool IsReachScenario => First.IsReach;
+        public bool IsWinScenario => Finally.IsBingo;
     }
 
     /// <summary>
@@ -119,42 +125,38 @@ namespace MedalPusher.Slot
     /// </summary>
     public readonly struct ReelScenario
     {
-        /// <summary>
-        /// 通常のシナリオを作成
-        /// </summary>
-        /// <param name="role"></param>
-        public ReelScenario(RoleValue role)
+        private ReelScenario(RoleValue first, RoleValue @finally, bool isReachKey)
         {
-            this.FirstRoleValue = role;
-            this.AfterReachRole = null;
+            this.First = first;
+            this.Finally = @finally;
+            this.IsReachKey = isReachKey;
         }
+
         /// <summary>
-        /// リーチのキーとなるシナリオを作成
+        /// 1回の抽選で終わる通常のシナリオを作成
         /// </summary>
-        /// <param name="first">最初に表示するRole</param>
-        /// <param name="afterReachRole">リーチの再抽選の先に表示するRole</param>
-        public ReelScenario(RoleValue first, RoleValue afterReachRole)
+        /// <param name="toValue">表示する出目</param>
+        /// <returns></returns>
+        public static ReelScenario Normal(RoleValue toValue)
         {
-            this.FirstRoleValue = first;
-            this.AfterReachRole = afterReachRole;
+            return new ReelScenario(toValue, toValue, false);
+        }
+        public static ReelScenario ReachKey(RoleValue first, RoleValue @finally)
+        {
+            return new ReelScenario(first, @finally, true);
         }
 
         /// <summary>
         /// 最初に表示する出目
         /// </summary>
-        public RoleValue FirstRoleValue { get; }
-        /// <summary>
-        /// リーチ演出の先に表示する確定出目
-        /// </summary>
-        public RoleValue? AfterReachRole { get; }
-
-        /// <summary>
-        /// このリールシナリオはリーチのキーシナリオかどうか
-        /// </summary>
-        public bool IsReachReelScenario => AfterReachRole.HasValue;
+        public RoleValue First { get; }
         /// <summary>
         /// 最終的に表示する出目
         /// </summary>
-        public RoleValue FinallyRole => AfterReachRole ?? FirstRoleValue;
+        public RoleValue Finally { get; }
+        /// <summary>
+        /// このリールシナリオはリーチのキーシナリオかどうか
+        /// </summary>
+        public bool IsReachKey { get; }
     }
 }
