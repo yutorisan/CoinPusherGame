@@ -5750,8 +5750,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6323d1f09ffa54f91adc1f84444ba7a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_directWinningProbability: 0.01
-  m_reachProbability: 0.3
+  m_directWinningProbability: 0
+  m_reachProbability: 1
   m_reachWinningProbability: 0.5
 --- !u!1 &546105400
 GameObject:
@@ -28436,7 +28436,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh280656
+  m_Name: pb_Mesh83266
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -30311,7 +30311,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 976259818}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.30536518, y: 0.0812, z: -0.21793133}
+  m_LocalPosition: {x: -0.30536518, y: 0.101, z: -0.21793133}
   m_LocalScale: {x: 0.0091058, y: 0.23163572, z: 0.56072}
   m_Children: []
   m_Father: {fileID: 1158425144}
@@ -30463,7 +30463,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed8a4530bab1b4a16aab31055e02e24c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_isEnabled: 0
+  m_isEnabled: 1
   m_instantiateMedals: 100
   m_fillMedals: 0
 --- !u!114 &993862547
@@ -32338,7 +32338,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1070485507}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.010165185, y: 0.081199996, z: -0.21793133}
+  m_LocalPosition: {x: -0.010165185, y: 0.10099999, z: -0.21793133}
   m_LocalScale: {x: 0.0091058, y: 0.23163572, z: 0.56072}
   m_Children: []
   m_Father: {fileID: 1158425144}
@@ -71344,7 +71344,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh280186
+  m_Name: pb_Mesh82532
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
