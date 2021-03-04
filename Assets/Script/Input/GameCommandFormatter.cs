@@ -29,7 +29,9 @@ namespace MedalPusher.Input
         /// </summary>
         private readonly Dictionary<KeyCode, GameCommand> keyCommandTable = new Dictionary<KeyCode, GameCommand>()
         {
-            {KeyCode.Space, GameCommand.InputInspectorMedal}
+            {KeyCode.Space, GameCommand.InputInspectorMedal},
+
+            {KeyCode.A,  GameCommand.debug_Input500Medals}
         };
 
         public IObservable<GameCommand> ObservableGameCommand { get; }

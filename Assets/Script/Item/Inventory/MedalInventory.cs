@@ -60,6 +60,10 @@ public class MedalInventory : SerializedMonoBehaviour, IObservableMedalInventory
                             .ObservableGameCommand
                             .Where(cmd => cmd == GameCommand.InputInspectorMedal)
                             .Subscribe(_ => PayoutFromInventory());
+        GameCommandFormatter.Instance
+                    .ObservableGameCommand
+                    .Where(cmd => cmd == GameCommand.debug_Input500Medals)
+                    .Subscribe(_ => m_medalPayoutOperator.PayoutRequest(500, MedalPayoutMethod.Shower));
 
     }
 
