@@ -27,9 +27,16 @@ namespace MedalPusher.Slot.Sequences.Core
         /// </summary>
         private readonly Angle m_frontAngle;
         /// <summary>
+        /// 各Role間の角度の間隔
+        /// </summary>
+        private readonly Angle m_roleIntervalAngle;
+        /// <summary>
         /// 初期状態の座標
         /// </summary>
         private readonly Vector3 m_initialPosition;
+        /// <summary>
+        /// リールの半径
+        /// </summary>
         private readonly float m_radius;
         /// <summary>
         /// 現在の角度
@@ -51,13 +58,14 @@ namespace MedalPusher.Slot.Sequences.Core
         /// <param name="operation"></param>
         /// <param name="initialAngle">初期状態の角度</param>
         /// <param name="radius">Reelの半径</param>
-        public RoleTweenProvider(IRoleOperation operation, Angle initialAngle, float radius, Angle frontAngle)
+        public RoleTweenProvider(IRoleOperation operation, Angle initialAngle, float radius, Angle frontAngle, Angle roleInterval)
         {
             m_operation = operation;
             m_initialPosition = operation.transform.position;
             m_initialAngle = initialAngle;
             m_radius = radius;
             m_frontAngle = frontAngle;
+            m_roleIntervalAngle = roleInterval;
 
             ApplyAngle(m_initialAngle);
         }
@@ -128,20 +136,19 @@ namespace MedalPusher.Slot.Sequences.Core
         /// </summary>
         /// <param name="angle">何度回転させるか</param>
         /// <param name="duration"></param>
-        public Tween RollRelatively(Angle angle, float duration, AngleTweenDirection direction = AngleTweenDirection.Both)
-        {
-            //UnityEngine.Debug.Log($"now:{m_nowAngle}, to:{m_nowAngle}+{angle}={m_nowAngle + angle}");
+        public Tween Roll(Angle angle, float duration, AngleTweenDirection direction = AngleTweenDirection.Both) =>
+            RollAbsolutely(angle, duration, direction).SetRelative();
 
-            return
-            DOTween.To(AnglePlugin.Instance,
-                        NowAngleGetter,
-                        ApplyAngleSetter,
-                        angle,
-                        duration)
-                    .OnComplete(PositiveNormalize)
-                    .SetRelative()
-                    .SetOptions(direction);
-        }
+        /// <summary>
+        /// Roleの間隔の倍数を指定により、現在の角度からReelを回転させる
+        /// </summary>
+        /// <param name="multiple">Roleの間隔の何倍の角度ぶん、回転させるか</param>
+        /// <param name="duration"></param>
+        /// <param name="direction"></param>
+        /// <returns></returns>
+        public Tween RollMultiple(float multiple, float duration, AngleTweenDirection direction = AngleTweenDirection.Both) =>
+            Roll(m_roleIntervalAngle * multiple, duration, direction);
+            
         /// <summary>
         /// 揃ったときの演出シーケンスを取得する
         /// </summary>
@@ -149,10 +156,10 @@ namespace MedalPusher.Slot.Sequences.Core
         public Sequence GetWinningProductionSequence()
         {
             return DOTween.Sequence()
-                            .Append(WinningRotate())
-                            .Append(WinningZoomUp())
-                            .AppendInterval(0.5f)
-                            .Append(WinningZoomDown());
+                          .Append(WinningRotate())
+                          .Append(WinningZoomUp())
+                          .AppendInterval(0.5f)
+                          .Append(WinningZoomDown());
 
             Tween WinningRotate() =>
                 m_operation.transform.DORotate(new Vector3(0, 720, 0), 0.5f).SetRelative();
@@ -166,6 +173,16 @@ namespace MedalPusher.Slot.Sequences.Core
         }
 
         /// <summary>
+        /// Transformを使った任意のTweenを生成します
+        /// </summary>
+        /// <param name="tweenSelector"></param>
+        /// <returns></returns>
+        public Tween Create(Func<Transform, Tween> tweenSelector)
+        {
+            return tweenSelector(m_operation.transform);
+        }
+
+        /// <summary>
         /// Transformを使った任意のSequenceを生成します
         /// </summary>
         /// <param name="sequenceSelector"></param>
@@ -176,16 +193,23 @@ namespace MedalPusher.Slot.Sequences.Core
         }
 
         /// <summary>
+        /// リールから外れたRoleをリール上に戻すTweenを取得します
+        /// </summary>
+        /// <param name="angle">戻す位置</param>
+        /// <param name="duration"></param>
+        /// <returns></returns>
+        public Tween BackToReelPosition(Angle angle, float duration) =>
+            m_operation.transform.DOMove(OnReelPosition(angle), duration);
+
+
+        /// <summary>
         /// 指定の角度にRoleを回転移動する
         /// </summary>
         /// <param name="targetAngle"></param>
         private void ApplyAngle(Angle targetAngle)
         {
             //Roleのpositionを回転させる
-            m_operation.transform.position = new Vector3(
-                0,
-                m_radius * Mathf.Cos(targetAngle.TotalRadian),
-                m_radius * Mathf.Sin(targetAngle.TotalRadian)) + m_initialPosition;
+            m_operation.transform.position = OnReelPosition(targetAngle);
             //透明度を更新する
             m_operation.ChangeOpacity(getOpacity());
             //テーブルを更新
@@ -202,6 +226,14 @@ namespace MedalPusher.Slot.Sequences.Core
                 else return 1 - diffOfFront.TotalDegree / RoleDisplayAngle.TotalDegree;
             }
         }
+
+        /// <summary>
+        /// 指定角度のときのリール上の座標を取得します。
+        /// </summary>
+        /// <param name="angle"></param>
+        /// <returns></returns>
+        private Vector3 OnReelPosition(Angle angle) =>
+           m_radius * angle.Point.AddX(0) + m_initialPosition;
 
         /// <summary>
         /// 現在の角度を正の角度で正規化するDOTween用コールバック処理

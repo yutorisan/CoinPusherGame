@@ -23,6 +23,8 @@ namespace MedalPusher.Slot
     }
     public class SlotDriver : MonoBehaviour, ISlotDriver
     {
+        public static readonly float SlotRadius = .2f;
+
         [SerializeField, TitleGroup("ReelObjects")]
         private GameObject m_leftReel;
         [SerializeField, TitleGroup("ReelObjects")]
@@ -41,9 +43,9 @@ namespace MedalPusher.Slot
 
             m_sequenceProviderTable = new Dictionary<ReelPos, IReelSequenceProvider>()
             {
-                {ReelPos.Left, new ReelSequenceProvider(leftRoles, 0.2f) },
-                {ReelPos.Middle, new ReelSequenceProvider(middleRoles, 0.2f) },
-                {ReelPos.Right, new ReelSequenceProvider(rightRoles, 0.2f) }
+                {ReelPos.Left, new ReelSequenceProvider(leftRoles, SlotRadius) },
+                {ReelPos.Middle, new ReelSequenceProvider(middleRoles, SlotRadius) },
+                {ReelPos.Right, new ReelSequenceProvider(rightRoles, SlotRadius) }
             };
         }
 
@@ -78,7 +80,8 @@ namespace MedalPusher.Slot
                     sq = sq.Append(provider.CreateReachReRollSequence(startRole: reelProduction.FirstRole,
                                                                  endValue: defenser,
                                                                  prop: production.ReachProperty));
-                    AntagonistType antagonistType = UnityEngine.Random.value < .5f ? AntagonistType.Type1 : AntagonistType.Type2;
+                    //ランダムに拮抗演出を取得する
+                    AntagonistType antagonistType = UnityUtility.Enum.Random<AntagonistType>();
 
                     sq.Append(provider.CreateAntagonistSequence(antagonistType, new AntagonistSequenceProperty()
                     {
