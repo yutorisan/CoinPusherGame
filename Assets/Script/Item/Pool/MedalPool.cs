@@ -139,7 +139,7 @@ namespace MedalPusher.Item.Pool
             public MedalPoolCounter()
             {
                 //Dictionaryを初期化
-                var medalTypes = Enum.GetValues(typeof(MedalValue)).Cast<MedalValue>();
+                var medalTypes = UnityUtility.Enum.All<MedalValue>();
                 _activeMedalCountTable = medalTypes.ToDictionary(medalval => medalval, _ => new ReactiveProperty<int>());
                 _instantiatedMedalCountTable = medalTypes.ToDictionary(medalval => medalval, _ => new ReactiveProperty<int>());
             }

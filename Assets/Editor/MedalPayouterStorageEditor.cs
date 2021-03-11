@@ -29,7 +29,7 @@ public class MedalPayouterStorageEditor : Editor
         //EditorGUILayout.DropdownButton()
         using(new EditorGUILayout.HorizontalScope())
         {
-            MedalPayoutMethod[] methods = EnumExtensions.GetEnumValues<MedalPayoutMethod>().ToArray();
+            MedalPayoutMethod[] methods = UnityUtility.Enum.All<MedalPayoutMethod>().ToArray();
 
             index = EditorGUILayout.Popup(index, methods.Select(m => m.ToString()).ToArray());
             method = methods[index];

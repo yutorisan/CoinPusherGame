@@ -16,7 +16,7 @@ public static class InputObservable
     {
         var observable = Observable.Empty<KeyCode>();
 
-        foreach (var keycode in EnumExtensions.GetEnumValues<KeyCode>())
+        foreach (var keycode in UnityUtility.Enum.All<KeyCode>())
         {
             observable = observable.Merge(FromKeyCode(keycode).Select(_ => keycode));
         }
