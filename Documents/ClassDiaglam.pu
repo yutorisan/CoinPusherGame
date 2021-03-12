@@ -221,19 +221,24 @@ namespace Slot{
     interface ISlotDriver{
         +ControlBy(Production) : IObservable<Unit>
     }
+    interface IObservableSlotStatus
     class SlotDriver
     ISlotDriver <|.. SlotDriver
+    IObservableSlotStatus <|. SlotDriver
 
-    SlotDriver "1"*--"3" IReelDriver
+    class ReelSequenceProvider
+    SlotDriver "1"*--"3" ReelSequenceProvider
 
-    interface IReelDriver{
-        +ControlBy(ProductionPart) : IObservable<Unit>
-    }
-    class ReelDriver
-    ReelDriver *-- IReelOperation
-    IReelDriver <|.. ReelDriver
-    ReelDriver "*"+-"1" RoleDriver
-    RoleDriver --> IRoleOperation
+    class RoleTweenProvider
+    ReelSequenceProvider "1"*--"*" RoleTweenProvider
+    RoleTweenProvider *-- IReelOperation
+
+    interface IReachAntagonistSequenceProvider
+    class ReachAntagonistSequenceProvider
+    IReachAntagonistSequenceProvider <|.. ReachAntagonistSequenceProvider
+
+    ReelSequenceProvider +- IReachAntagonistSequenceProvider
+
 
     interface IReelOperation{
         +Roles { get; } : IReadOnlyList<IRoleOperation>
@@ -270,6 +275,21 @@ namespace PayoutPinball{
 
     PinballPocket *- IPinballEvent
     PinballPocket --(( IObservableMedalChecker
+}
+
+namespace Production{
+    namespace Light{
+        class SlotLightController
+        SlotLightController --> Slot.IObservableSlotStatus
+
+        class SlotLightColorChanger
+        class SlotLightIntensityChanger
+        class SlotLightLookAtChanger
+
+        SlotLightColorChanger <-- SlotLightController
+        SlotLightIntensityChanger <-- SlotLightController
+        SlotLightLookAtChanger <-- SlotLightController
+    }
 }
 
 namespace Lottery{
