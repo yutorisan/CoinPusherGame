@@ -63,6 +63,8 @@ namespace MedalPusher.Slot
                 //リーチの場合はリーチシーケンスを追加
                 if (production[reelPos].IsReachProduction)
                 {
+                    sq.OnComplete(() => print("リーチに入りました!"));
+
                     ReelProduction reelProduction = production[reelPos];
                     RoleValue defenser, offenser;
 
@@ -77,11 +79,11 @@ namespace MedalPusher.Slot
                         offenser = reelProduction.FinallyRole.Next;
                     }
 
-                    sq = sq.Append(provider.CreateReachReRollSequence(startRole: reelProduction.FirstRole,
+                    sq.Append(provider.CreateReachReRollSequence(startRole: reelProduction.FirstRole,
                                                                  endValue: defenser,
                                                                  prop: production.ReachProperty));
                     //ランダムに拮抗演出を取得する
-                    AntagonistType antagonistType = UnityUtility.Enum.Random<AntagonistType>();
+                    AntagonistType antagonistType = AntagonistType.Type1 /*UnityUtility.Enum.Random<AntagonistType>()*/;
 
                     sq.Append(provider.CreateAntagonistSequence(antagonistType, new AntagonistSequenceProperty()
                     {
@@ -89,6 +91,8 @@ namespace MedalPusher.Slot
                         Offenser = offenser,
                         IsOffenserWin = production.IsWinProduction
                     }));
+
+                    sq.OnComplete(() => print("リーチが終わりました！"));
                 }
                 rollAndReachSqTasks.Add(sq.PlayAsync());
             }

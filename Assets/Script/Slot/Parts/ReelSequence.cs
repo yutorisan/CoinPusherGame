@@ -25,6 +25,8 @@ namespace MedalPusher.Slot
         IReelSequence Join(IReelSequence sequence);
         IReelSequence AppendInterval(float interval);
         float Duration();
+
+        IReelSequence OnComplete(TweenCallback callback);
     }
 
     public class ReelSequence : IReelSequence
@@ -55,10 +57,6 @@ namespace MedalPusher.Slot
         /// </summary>
         /// <returns></returns>
         public static IReelSequence Empty() => new ReelSequence();
-        ///// <summary>
-        ///// ReelSequenceの元となる空のテンプレートDictionaryを取得する
-        ///// </summary>
-        //public static Dictionary<RoleValue, Sequence> Template => RoleValue.Every.ToDictionary(role => role, role => DOTween.Sequence());
 
         /// <summary>
         /// Valueがnullのテンプレート
@@ -76,26 +74,46 @@ namespace MedalPusher.Slot
         public IReelSequence Append(IReelSequence sequence)
         {
             AppendBulky();
-            return m_sequenceTable.DictionaryCombine(sequence,
-                                                     (sq1, sq2) => sq1.Append(sq2),
-                                                     () => DOTween.Sequence(),
-                                                     () => DOTween.Sequence())
-                                  .ToReelSequence();
+
+            m_sequenceTable =
+                m_sequenceTable.DictionaryCombine(sequence,
+                                                  (sq1, sq2) => DOTween.Sequence().Append(sq1).Append(sq2),
+                                                  () => DOTween.Sequence(),
+                                                  () => DOTween.Sequence())
+                               .ToDictionary();
+            return this;
         }
 
         public IReelSequence AppendInterval(float interval)
         {
             AppendBulky();
-            return m_sequenceTable.DictionarySelect(sq => sq.AppendInterval(interval))
-                                  .ToReelSequence();
+
+            m_sequenceTable =
+                m_sequenceTable.DictionarySelect(sq => sq.AppendInterval(interval))
+                               .ToDictionary();
+            return this;
         }
 
-        public IReelSequence Join(IReelSequence sequence) =>
-            m_sequenceTable.DictionaryCombine(sequence,
-                                              (sq1, sq2) => sq1.Join(sq2),
-                                              () => DOTween.Sequence(),
-                                              () => DOTween.Sequence())
-                           .ToReelSequence();
+        public IReelSequence Join(IReelSequence sequence)
+        {
+            m_sequenceTable =
+                m_sequenceTable.DictionaryCombine(sequence,
+                                                  (sq1, sq2) => DOTween.Sequence().Append(sq1).Join(sq2),
+                                                  () => DOTween.Sequence(),
+                                                  () => DOTween.Sequence())
+                               .ToDictionary();
+            return this;
+        }
+
+        public IReelSequence OnComplete(TweenCallback callback)
+        {
+            //Durationが最長のものにOnCompleteを設定する
+            m_sequenceTable.Values
+                           .OrderByDescending(sq => sq.Duration())
+                           .First()
+                           .onComplete += callback;
+            return this;
+        }
 
         public UniTask PlayAsync() =>
             m_sequenceTable.Values.Select(sq => sq.Play().AsyncWaitForCompletion().AsUniTask()).WhenAll();
