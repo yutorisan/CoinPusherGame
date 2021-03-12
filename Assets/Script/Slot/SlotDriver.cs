@@ -9,6 +9,7 @@ using System.Linq;
 using DG.Tweening;
 using Sirenix.OdinInspector;
 using MedalPusher.Slot.Sequences;
+using UnityUtility;
 
 namespace MedalPusher.Slot
 {
@@ -21,9 +22,23 @@ namespace MedalPusher.Slot
         /// <returns>スロットの制御完了通知</returns>
         UniTask ControlBy(Production production);
     }
-    public class SlotDriver : MonoBehaviour, ISlotDriver
+    public interface IObservableSlotProdctionStatus
     {
+        /// <summary>
+        /// スロット演出の状況とその変更通知を提供します
+        /// </summary>
+        IReadOnlyReactiveProperty<SlotProductionStatus> ProductionStatus { get; }
+    }
+    public class SlotDriver : MonoBehaviour, ISlotDriver, IObservableSlotProdctionStatus
+    {
+        /// <summary>
+        /// スロットリールの半径
+        /// </summary>
         public static readonly float SlotRadius = .2f;
+        /// <summary>
+        /// 現在のスロットの演出
+        /// </summary>
+        private readonly IReactiveProperty<SlotProductionStatus> m_productionStatus = new ReactiveProperty<SlotProductionStatus>();
 
         [SerializeField, TitleGroup("ReelObjects")]
         private GameObject m_leftReel;
@@ -49,28 +64,35 @@ namespace MedalPusher.Slot
             };
         }
 
+        public IReadOnlyReactiveProperty<SlotProductionStatus> ProductionStatus => m_productionStatus;
+
         public UniTask ControlBy(Production production)
         {
             print(production.FinallyRoleset);
+
+            //各Sequneceの再生Taskを格納するListを用意
             List<UniTask> rollAndReachSqTasks = new List<UniTask>();
-            foreach (var item in m_sequenceProviderTable)
+
+            //左右真ん中3つのリールに対して、同様の処理を行う
+            foreach (var (reelPos, provider) in m_sequenceProviderTable)
             {
-                var reelPos = item.Key;
-                var provider = item.Value;
                 //通常の回転シーケンスを取得
-                var sq = ReelSequence.Empty().Append( provider.CreateFirstRollSequence(production[reelPos].FirstRole,
-                                                           production.NormalProperty));
+                var sq = provider.CreateFirstRollSequence(production[reelPos].FirstRole,
+                                                          production.NormalProperty)
+                                 //Play時にステータスを更新
+                                 .OnPlay(() => m_productionStatus.Value = SlotProductionStatus.Rolling);
                 //リーチの場合はリーチシーケンスを追加
                 if (production[reelPos].IsReachProduction)
                 {
-                    sq.OnComplete(() => print("リーチに入りました!"));
+                    //リーチ開始時（通常の回転シーケンス完了時）にステータスを更新
+                    sq.OnComplete(() => m_productionStatus.Value = SlotProductionStatus.Reaching);
 
                     ReelProduction reelProduction = production[reelPos];
-                    RoleValue defenser, offenser;
+                    RoleValue defenser, offenser; //defenser:現在の位置を死守しようとする役, offenser:位置を獲得しようとする役
 
                     if (production.IsWinProduction)
                     {
-                        defenser = reelProduction.FinallyRole.Previous;
+                        defenser = reelProduction.FinallyRole.Previous; 
                         offenser = reelProduction.FinallyRole;
                     }
                     else
@@ -100,19 +122,25 @@ namespace MedalPusher.Slot
             return UniTask.WhenAll(rollAndReachSqTasks).ContinueWith(() =>
             {
                 //当たりじゃなければここで終了
-                if (!production.IsWinProduction) return UniTask.CompletedTask;
-                //当たりなら当たり演出を追加
-                List<UniTask> winTasks = new List<UniTask>();
-                foreach (var item in m_sequenceProviderTable)
+                if (!production.IsWinProduction)
                 {
-                    var reelPos = item.Key;
-                    var provider = item.Value;
-                    winTasks.Add(provider.CreateWinningProductionSequence(production.FinallyRoleset[reelPos]).PlayAsync());
+                    m_productionStatus.Value = SlotProductionStatus.Idol;
+                    return UniTask.CompletedTask;
                 }
-                return UniTask.WhenAll(winTasks);
+                //当たりなら当たり演出を追加
+                else
+                {
+                    return m_sequenceProviderTable
+                        .Select(kvp => (reelpos: kvp.Key, provider: kvp.Value))
+                        .Select(pair => pair.provider
+                                            .CreateWinningProductionSequence(production.FinallyRoleset[pair.reelpos])
+                                            .OnPlay(() => m_productionStatus.Value = SlotProductionStatus.Winning)
+                                            .OnComplete(() => m_productionStatus.Value = SlotProductionStatus.Idol)
+                                            .PlayAsync())
+                        .WhenAll();
+                }
             });
         }
     }
-
 
 }

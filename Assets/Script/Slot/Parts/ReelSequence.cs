@@ -21,12 +21,15 @@ namespace MedalPusher.Slot
         /// </summary>
         /// <returns>再生完了通知</returns>
         UniTask PlayAsync();
+
         IReelSequence Append(IReelSequence sequence);
         IReelSequence Join(IReelSequence sequence);
         IReelSequence AppendInterval(float interval);
-        float Duration();
 
         IReelSequence OnComplete(TweenCallback callback);
+        IReelSequence OnPlay(TweenCallback callback);
+
+        float Duration();
     }
 
     public class ReelSequence : IReelSequence
@@ -108,10 +111,13 @@ namespace MedalPusher.Slot
         public IReelSequence OnComplete(TweenCallback callback)
         {
             //Durationが最長のものにOnCompleteを設定する
-            m_sequenceTable.Values
-                           .OrderByDescending(sq => sq.Duration())
-                           .First()
-                           .onComplete += callback;
+            MaxDurationSequence.onComplete += callback;
+            return this;
+        }
+
+        public IReelSequence OnPlay(TweenCallback callback)
+        {
+            MaxDurationSequence.onPlay += callback;
             return this;
         }
 
@@ -136,6 +142,15 @@ namespace MedalPusher.Slot
                 else return sq.AppendInterval(bulky);
             }).ToDictionary();
         }
+
+        /// <summary>
+        /// Durationが最長のSequenceを取得する
+        /// </summary>
+        private Sequence MaxDurationSequence =>
+            m_sequenceTable.Values
+                           .OrderByDescending(sq => sq.Duration())
+                           .First();
+
     }
 
     public static class ReelSequenceExtensions

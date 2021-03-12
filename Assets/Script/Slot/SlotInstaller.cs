@@ -29,6 +29,10 @@ namespace MedalPusher.Slot
                      .To<SlotDriver>()
                      .FromComponentInHierarchy()
                      .AsCached();
+            Container.Bind<IObservableSlotProdctionStatus>()
+                     .To<SlotDriver>()
+                     .FromComponentInHierarchy()
+                     .AsCached();
 
             Container.Bind<ISlotPrizeOrderer>()
                      .To<SlotPrizeOrderer>()
