@@ -83,7 +83,7 @@ namespace MedalPusher.Slot
                                                                  endValue: defenser,
                                                                  prop: production.ReachProperty));
                     //ランダムに拮抗演出を取得する
-                    AntagonistType antagonistType = AntagonistType.Type1 /*UnityUtility.Enum.Random<AntagonistType>()*/;
+                    AntagonistType antagonistType = UnityUtility.Enum.Random<AntagonistType>();
 
                     sq.Append(provider.CreateAntagonistSequence(antagonistType, new AntagonistSequenceProperty()
                     {
