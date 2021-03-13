@@ -10,7 +10,7 @@ using UnityUtility.Enums;
 namespace MedalPusher.Production.Light
 {
 
-    public class SlotLightController : MonoBehaviour
+    public class SlotProductionEffectController : MonoBehaviour
     {
         [Inject]
         private IObservableSlotProdctionStatus m_slotStatus;
@@ -23,6 +23,8 @@ namespace MedalPusher.Production.Light
         private Transform m_leftCircleCenter;
         [SerializeField, Required, TitleGroup("LookAt")]
         private Transform m_rightCircleCenter;
+        [SerializeField, Required, TitleGroup("ParticleSystem")]
+        private List<ParticleSystem> m_fireworkParticle;
 
         // Start is called before the first frame update
         void Start()
@@ -34,6 +36,7 @@ namespace MedalPusher.Production.Light
             new SlotLightIntensityChanger(m_rightLight, observableStatus);
             new SlotLightLookAtChanger(m_leftLight, observableStatus, m_leftCircleCenter.position, .1f, LeftRight.Left);
             new SlotLightLookAtChanger(m_rightLight, observableStatus, m_rightCircleCenter.position, .1f, LeftRight.Right);
+            new FireworksParticleController(m_fireworkParticle, observableStatus);
         }
     }
 }
