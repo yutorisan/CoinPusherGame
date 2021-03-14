@@ -16,18 +16,9 @@ namespace MedalPusher.Production
             System.Random random = new System.Random();
 
             status.Where(s => s == SlotProductionStatus.Winning)
-                  .SelectMany(s => Observable.Range(0, particles.Count))
-                  .SelectMany(index => Observable.Create<int>(observer =>
-                  {
-                      var disposable = new CancellationDisposable();
-                      Task.Run(async () =>
-                      {
-                          await UniTask.Delay(random.Next(0, 1500));
-                          observer.OnNext(index);
-                      }, disposable.Token);
-                      return disposable;
-                  }))
+                  .SelectMany(_ => ObservableEx.RandomTiming(0, 1500, 3))
                   .Subscribe(index => particles[index].Play());
         }
     }
 }
+
