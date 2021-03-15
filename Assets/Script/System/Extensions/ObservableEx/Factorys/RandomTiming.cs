@@ -16,7 +16,10 @@ public static partial class ObservableEx
     /// <returns></returns>
     public static IObservable<int> RandomTiming(int minTimingMillisecond, int maxTimingMillisecond, int count)
     {
-        return RandomTiming(TimeSpan.FromMilliseconds(minTimingMillisecond), TimeSpan.FromMilliseconds(maxTimingMillisecond), count);
+        //return RandomTiming(TimeSpan.FromMilliseconds(minTimingMillisecond), TimeSpan.FromMilliseconds(maxTimingMillisecond), count);
+        return Observable.Range(0, count)
+                         .SelectMany(i => Observable.Timer(TimeSpan.FromMilliseconds(UnityEngine.Random.Range(minTimingMillisecond, maxTimingMillisecond))),
+                                     (i, _) => i);
     }
     /// <summary>
     /// ランダムなタイミングで値を発行するシーケンスを生成します。
@@ -27,12 +30,6 @@ public static partial class ObservableEx
     /// <returns></returns>
     public static IObservable<int> RandomTiming(TimeSpan minTiming, TimeSpan maxTiming, int count)
     {
-        System.Random random = new System.Random();
-        return Observable.Range(0, count)
-                         .SelectMany(i => UniTask.Delay(random.Next((int)minTiming.TotalMilliseconds,
-                                                                    (int)maxTiming.TotalMilliseconds))
-                                                 .ToObservable()
-                                                 .Select(_ => i));
-
+        return RandomTiming((int)minTiming.TotalMilliseconds, (int)maxTiming.TotalMilliseconds, count);
     }
 }
