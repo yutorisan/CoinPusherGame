@@ -13,10 +13,8 @@ namespace MedalPusher.Production
     {
         public FireworksParticleController(IReadOnlyList<ParticleSystem> particles, IObservable<SlotProductionStatus> status)
         {
-            System.Random random = new System.Random();
-
             status.Where(s => s == SlotProductionStatus.Winning)
-                  .SelectMany(_ => ObservableEx.RandomTiming(0, 1500, 3))
+                  .SelectMany(_ => ObservableEx.RandomTiming(0, 1500, particles.Count))
                   .Subscribe(index => particles[index].Play());
         }
     }

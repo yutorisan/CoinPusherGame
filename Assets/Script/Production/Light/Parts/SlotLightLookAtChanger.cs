@@ -12,6 +12,7 @@ namespace MedalPusher.Production.Light
 {
     public class SlotLightLookAtChanger
     {
+        private readonly SequenceSwitcher<SlotProductionStatus> m_sequenceSwitcher = new SequenceSwitcher<SlotProductionStatus>();
         private readonly IReadOnlyDictionary<SlotProductionStatus, Action> m_lookAtSequenceTable;
         /// <summary>
         /// ライトの回転照射の半径
@@ -62,7 +63,7 @@ namespace MedalPusher.Production.Light
                 [SlotProductionStatus.Idol] = () => tween.Pause(),
                 [SlotProductionStatus.Rolling] = () => tween.Pause(),
                 [SlotProductionStatus.Reaching] = () => tween.Play(),
-                [SlotProductionStatus.Winning] = () => tween.Pause(),
+                [SlotProductionStatus.Winning] = () => tween.Play(),
             };
 
             observableStatus.Select(s => m_lookAtSequenceTable[s])
