@@ -6,14 +6,33 @@ using UniRx;
 
 namespace MedalPusher.Input
 {
-    public class UserInputProvider : IInputProvider
+    internal class UserInputProvider : IGameCommandProvider
     {
+        private readonly IObservable<KeyCode> observableKeyCode = Observable.Empty<KeyCode>();
+        private readonly IKeyConfig keyConfig = KeyConfigSelector.Default;
+
         public UserInputProvider()
         {
-            //InputObservable.FromKeyCode(KeyCode.Space)
-                           
+            //使用中のキーコードの入力を監視する
+            foreach (var key in keyConfig.UsedKeyCodes)
+            {
+                observableKeyCode = observableKeyCode.Merge(KeyInputed(key));
+            }
         }
 
-        public IObservable<KeyCode> ObservableInput => InputObservable.FromAnyKey().Share();
+
+        public IObservable<GameCommand> ObservableGameCommand =>
+            observableKeyCode.Select(key => keyConfig.KeyCommandTable[key])
+                             .Share();
+
+        /// <summary>
+        /// 特定のキーが押されたことを示すIObservableを取得する
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private IObservable<KeyCode> KeyInputed(KeyCode key) =>
+            Observable.EveryUpdate()
+                      .Where(_ => UnityEngine.Input.GetKey(key))
+                      .Select(_ => key);
     }
 }

@@ -166,17 +166,23 @@ namespace Input{
     interface IGameCommandProvider{
         +IObservable<GameCommand> InputedCommand { get; }
     }
-    class GameCommandFormatter
-    GameCommand <- GameCommandFormatter
-    IGameCommandProvider <|.. GameCommandFormatter
-    GameCommandFormatter --> IInputProvider
-    interface IInputProvider
     class UserInputProvider
-    class AutoInputProvider
     class Input<<static>>
-    IInputProvider <|.. UserInputProvider
-    IInputProvider <|.. AutoInputProvider
     UserInputProvider --> Input
+
+    interface IKeyConfig
+    abstract KeyConfig
+    class DefaultKeyConfig
+
+    IKeyConfig <|.. KeyConfig
+    KeyConfig <|-- DefaultKeyConfig
+    GameCommand <- KeyConfig
+
+    class KeyConfigSelector
+    KeyConfigSelector --> IKeyConfig
+    UserInputProvider -> KeyConfigSelector
+    IGameCommandProvider <|.. UserInputProvider
+    
 }
 
 namespace Slot{

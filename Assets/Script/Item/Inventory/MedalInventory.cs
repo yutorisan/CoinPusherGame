@@ -30,6 +30,11 @@ public class MedalInventory : SerializedMonoBehaviour, IObservableMedalInventory
     /// </summary>
     [Inject]
     private IMedalPayoutOperation m_medalPayoutOperator;
+    /// <summary>
+    /// ゲームコマンド投入司令を受け取る
+    /// </summary>
+    [Inject]
+    private IGameCommandProvider gameCommandProvider;
 
     /// <summary>
     /// インベントリ内のメダル枚数
@@ -56,14 +61,12 @@ public class MedalInventory : SerializedMonoBehaviour, IObservableMedalInventory
         m_winMedalChecker.Checked
                       .Subscribe(medal => m_inventoryMedalCount.Value += medal.Value);
         //メダル投入コマンドを受け取ったらメダルを投入
-        GameCommandFormatter.Instance
-                            .ObservableGameCommand
-                            .Where(cmd => cmd == GameCommand.InputInspectorMedal)
-                            .Subscribe(_ => PayoutFromInventory());
-        GameCommandFormatter.Instance
-                    .ObservableGameCommand
-                    .Where(cmd => cmd == GameCommand.debug_Input500Medals)
-                    .Subscribe(_ => m_medalPayoutOperator.PayoutRequest(500, MedalPayoutMethod.Shower));
+        gameCommandProvider.ObservableGameCommand
+                           .Where(cmd => cmd == GameCommand.InputInspectorMedal)
+                           .Subscribe(_ => PayoutFromInventory());
+        gameCommandProvider.ObservableGameCommand
+                           .Where(cmd => cmd == GameCommand.debug_Input500Medals)
+                           .Subscribe(_ => m_medalPayoutOperator.PayoutRequest(500, MedalPayoutMethod.Shower));
 
     }
 
