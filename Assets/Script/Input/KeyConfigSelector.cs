@@ -10,16 +10,23 @@ namespace MedalPusher.Input
     /// </summary>
     internal static class KeyConfigSelector 
     {
-        internal static IKeyConfig Default => DefalutKeyConfig.Instance;
+        /// <summary>
+        /// 現在のキーコンフィグ設定を取得する
+        /// </summary>
+        internal static IKeyConfig Now => DefalutKeyConfig.Instance;
 
         /// <summary>
         /// デフォルトのキーコンフィグ
         /// </summary>
         private class DefalutKeyConfig : KeyConfig
         {
+            //シングルトン
             private static IKeyConfig _instance;
             public static IKeyConfig Instance => _instance ?? (_instance = new DefalutKeyConfig());
 
+            /// <summary>
+            /// キーコンフィグ本体
+            /// </summary>
             private static readonly Dictionary<KeyCode, GameCommand> m_keyCommandTable = new Dictionary<KeyCode, GameCommand>()
             {
                 {KeyCode.Space, GameCommand.InputInspectorMedal},

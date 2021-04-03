@@ -1,13 +1,14 @@
-using UnityEngine;
 using Zenject;
-using MedalPusher.Input;
 
-public class InputInstaller : MonoInstaller
+namespace MedalPusher.Input
 {
-    public override void InstallBindings()
+    public class InputInstaller : MonoInstaller
     {
-        Container.Bind<IGameCommandProvider>()
-                 .To<UserInputProvider>()
-                 .AsCached();
+        public override void InstallBindings()
+        {
+            Container.Bind<IGameCommandProvider>()
+                     .To<GameCommandProvider>()
+                     .AsCached();
+        }
     }
 }

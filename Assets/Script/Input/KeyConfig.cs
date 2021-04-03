@@ -5,7 +5,7 @@ using UnityUtility;
 
 namespace MedalPusher.Input
 {
-    public interface IKeyConfig
+    internal interface IKeyConfig
     {
         /// <summary>
         /// キーコンフィグ本体
@@ -16,7 +16,11 @@ namespace MedalPusher.Input
         /// </summary>
         IEnumerable<KeyCode> UsedKeyCodes { get; }
     }
-    public abstract class KeyConfig : IKeyConfig
+
+    /// <summary>
+    /// キーコンフィグ設定クラスのベースクラス
+    /// </summary>
+    internal abstract class KeyConfig : IKeyConfig
     {
         public abstract IReadOnlyDictionary<KeyCode, GameCommand> KeyCommandTable { get; }
 
