@@ -6,13 +6,11 @@ using DG.Tweening;
 using DG.Tweening.Core;
 using Sirenix.OdinInspector;
 using Sirenix.Utilities;
-using UniRx;
 using UnityEditor;
 using UnityEngine;
 using UnityUtility;
 using UnityUtility.Linq;
 using Zenject;
-using UniRx.Diagnostics;
 using Cysharp.Threading.Tasks;
 using MedalPusher.Slot.Sequences.Core;
 
@@ -35,7 +33,12 @@ namespace MedalPusher.Slot.Sequences
         /// </summary>
         /// <returns></returns>
         IReelSequence CreateWinningProductionSequence(RoleValue target);
-
+        /// <summary>
+        /// リーチ時の拮抗演出シーケンスを取得する
+        /// </summary>
+        /// <param name="antagonist"></param>
+        /// <param name="property"></param>
+        /// <returns></returns>
         IReelSequence CreateAntagonistSequence(AntagonistType antagonist, AntagonistSequenceProperty property);
     }
 

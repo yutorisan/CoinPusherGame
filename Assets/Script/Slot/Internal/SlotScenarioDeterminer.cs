@@ -5,7 +5,6 @@ using System.Reflection;
 using Cysharp.Threading.Tasks;
 using MedalPusher.Slot.Prize;
 using Sirenix.OdinInspector;
-using TMPro.Examples;
 using UniRx;
 using UnityEngine;
 using UnityEngine.Playables;

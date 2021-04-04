@@ -10,7 +10,7 @@ using System;
 namespace MedalPusher.Slot.Stock
 {
 
-    public interface IObservableStockCount
+    public interface IReadOnlyObservableStockCount
     {
         IReadOnlyReactiveProperty<int> StockCount { get; }
     }
@@ -32,7 +32,7 @@ namespace MedalPusher.Slot.Stock
     /// <summary>
     /// スロットのストックを数える
     /// </summary>
-    public class StockCounter : SerializedMonoBehaviour, IStockCounter, IObservableStockCount
+    public class StockCounter : SerializedMonoBehaviour, IStockCounter, IReadOnlyObservableStockCount
     {
         [SerializeField]
         private IObservableMedalChecker m_medalChecker;

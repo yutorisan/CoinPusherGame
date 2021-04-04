@@ -13,7 +13,7 @@ namespace MedalPusher.Production.Light
     public class SlotProductionEffectController : MonoBehaviour
     {
         [Inject]
-        private IObservableSlotProdctionStatus m_slotStatus;
+        private IReadOnlyObservableSlotProdctionStatus m_slotStatus;
 
         [SerializeField, Required, TitleGroup("LightComponent")]
         private UnityEngine.Light m_leftLight;

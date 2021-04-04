@@ -13,7 +13,7 @@ namespace MedalPusher.Slot
                      .To<StockCounter>()
                      .FromComponentInHierarchy()
                      .AsCached();
-            Container.Bind<IObservableStockCount>()
+            Container.Bind<IReadOnlyObservableStockCount>()
                      .To<StockCounter>()
                      .FromComponentsInHierarchy()
                      .AsCached();
@@ -29,7 +29,7 @@ namespace MedalPusher.Slot
                      .To<SlotDriver>()
                      .FromComponentInHierarchy()
                      .AsCached();
-            Container.Bind<IObservableSlotProdctionStatus>()
+            Container.Bind<IReadOnlyObservableSlotProdctionStatus>()
                      .To<SlotDriver>()
                      .FromComponentInHierarchy()
                      .AsCached();

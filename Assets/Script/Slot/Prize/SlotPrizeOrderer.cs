@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using MedalPusher.Item.Payout;
 using UnityEngine;
 using Zenject;
+using System;
 
 namespace MedalPusher.Slot.Prize
 {
@@ -12,6 +13,10 @@ namespace MedalPusher.Slot.Prize
     public interface ISlotPrizeOrderer
     {
         void Order(SlotResult result);
+    }
+    public interface IObservableSlotPrize
+    {
+        //IObservable<ireadonly>
     }
     public class SlotPrizeOrderer : ISlotPrizeOrderer
     {

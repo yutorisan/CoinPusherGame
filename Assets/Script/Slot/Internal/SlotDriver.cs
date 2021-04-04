@@ -22,14 +22,14 @@ namespace MedalPusher.Slot
         /// <returns>スロットの制御完了通知</returns>
         UniTask ControlBy(Production production);
     }
-    public interface IObservableSlotProdctionStatus
+    public interface IReadOnlyObservableSlotProdctionStatus
     {
         /// <summary>
         /// スロット演出の状況とその変更通知を提供します
         /// </summary>
         IReadOnlyReactiveProperty<SlotProductionStatus> ProductionStatus { get; }
     }
-    public class SlotDriver : MonoBehaviour, ISlotDriver, IObservableSlotProdctionStatus
+    public class SlotDriver : MonoBehaviour, ISlotDriver, IReadOnlyObservableSlotProdctionStatus
     {
         /// <summary>
         /// スロットリールの半径

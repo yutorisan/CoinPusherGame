@@ -31,7 +31,7 @@ namespace MedalPusher.Slot
         [Inject]
         private ISlotDriver m_slotDriver;
         [Inject]
-        private IObservableStockCount m_stockCount;
+        private IReadOnlyObservableStockCount m_stockCount;
 
         [SerializeField, LabelText("通常モード"), TitleGroup("通常回転シーケンス")]
         private NormalRollProductionProperty m_normalProp;

@@ -2,7 +2,6 @@
 using UnityUtility;
 using DG.Tweening;
 using UnityEngine;
-using ModestTree.Util;
 using System;
 using MedalPusher.Slot.Sequences.Core;
 using System.Collections;

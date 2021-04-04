@@ -12,7 +12,7 @@ namespace MedalPusher.Slot.Stock
         [SerializeField]
         private TextMeshProUGUI m_stockText;
         [Inject]
-        private IObservableStockCount _stockCount;
+        private IReadOnlyObservableStockCount _stockCount;
 
         // Start is called before the first frame update
         void Start()
