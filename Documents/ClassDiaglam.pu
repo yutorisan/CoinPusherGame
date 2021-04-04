@@ -161,7 +161,7 @@ namespace Item{
 
 }
 
-namespace Input{
+namespace Input #DDDDDD{
     enum GameCommand
     interface IGameCommandProvider{
         +IObservable<GameCommand> InputedCommand { get; }
@@ -185,31 +185,33 @@ namespace Input{
     
 }
 
-namespace Slot{
+
+namespace Slot #DDDDDD {
     namespace Stock{
-        interface IObservableStockCount{
-            +Stock { get; } : IObservable<int>
+        interface IReadOnlyObservableStockCount{
+            +Stock { get; } : IReadOnlyReactiveProperty<int>
         }
+        interface IStockAdder
         interface IStockCounter
         class StockCounter
-        IObservableStockCount <|.. StockCounter
+        IReadOnlyObservableStockCount <|.. StockCounter
+        IStockAdder <. StockCounter
         StockCounter ..|> IStockCounter
-        IObservableMedalChecker ))- StockCounter
 
-        class StockCounterView<<View>>
-        StockCounterView --> IObservableStockCount
     }
 
     class SlotStarter
     Slot.Stock.IStockCounter <-- SlotStarter
-    SlotStarter *--  ISlotRoleDeterminer
+    SlotStarter *--  ISlotScenarioDeterminer
 
-    interface ISlotRoleDeterminer{
+    interface ISlotScenarioDeterminer{
         +DetermineRole() : IObservable<Unit>
     }
-    class SlotRoleDeterminer
-    ISlotRoleDeterminer <|.. SlotRoleDeterminer
-    SlotRoleDeterminer *-- ISlotProductionDeterminer
+    class SlotScenarioDeterminer
+    ISlotScenarioDeterminer <|.. SlotScenarioDeterminer
+    SlotScenarioDeterminer *-- ISlotProductionDeterminer
+    interface ISlotResultSubmitter
+    ISlotResultSubmitter <|.. SlotScenarioDeterminer
 
     interface ISlotProductionDeterminer{
         +DetermineProduction(RoleSet) : IObservable<Unit>
@@ -217,136 +219,133 @@ namespace Slot{
     class SlotProductionDeterminer
     ISlotProductionDeterminer <|.. SlotProductionDeterminer
     SlotProductionDeterminer *-- ISlotDriver
-
-    interface IReachReLotteryer
-    class ReachReLotteryer
-    IReachReLotteryer <|.. ReachReLotteryer
-
-    SlotProductionDeterminer -> IReachReLotteryer
+    Slot.Stock.IReadOnlyObservableStockCount <-- SlotProductionDeterminer
 
     interface ISlotDriver{
         +ControlBy(Production) : IObservable<Unit>
     }
-    interface IObservableSlotStatus
+    interface IReadOnlyObservableSlotProdctionStatus
     class SlotDriver
     ISlotDriver <|.. SlotDriver
-    IObservableSlotStatus <|. SlotDriver
+    IReadOnlyObservableSlotProdctionStatus <|. SlotDriver
 
-    class ReelSequenceProvider
-    SlotDriver "1"*--"3" ReelSequenceProvider
+    namespace Core{
+        class ReelSequenceProvider
+        interface IReelSequenceProvider
+        IReelSequenceProvider <|.. ReelSequenceProvider
+        Slot.SlotDriver "1"*--"3" IReelSequenceProvider
 
-    class RoleTweenProvider
-    ReelSequenceProvider "1"*--"*" RoleTweenProvider
-    RoleTweenProvider *-- IReelOperation
+        class RoleTweenProvider
+        ReelSequenceProvider "1"*--"*" RoleTweenProvider
+        RoleTweenProvider *-- IRoleOperation
 
-    interface IReachAntagonistSequenceProvider
-    class ReachAntagonistSequenceProvider
-    IReachAntagonistSequenceProvider <|.. ReachAntagonistSequenceProvider
+        interface IReachAntagonistSequenceProvider
+        class ReachAntagonistSequenceProvider
+        IReachAntagonistSequenceProvider <|.. ReachAntagonistSequenceProvider
 
-    ReelSequenceProvider +- IReachAntagonistSequenceProvider
+        ReelSequenceProvider +- IReachAntagonistSequenceProvider
 
-
-    interface IReelOperation{
-        +Roles { get; } : IReadOnlyList<IRoleOperation>
+        interface IRoleOperation{
+            +transform { get; } : Transform
+            +Value { get; } : RoleValue
+        }
+        class Role
+        IRoleOperation <|.. Role
     }
-    class Reel
-    IReelOperation <|.. Reel
 
-    interface IRoleOperation{
-        +transform { get; } : Transform
-        +Value { get; } : RoleValue
-    }
-    class Role
-    IRoleOperation <|.. Role
-    Reel "1"*--"*" IRoleOperation
+    namespace Production{
+        namespace Light{
+            class SlotLightController
+            SlotLightController --> Slot.IReadOnlyObservableSlotProdctionStatus
 
-    interface ISlotPrizeOrderer{
-        +Order(RoleSet) : void
-    }
-    class SlotPrizeFacade
-    ISlotPrizeOrderer <|.. SlotPrizeFacade
+            class SlotLightColorChanger
+            class SlotLightIntensityChanger
+            class SlotLightLookAtChanger
 
-    ISlotPrizeOrderer <- SlotRoleDeterminer
-    Item.Payout.IMedalPayoutOperation <-- SlotPrizeFacade
-}
-
-namespace PayoutPinball{
-    interface IPinballPocket
-    class PinballPocket
-    IPinballPocket <|.. PinballPocket
-
-    interface IPinballEvent
-    class PinballEvent
-    IPinballEvent <|.. PinballEvent
-
-    PinballPocket *- IPinballEvent
-    PinballPocket --(( IObservableMedalChecker
-}
-
-namespace Production{
-    namespace Light{
-        class SlotLightController
-        SlotLightController --> Slot.IObservableSlotStatus
-
-        class SlotLightColorChanger
-        class SlotLightIntensityChanger
-        class SlotLightLookAtChanger
-
-        SlotLightColorChanger <-- SlotLightController
-        SlotLightIntensityChanger <-- SlotLightController
-        SlotLightLookAtChanger <-- SlotLightController
+            SlotLightColorChanger <-- SlotLightController
+            SlotLightIntensityChanger <-- SlotLightController
+            SlotLightLookAtChanger <-- SlotLightController
+        }
     }
 }
 
-namespace Lottery{
-    interface IObservableLotteryRotater{
-        +IObservable<float> ObservableRotate { get; }
-    }
-    class LotteryBowlRotater
-    IObservableLotteryRotater <|.. LotteryBowlRotater
+namespace SlotInterface{
 
-    class LotteryPrizeInfo{
-        IFieldObject Prize { get; }
-    }
-    interface ILotteryPocketPositionOperation
-    class LotteryPocket
-    LotteryPocket ..|> ILotteryPocketPositionOperation
+    class StockCounterView<<View>>
+    StockCounterView --> Slot.Stock.IReadOnlyObservableStockCount
 
-    class LotteryPocketPositionOperator
-    LotteryPocketPositionOperator --> IObservableLotteryRotater 
-    ILotteryPocketPositionOperation "*" --o "1" LotteryPocketPositionOperator
+    class SlotResultToPrizeConverter
+    Slot.ISlotResultSubmitter <-- SlotResultToPrizeConverter
+    IMedalPayoutOperation ))-- SlotResultToPrizeConverter
 
-    class LotteryPrize3DView
-    LotteryPrize3DView -* LotteryPocket
-
-    interface ILotteryPrizeInsertionSlot
-    class LotteryPrizeCollector
-    LotteryPrizeCollector ..|> ILotteryPrizeInsertionSlot
-
-    ILotteryPrizeInsertionSlot <-- LotteryPocket
-    LotteryPocket *- LotteryPrizeInfo
-
-    Item.Payout.IFieldItemPayoutOperator <-- LotteryPrizeCollector
-    Item.Payout.IMedalPayoutOperation <-- LotteryPrizeCollector
-
-    interface IBallBornOperator{
-        +Born() : void
-    }
-    class BallBorner
-    IBallBornOperator <|.. BallBorner
-
-
-    class LotteryStockCollector
-    IObservableMedalChecker ))-- LotteryStockCollector
-    LotteryStockCollector --> IBallBornOperator
-
-    class LotteryInstaller<<Installer>>{}
+    class SlotStockSensor
+    Slot.Stock.IStockAdder <-- SlotStockSensor
+    SlotStockSensor ---(( IObservableMedalChecker
 }
+' namespace PayoutPinball{
+'     interface IPinballPocket
+'     class PinballPocket
+'     IPinballPocket <|.. PinballPocket
+
+'     interface IPinballEvent
+'     class PinballEvent
+'     IPinballEvent <|.. PinballEvent
+
+'     PinballPocket *- IPinballEvent
+'     PinballPocket --(( IObservableMedalChecker
+' }
+
+
+
+' namespace Lottery{
+'     interface IObservableLotteryRotater{
+'         +IObservable<float> ObservableRotate { get; }
+'     }
+'     class LotteryBowlRotater
+'     IObservableLotteryRotater <|.. LotteryBowlRotater
+
+'     class LotteryPrizeInfo{
+'         IFieldObject Prize { get; }
+'     }
+'     interface ILotteryPocketPositionOperation
+'     class LotteryPocket
+'     LotteryPocket ..|> ILotteryPocketPositionOperation
+
+'     class LotteryPocketPositionOperator
+'     LotteryPocketPositionOperator --> IObservableLotteryRotater 
+'     ILotteryPocketPositionOperation "*" --o "1" LotteryPocketPositionOperator
+
+'     class LotteryPrize3DView
+'     LotteryPrize3DView -* LotteryPocket
+
+'     interface ILotteryPrizeInsertionSlot
+'     class LotteryPrizeCollector
+'     LotteryPrizeCollector ..|> ILotteryPrizeInsertionSlot
+
+'     ILotteryPrizeInsertionSlot <-- LotteryPocket
+'     LotteryPocket *- LotteryPrizeInfo
+
+'     Item.Payout.IFieldItemPayoutOperator <-- LotteryPrizeCollector
+'     Item.Payout.IMedalPayoutOperation <-- LotteryPrizeCollector
+
+'     interface IBallBornOperator{
+'         +Born() : void
+'     }
+'     class BallBorner
+'     IBallBornOperator <|.. BallBorner
+
+
+'     class LotteryStockCollector
+'     IObservableMedalChecker ))-- LotteryStockCollector
+'     LotteryStockCollector --> IBallBornOperator
+
+'     class LotteryInstaller<<Installer>>{}
+' }
 
 namespace Debug{
-    class MedalPoolLog
+    class MedalPoolDebug
 
-    Item.Pool.IObservableMedalPoolInfo <-- MedalPoolLog
+    Item.Pool.IObservableMedalPoolInfo <-- MedalPoolDebug
 }
 
 class SceneInstaller<<Installer>>
