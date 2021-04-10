@@ -1,66 +1,56 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using MedalPusher.Item.Checker;
-using Sirenix.OdinInspector;
-using UnityEngine;
-using Zenject;
-using UniRx;
+﻿using UniRx;
 using System;
 
-namespace MedalPusher.Slot.Stock
+namespace MedalPusher.Slot.Internal.Stock
 {
-
+    /// <summary>
+    /// スロットのストックを追加できる
+    /// </summary>
+    public interface IStockAdder
+    {
+        /// <summary>
+        /// スロットのストックを追加する
+        /// </summary>
+        void Add();
+    }
+    /// <summary>
+    /// スロットのストック数を取得・購読できる
+    /// </summary>
     public interface IReadOnlyObservableStockCount
     {
+        /// <summary>
+        /// スロットのストック数を取得・購読する
+        /// </summary>
         IReadOnlyReactiveProperty<int> StockCount { get; }
     }
-    public interface IStockCounter
-    {
-        /// <summary>
-        /// ストックが0の状態からストックが供給されたときに通知される
-        /// </summary>
-        IObservable<Unit> StockSupplied { get; }
-        /// <summary>
-        /// ストックを消費可能か
-        /// </summary>
-        bool IsSpendable { get; }
-        /// <summary>
-        /// ストックを1つ消費する
-        /// </summary>
-        void SpendStock();
-    }
+
     /// <summary>
     /// スロットのストックを数える
     /// </summary>
-    public class StockCounter : SerializedMonoBehaviour, IStockCounter, IReadOnlyObservableStockCount
+    internal class StockCounter : IStockCounter, IStockAdder, IReadOnlyObservableStockCount
     {
-        [SerializeField]
-        private IObservableMedalChecker m_medalChecker;
-
         /// <summary>
         /// 現在のストック数
         /// </summary>
         private ReactiveProperty<int> m_stockCount = new ReactiveProperty<int>(0);
 
-        // Start is called before the first frame update
-        void Start()
-        {
-            //メダルが入ったらストックをインクリメント
-            m_medalChecker.Checked
-                          .Subscribe(_ =>　++m_stockCount.Value);
-        }
-
-        public void SpendStock()
+        public void Spend()
         {
             if (IsSpendable) --m_stockCount.Value;
             else throw new InvalidOperationException("ストックを消費しようとしましたが、消費できるストックが存在しません");
         }
 
-        public IObservable<Unit> StockSupplied =>
+        public void Add()
+        {
+            ++m_stockCount.Value;
+        }
+
+        public IObservable<Unit> Supplied =>
             m_stockCount.Pairwise()
                         .Where(pair => pair.Previous <= 0 && pair.Current > 0) //ストックがない状態から、ストックがある状態に変化した
-                        .AsUnitObservable();
-                                                              
+                        .AsUnitObservable()
+                        .Share();
+
         public bool IsSpendable => m_stockCount.Value > 0;
 
         public IReadOnlyReactiveProperty<int> StockCount => m_stockCount;

@@ -3,81 +3,119 @@ using UnityUtility;
 using DG.Tweening;
 using UnityEngine;
 using System;
-using MedalPusher.Slot.Sequences.Core;
 using System.Collections;
 
-namespace MedalPusher.Slot.Sequences
+namespace MedalPusher.Slot.Internal.Core
 {
     public partial class ReelSequenceProvider
     {
+        /// <summary>
+        /// リーチ時の拮抗演出シーケンスを提供できる
+        /// </summary>
         private interface IReachAntagonistSequenceProvider
         {
+            /// <summary>
+            /// 拮抗演出シーケンスを取得する
+            /// </summary>
+            /// <param name="antagonist">取得する拮抗演出タイプ</param>
+            /// <param name="property">取得する拮抗演出のプロパティ</param>
+            /// <returns></returns>
             IReelSequence GetAntagonistSequence(AntagonistType antagonist, AntagonistSequenceProperty property);
         }
+
+        /// <summary>
+        /// リーチ時の拮抗演出シーケンスを提供する
+        /// </summary>
         private class ReachAntagonistSequenceProvider : IReachAntagonistSequenceProvider
         {
-            private readonly ReelSequenceProvider m_parent;
-            private readonly IReadOnlyDictionary<AntagonistType, IAntagonistSequenceCreator> m_sqCreatorTable;
+            /// <summary>
+            /// 各拮抗演出タイプに対応する、拮抗演出クリエイターの対応テーブル
+            /// </summary>
+            private readonly IReadOnlyDictionary<AntagonistType, IAntagonistSequenceCreator> antagonistSqCreatorTable;
+
             public ReachAntagonistSequenceProvider(ReelSequenceProvider parent)
             {
-                m_parent = parent;
-                m_sqCreatorTable = new Dictionary<AntagonistType, IAntagonistSequenceCreator>()
+                //各拮抗演出に対応するクリエイターオブジェクトを生成して格納する
+                antagonistSqCreatorTable = new Dictionary<AntagonistType, IAntagonistSequenceCreator>()
                 {
                     {AntagonistType.Type1, new Type1AntagonistSqCreator(parent) },
                     {AntagonistType.Type2, new Type2AntagonistSqCreator(parent) },
-                    {AntagonistType.Type3, new Type3AntagonistCreator(parent, new Vector3(0,0.377383053f,-0.35f), .15f, m_parent.m_frontroleAngleTable) },
+                    {AntagonistType.Type3, new Type3AntagonistSqCreator(parent) },
                 };
             }
 
             public IReelSequence GetAntagonistSequence(AntagonistType antagonist, AntagonistSequenceProperty property)
             {
-                return m_sqCreatorTable[antagonist].Create(property);
+                return antagonistSqCreatorTable[antagonist].Create(property);
             }
 
+            #region AntagonistSequenceCreator
+            /// <summary>
+            /// 拮抗演出シーケンスを生成できる
+            /// </summary>
             private interface IAntagonistSequenceCreator
             {
+                /// <summary>
+                /// 拮抗演出シーケンスを生成する
+                /// </summary>
+                /// <param name="property"></param>
+                /// <returns></returns>
                 IReelSequence Create(AntagonistSequenceProperty property);
             }
+
+            /// <summary>
+            /// 拮抗演出シーケンス生成クラスのベース
+            /// </summary>
             private abstract class AntagonistSqCreatorBase : IAntagonistSequenceCreator
             {
                 protected readonly ReelSequenceProvider sqProvider;
-                protected readonly Angle _roleInterval;
+                protected readonly Angle roleIntervalAngle;
                 public AntagonistSqCreatorBase(ReelSequenceProvider parent)
                 {
                     sqProvider = parent;
-                    _roleInterval = parent.RoleIntervalAngle;
+                    roleIntervalAngle = parent.RoleIntervalAngle;
                 }
                 public abstract IReelSequence Create(AntagonistSequenceProperty property);
             }
+
+            /// <summary>
+            /// 拮抗演出１：行ったり来たりする演出
+            /// </summary>
             private class Type1AntagonistSqCreator : AntagonistSqCreatorBase
             {
                 public Type1AntagonistSqCreator(ReelSequenceProvider parent) : base(parent) { }
                 public override IReelSequence Create(AntagonistSequenceProperty property)
                 {
+                    //リール全体が行ったり来たりするシーケンスを生成
                     var antagonistSq =
-                    ReelSequence.Empty()
-                                .Append(sqProvider.CreateRollSequence(_roleInterval * .5f, .3f)) //.5
-                                .Append(sqProvider.CreateRollSequence(_roleInterval * -.5f, .3f)) // 0
-                                .Append(sqProvider.CreateRollSequence(_roleInterval * .7f, .3f)) //.7
-                                .Append(sqProvider.CreateRollSequence(_roleInterval * -.5f, .3f)) //.2
-                                .Append(sqProvider.CreateRollSequence(_roleInterval * .6f, .3f)) //.8
-                                .Append(sqProvider.CreateRollSequence(_roleInterval * -.4f, .3f)) //.4
-                                .Append(sqProvider.CreateRollSequence(_roleInterval * .5f, .3f)) //.9
-                                .AppendInterval(1f);
+                        ReelSequence.Empty()
+                                    .Append(sqProvider.CreateRollSequence(roleIntervalAngle * .5f, .3f)) //.5
+                                    .Append(sqProvider.CreateRollSequence(roleIntervalAngle * -.5f, .3f)) // 0
+                                    .Append(sqProvider.CreateRollSequence(roleIntervalAngle * .7f, .3f)) //.7
+                                    .Append(sqProvider.CreateRollSequence(roleIntervalAngle * -.5f, .3f)) //.2
+                                    .Append(sqProvider.CreateRollSequence(roleIntervalAngle * .6f, .3f)) //.8
+                                    .Append(sqProvider.CreateRollSequence(roleIntervalAngle * -.4f, .3f)) //.4
+                                    .Append(sqProvider.CreateRollSequence(roleIntervalAngle * .5f, .3f)) //.9
+                                    .AppendInterval(1f);
 
 
+                    //最後に、当たりかハズレかによって、リールを進めるか戻すかのシーケンスを追加する
                     if (property.IsOffenserWin)
                     {
-                        antagonistSq.Append(sqProvider.CreateRollSequence(_roleInterval * .1f, .1f));
+                        antagonistSq.Append(sqProvider.CreateRollSequence(roleIntervalAngle * .1f, .1f));
                     }
                     else
                     {
-                        antagonistSq.Append(sqProvider.CreateRollSequence(_roleInterval * -.9f, .4f));
+                        antagonistSq.Append(sqProvider.CreateRollSequence(roleIntervalAngle * -.9f, .4f));
                     }
 
                     return antagonistSq;
                 }
             }
+
+            /// <summary>
+            /// 拮抗演出２：中央で止まって振動する
+            /// </summary>
             private class Type2AntagonistSqCreator : AntagonistSqCreatorBase
             {
                 public Type2AntagonistSqCreator(ReelSequenceProvider parent) : base(parent)
@@ -86,53 +124,49 @@ namespace MedalPusher.Slot.Sequences
 
                 public override IReelSequence Create(AntagonistSequenceProperty property) =>
                     ReelSequence.Empty()
-                                .Append(sqProvider.CreateRollSequence(_roleInterval * .5f, 1.5f))
+                                //中央までリールを回転させて
+                                .Append(sqProvider.CreateRollSequence(roleIntervalAngle * .5f, 1.5f))
+                                //振動させて
                                 .Append(sqProvider.Create(t => t.DOShakePosition(3, 0.02f).ToSequence(), property.Offenser, property.Defenser))
-                                .Append(sqProvider.CreateRollSequence(property.IsOffenserWin ? _roleInterval * .5f : _roleInterval * -.5f, .5f));
+                                //当たりなら進める、ハズレなら戻す
+                                .Append(sqProvider.CreateRollSequence(property.IsOffenserWin ? roleIntervalAngle * .5f : roleIntervalAngle * -.5f, .5f));
             }
-            private class Type3AntagonistCreator : AntagonistSqCreatorBase
+
+            /// <summary>
+            /// 拮抗演出３：前面に出てきて戦う
+            /// </summary>
+            private class Type3AntagonistSqCreator : AntagonistSqCreatorBase
             {
                 /// <summary>
                 /// 戦闘の中心座標
                 /// </summary>
-                private readonly Vector3 m_fightCenterPosition;
+                private static readonly Vector3 fightCenterPosition = new Vector3(0, 0.377383053f, -0.35f);
                 /// <summary>
                 /// 戦闘の中心座標から、両者のベース位置までの距離
                 /// </summary>
-                private readonly float m_centerToFighterLength;
-                private readonly FrontRoleAndEachAngleTable m_angleTable;
+                private static readonly float centerToFighterLength = .15f;
 
-                public Type3AntagonistCreator(ReelSequenceProvider parent, Vector3 fightCenter, float centerToLength, FrontRoleAndEachAngleTable table) : base(parent)
+                public Type3AntagonistSqCreator(ReelSequenceProvider parent) : base(parent)
                 {
-                    m_fightCenterPosition = fightCenter;
-                    m_centerToFighterLength = centerToLength;
-                    m_angleTable = table;
                 }
 
                 public override IReelSequence Create(AntagonistSequenceProperty property)
                 {
-                    var leftBasePosition = m_fightCenterPosition.PlusX(-m_centerToFighterLength);
-                    var rightBasePosition = m_fightCenterPosition.PlusX(m_centerToFighterLength);
+                    //戦うベースポジション
+                    var leftBasePosition = fightCenterPosition.PlusX(-centerToFighterLength);
+                    var rightBasePosition = fightCenterPosition.PlusX(centerToFighterLength);
 
-                    //offenserがleft, defenserがright
-
-                    //最初の拮抗
+                    //OffenserがDefenserにツンツンと攻撃するようなシーケンスを取得するテーブル
                     Dictionary<RoleValue, Func<RoleTweenProvider, Sequence>> firstAntagonistSelectorTable =
                         new Dictionary<RoleValue, Func<RoleTweenProvider, Sequence>>()
                         {
-                            //[property.Defenser] = provider =>
-                            //    DOTween.Sequence()
-                            //           .Append(provider.RollRelatively(-_roleInterval / 2, 1f)),
                             [property.Offenser] = provider =>
                                 DOTween.Sequence()
                                        .Append(provider.RollMultiple(.7f, .2f))                     //速くぶつかって
-                                       //.Append(provider.Create(t => t.DOShakePosition(.5f, .05f)))   //衝撃のエフェクトを掛けて
                                        .Append(provider.RollMultiple(-.7f, .8f))                    //ゆっくり戻って
                                        .Append(provider.RollMultiple(.8f, .2f))                     //速くぶつかって
-                                       //.Append(provider.Create(t => t.DOShakePosition(.5f, .1f)))   //衝撃のエフェクトを掛けて
                                        .Append(provider.RollMultiple(-.8f, .8f))                    //ゆっくり戻って
                                        .Append(provider.RollMultiple(.9f,  .1f))                    //速くぶつかって
-                                       //.Append(provider.Create(t => t.DOShakePosition(.5f, .15f)))   //衝撃のエフェクトを掛けて
                                        .Append(provider.RollMultiple(-.9f, .8f))                    //ゆっくり戻って
                         };
 
@@ -174,15 +208,18 @@ namespace MedalPusher.Slot.Sequences
                                      .Append(sqProvider.Create(fightSelectorTable))
                                      .Append(sqProvider.CreateBackToReelSequence(property.WinRole, .5f));
 
+                    //戦闘フィールドのX方向の長さに対してmultiple倍だけ動くTweenを取得する
                     Tween FightTweenX(Transform transform, float multiple, float duration) =>
-                        transform.DOMoveX(m_centerToFighterLength * multiple, duration).SetRelative();
+                        transform.DOMoveX(centerToFighterLength * multiple, duration).SetRelative();
                 }
             }
+            #endregion
         }
-
-
     }
 
+    /// <summary>
+    /// 拮抗演出の種類
+    /// </summary>
     public enum AntagonistType
     {
         Type1,
@@ -190,6 +227,9 @@ namespace MedalPusher.Slot.Sequences
         Type3
     }
 
+    /// <summary>
+    /// 拮抗演出を生成するために必要な情報
+    /// </summary>
     public struct AntagonistSequenceProperty
     {
         /// <summary>

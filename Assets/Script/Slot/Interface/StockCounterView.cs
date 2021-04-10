@@ -4,9 +4,13 @@ using TMPro;
 using UnityEngine;
 using Zenject;
 using UniRx;
+using MedalPusher.Slot.Internal.Stock;
 
 namespace MedalPusher.Slot.Stock
 {
+    /// <summary>
+    /// スロットのストック数に対するView
+    /// </summary>
     public class StockCounterView : MonoBehaviour
     {
         [SerializeField]
@@ -14,9 +18,9 @@ namespace MedalPusher.Slot.Stock
         [Inject]
         private IReadOnlyObservableStockCount _stockCount;
 
-        // Start is called before the first frame update
         void Start()
         {
+            //ストックを監視してTextMeshProに反映
             _stockCount.StockCount.Subscribe(stock => m_stockText.text = stock.ToString());
         }
     }

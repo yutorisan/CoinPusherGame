@@ -8,31 +8,65 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityUtility.Linq;
 
-namespace MedalPusher.Slot
+namespace MedalPusher.Slot.Internal.Core
 {
+    /// <summary>
+    /// ReelSequenceの実データ（Sequence）に対するアクセス
+    /// </summary>
     public interface IReelSequenceData : IEnumerable<KeyValuePair<RoleValue, Sequence>>
     {
         Sequence this[RoleValue index] { get; set; }
     }
+    /// <summary>
+    /// Reelに対する制御シーケンス
+    /// </summary>
     public interface IReelSequence : IReelSequenceData
     {
         /// <summary>
         /// ReelSequenceを再生する
         /// </summary>
-        /// <returns>再生完了通知</returns>
+        /// <returns>再生タスク</returns>
         UniTask PlayAsync();
-
+        /// <summary>
+        /// 末尾にReelSequenceを追加する
+        /// </summary>
+        /// <param name="sequence"></param>
+        /// <returns></returns>
         IReelSequence Append(IReelSequence sequence);
+        /// <summary>
+        /// 同時に実行するReelSequenceを登録する
+        /// </summary>
+        /// <param name="sequence"></param>
+        /// <returns></returns>
         IReelSequence Join(IReelSequence sequence);
+        /// <summary>
+        /// 末尾に待機Sequenceを追加する
+        /// </summary>
+        /// <param name="interval">待機時間(s)</param>
+        /// <returns></returns>
         IReelSequence AppendInterval(float interval);
 
+        /// <summary>
+        /// ReelSequenceの再生完了時に実行する処理を登録する
+        /// </summary>
+        /// <param name="callback"></param>
+        /// <returns></returns>
         IReelSequence OnComplete(TweenCallback callback);
+        /// <summary>
+        /// ReelSequenceの再生開始時に実行する処理を登録する
+        /// </summary>
+        /// <param name="callback"></param>
+        /// <returns></returns>
         IReelSequence OnPlay(TweenCallback callback);
 
+        /// <summary>
+        /// ReelSequenceの全体の継続時間を取得する
+        /// </summary>
+        /// <returns></returns>
         float Duration();
     }
 
-    public class ReelSequence : IReelSequence
+    internal class ReelSequence : IReelSequence
     {
         private IDictionary<RoleValue, Sequence> m_sequenceTable;
 
@@ -47,7 +81,7 @@ namespace MedalPusher.Slot
         /// RoleValueとSequenceの対応表からReelSequenceを取得する
         /// </summary>
         /// <param name="sequenceTable"></param>
-        public ReelSequence(IReadOnlyDictionary<RoleValue, Sequence> sequenceTable)
+        internal ReelSequence(IReadOnlyDictionary<RoleValue, Sequence> sequenceTable)
         {
             //すべてのRoleValueが揃ったDictionaryの場合はそのまま採用
             if (NullTemplate.SequenceEqual(sequenceTable)) m_sequenceTable = sequenceTable.ToDictionary();
@@ -153,18 +187,30 @@ namespace MedalPusher.Slot
 
     }
 
+    /// <summary>
+    /// ReelSequenceに対する各種ユーティリティ
+    /// </summary>
     public static class ReelSequenceExtensions
     {
+        /// <summary>
+        /// DictionaryからReelSequenceを生成する
+        /// </summary>
+        /// <param name="sequences"></param>
+        /// <returns></returns>
         public static IReelSequence ToReelSequence(this IReadOnlyDictionary<RoleValue, Sequence> sequences) =>
             new ReelSequence(sequences);
+        /// <summary>
+        /// DictionaryからReelSequenceを生成する
+        /// </summary>
+        /// <param name="sequences"></param>
+        /// <returns></returns>
         public static IReelSequence ToReelSequence(this IEnumerable<KeyValuePair<RoleValue, Sequence>> sequences) =>
             sequences.ToDictionary().ToReelSequence();
         /// <summary>
-        /// SequenceをReelSequenceに変換します
-        /// 指定したRole以外はnullが入ります
+        /// SequenceをReelSequenceに変換する
         /// </summary>
         /// <param name="sequence">ソース</param>
-        /// <param name="roleAs">どのRoleのSequenceか</param>
+        /// <param name="roleAs">ソースSequenceをどのRoleにアタッチするか</param>
         /// <returns></returns>
         public static IReelSequence AsReelSequence(this Sequence sequence, RoleValue roleAs)
         {

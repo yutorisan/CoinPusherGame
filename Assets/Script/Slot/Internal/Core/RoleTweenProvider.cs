@@ -6,7 +6,7 @@ using DG.Tweening.Core;
 using UnityEngine;
 using UnityUtility;
 
-namespace MedalPusher.Slot.Sequences.Core
+namespace MedalPusher.Slot.Internal.Core
 {
     /// <summary>
     /// Roleを制御する各種Tweenを提供する
@@ -17,40 +17,43 @@ namespace MedalPusher.Slot.Sequences.Core
         /// 正面からの表示範囲角度
         /// </summary>
         private static readonly Angle RoleDisplayAngle = Angle.FromDegree(90);
-        private IRoleOperation m_operation;
+        /// <summary>
+        /// 制御するRole GameObject本体
+        /// </summary>
+        private readonly IRoleOperation role;
         /// <summary>
         /// 初期状態の角度
         /// </summary>
-        private readonly Angle m_initialAngle;
+        private readonly Angle initialAngle;
         /// <summary>
         /// 正面とする角度
         /// </summary>
-        private readonly Angle m_frontAngle;
+        private readonly Angle frontAngle;
         /// <summary>
         /// 各Role間の角度の間隔
         /// </summary>
-        private readonly Angle m_roleIntervalAngle;
+        private readonly Angle roleIntervalAngle;
         /// <summary>
         /// 初期状態の座標
         /// </summary>
-        private readonly Vector3 m_initialPosition;
+        private readonly Vector3 initialPosition;
         /// <summary>
         /// リールの半径
         /// </summary>
-        private readonly float m_radius;
+        private readonly float reelRadius;
         /// <summary>
         /// 現在の角度
         /// </summary>
-        private Angle m_nowAngle;
+        private Angle nowAngle;
 
         /// <summary>
-        /// このDriverが操るRoleの値
+        /// このProviderが担当するRoleの値
         /// </summary>
-        public RoleValue RoleValue => m_operation.Value;
-        /// <summary>
-        /// Roleの識別子
-        /// </summary>
-        public IRole RoleID => m_operation;
+        public RoleValue RoleValue => role.Value;
+        ///// <summary>
+        ///// Roleの識別子
+        ///// </summary>
+        //public IRole RoleID => m_operation;
 
         /// <summary>
         /// 
@@ -60,14 +63,14 @@ namespace MedalPusher.Slot.Sequences.Core
         /// <param name="radius">Reelの半径</param>
         public RoleTweenProvider(IRoleOperation operation, Angle initialAngle, float radius, Angle frontAngle, Angle roleInterval)
         {
-            m_operation = operation;
-            m_initialPosition = operation.transform.position;
-            m_initialAngle = initialAngle;
-            m_radius = radius;
-            m_frontAngle = frontAngle;
-            m_roleIntervalAngle = roleInterval;
+            this.role = operation;
+            this.initialPosition = operation.transform.position;
+            this.initialAngle = initialAngle;
+            this.reelRadius = radius;
+            this.frontAngle = frontAngle;
+            this.roleIntervalAngle = roleInterval;
 
-            ApplyAngle(m_initialAngle);
+            ApplyAngle(this.initialAngle);
         }
 
         /// <summary>
@@ -81,7 +84,7 @@ namespace MedalPusher.Slot.Sequences.Core
             DOTween.To(AnglePlugin.Instance,
                         NowAngleGetter,
                         ApplyAngleSetter,
-                        m_nowAngle + Angle.Round * duration * rps,
+                        nowAngle + Angle.Round * duration * rps,
                         duration)
                     .SetEase(Ease.InQuad)
                     .OnComplete(PositiveNormalize);
@@ -96,7 +99,7 @@ namespace MedalPusher.Slot.Sequences.Core
             DOTween.To(AnglePlugin.Instance,
                         NowAngleGetter,
                         ApplyAngleSetter,
-                        m_nowAngle + Angle.Round * laps,
+                        nowAngle + Angle.Round * laps,
                         laps / rps)
                     .SetEase(Ease.Linear)
                     .OnComplete(PositiveNormalize);
@@ -147,7 +150,7 @@ namespace MedalPusher.Slot.Sequences.Core
         /// <param name="direction"></param>
         /// <returns></returns>
         public Tween RollMultiple(float multiple, float duration, AngleTweenDirection direction = AngleTweenDirection.Both) =>
-            Roll(m_roleIntervalAngle * multiple, duration, direction);
+            Roll(roleIntervalAngle * multiple, duration, direction);
             
         /// <summary>
         /// 揃ったときの演出シーケンスを取得する
@@ -162,13 +165,13 @@ namespace MedalPusher.Slot.Sequences.Core
                           .Append(WinningZoomDown());
 
             Tween WinningRotate() =>
-                m_operation.transform.DORotate(new Vector3(0, 720, 0), 0.5f).SetRelative();
+                role.transform.DORotate(new Vector3(0, 720, 0), 0.5f).SetRelative();
 
             Tween WinningZoomUp() =>
-                m_operation.transform.DOLocalMoveZ(-0.5f, 0.5f)
+                role.transform.DOLocalMoveZ(-0.5f, 0.5f)
                                      .SetRelative();
             Tween WinningZoomDown() =>
-                m_operation.transform.DOLocalMoveZ(0.5f, 0.5f)
+                role.transform.DOLocalMoveZ(0.5f, 0.5f)
                                      .SetRelative();
         }
 
@@ -179,7 +182,7 @@ namespace MedalPusher.Slot.Sequences.Core
         /// <returns></returns>
         public Tween Create(Func<Transform, Tween> tweenSelector)
         {
-            return tweenSelector(m_operation.transform);
+            return tweenSelector(role.transform);
         }
 
         /// <summary>
@@ -189,7 +192,7 @@ namespace MedalPusher.Slot.Sequences.Core
         /// <returns></returns>
         public Sequence Create(Func<Transform, Sequence> sequenceSelector)
         {
-            return sequenceSelector(m_operation.transform);
+            return sequenceSelector(role.transform);
         }
 
         /// <summary>
@@ -199,7 +202,7 @@ namespace MedalPusher.Slot.Sequences.Core
         /// <param name="duration"></param>
         /// <returns></returns>
         public Tween BackToReelPosition(Angle angle, float duration) =>
-            m_operation.transform.DOMove(OnReelPosition(angle), duration);
+            role.transform.DOMove(OnReelPosition(angle), duration);
 
 
         /// <summary>
@@ -209,16 +212,16 @@ namespace MedalPusher.Slot.Sequences.Core
         private void ApplyAngle(Angle targetAngle)
         {
             //Roleのpositionを回転させる
-            m_operation.transform.position = OnReelPosition(targetAngle);
+            role.transform.position = OnReelPosition(targetAngle);
             //透明度を更新する
-            m_operation.ChangeOpacity(getOpacity());
+            role.ChangeOpacity(getOpacity());
             //テーブルを更新
-            m_nowAngle = targetAngle;
+            nowAngle = targetAngle;
 
             float getOpacity()
             {
                 //正面の角度からの差分の絶対値を算出
-                var diffOfFront = (m_frontAngle - targetAngle.Normalize()).Absolute();
+                var diffOfFront = (frontAngle - targetAngle.Normalize()).Absolute();
 
                 //表示範囲より外側は不透明度0
                 if (diffOfFront > RoleDisplayAngle) return 0;
@@ -233,16 +236,16 @@ namespace MedalPusher.Slot.Sequences.Core
         /// <param name="angle"></param>
         /// <returns></returns>
         private Vector3 OnReelPosition(Angle angle) =>
-           m_radius * angle.Point.AddX(0) + m_initialPosition;
+           reelRadius * angle.Point.AddX(0) + initialPosition;
 
         /// <summary>
         /// 現在の角度を正の角度で正規化するDOTween用コールバック処理
         /// </summary>
-        private TweenCallback PositiveNormalize => () => m_nowAngle = m_nowAngle.PositiveNormalize();
+        private TweenCallback PositiveNormalize => () => nowAngle = nowAngle.PositiveNormalize();
         /// <summary>
         /// 現在のAngleをセットするDOTween用デフォルトゲッター
         /// </summary>
-        private DOGetter<Angle> NowAngleGetter => () => m_nowAngle;
+        private DOGetter<Angle> NowAngleGetter => () => nowAngle;
         /// <summary>
         /// 受け取ったAngleをそのままApplyするDOTween用デフォルトセッター
         /// </summary>

@@ -2,12 +2,20 @@
 
 namespace MedalPusher.Slot
 {
-    public struct SlotResult
+    /// <summary>
+    /// スロットの最終的な結果
+    /// </summary>
+    public readonly struct SlotResult
     {
-        public SlotResult(RoleSet result)
+        private readonly RoleSet roleSet;
+        public SlotResult(RoleSet finalRoleSet)
         {
-            this.RoleSet = result;
+            this.roleSet = finalRoleSet;
         }
-        public RoleSet RoleSet { get; }
+
+        /// <summary>
+        /// 当たっているかどうか
+        /// </summary>
+        public bool IsWin => roleSet.IsBingo;
     }
 }

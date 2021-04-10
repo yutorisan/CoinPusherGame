@@ -6,27 +6,28 @@ using UnityEngine;
 using UniRx;
 using DG.Tweening;
 
-namespace MedalPusher.Production.Light
+namespace MedalPusher.Slot.Internal.Productions
 {
     /// <summary>
     /// スロット用ライトの色を調整する
     /// </summary>
     public class SlotLightColorChanger
     {
-        private readonly IReadOnlyDictionary<SlotProductionStatus, Action> m_actionTable;
-        private readonly IReadOnlyDictionary<SlotProductionStatus, Color> m_colorTable;
-        private readonly SequenceSwitcher<SlotProductionStatus> m_sequenceSwitcher = new SequenceSwitcher<SlotProductionStatus>();
+        private readonly IReadOnlyDictionary<SlotProductionStatus, Action> actionTable;
+        private readonly SequenceSwitcher<SlotProductionStatus> sequenceSwitcher = new SequenceSwitcher<SlotProductionStatus>();
 
         public SlotLightColorChanger(UnityEngine.Light light, IObservable<SlotProductionStatus> observableStatus)
         {
-            m_sequenceSwitcher.Add(SlotProductionStatus.Winning,
-                                   DOTween.Sequence()
-                                          .Append(light.DOColor(new Color(0, 0, 1), .5f))
-                                          .Append(light.DOColor(new Color(0, 1, 0), .5f))
-                                          .Append(light.DOColor(new Color(1, 0, 0), .5f))
-                                          .SetLoops(-1));
+            //当たったときに再生するSequenceを登録
+            sequenceSwitcher.Add(SlotProductionStatus.Winning,
+                                 DOTween.Sequence()
+                                        .Append(light.DOColor(new Color(0, 0, 1), .5f))
+                                        .Append(light.DOColor(new Color(0, 1, 0), .5f))
+                                        .Append(light.DOColor(new Color(1, 0, 0), .5f))
+                                        .SetLoops(-1));
 
-            m_actionTable = new Dictionary<SlotProductionStatus, Action>()
+            //ステータスによって実行する処理（ライト色変更）
+            actionTable = new Dictionary<SlotProductionStatus, Action>()
             {
                 [SlotProductionStatus.Idol] = () => { },
                 [SlotProductionStatus.Rolling] = () => light.color = Color.white,
@@ -34,8 +35,9 @@ namespace MedalPusher.Production.Light
                 [SlotProductionStatus.Winning] = () => { },
             };
 
-            observableStatus.Subscribe(status => m_sequenceSwitcher.SwitchTo(status));
-            observableStatus.Select(status => m_actionTable[status])
+            //ステータス変更に応じてライトを制御
+            observableStatus.Subscribe(status => sequenceSwitcher.SwitchTo(status));
+            observableStatus.Select(status => actionTable[status])
                             .Subscribe(action => action());
         }
     }

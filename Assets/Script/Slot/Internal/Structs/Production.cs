@@ -60,7 +60,6 @@ namespace MedalPusher.Slot
         public NormalRollProductionProperty NormalProperty { get; }
         public ReachProductionProperty ReachProperty { get; }
 
-        //public Scenario Scenario { get; }
 
    }
 

@@ -1,7 +1,6 @@
-using MedalPusher.Slot.Prize;
-using MedalPusher.Slot.Stock;
-using UnityEngine;
 using Zenject;
+using MedalPusher.Slot.Internal.Stock;
+using MedalPusher.Slot.Internal;
 
 namespace MedalPusher.Slot
 {
@@ -9,15 +8,26 @@ namespace MedalPusher.Slot
     {
         public override void InstallBindings()
         {
+            StockCounter stockCounter = new StockCounter();
+            //StockCounter
             Container.Bind<IStockCounter>()
                      .To<StockCounter>()
-                     .FromComponentInHierarchy()
+                     .FromInstance(stockCounter)
                      .AsCached();
             Container.Bind<IReadOnlyObservableStockCount>()
                      .To<StockCounter>()
-                     .FromComponentsInHierarchy()
+                     .FromInstance(stockCounter)
                      .AsCached();
-            Container.Bind<ISlotScenarioDeterminer>()
+            Container.Bind<IStockAdder>()
+                     .To<StockCounter>()
+                     .FromInstance(stockCounter)
+                     .AsCached();
+
+            Container.Bind<ISlotResultSubmitter>()
+                     .To<SlotStartScheduler>()
+                     .FromComponentInHierarchy()
+                     .AsCached();
+            Container.Bind<ISlotStarter>()
                      .To<SlotScenarioDeterminer>()
                      .FromComponentInHierarchy()
                      .AsCached();
@@ -33,10 +43,6 @@ namespace MedalPusher.Slot
                      .To<SlotDriver>()
                      .FromComponentInHierarchy()
                      .AsCached();
-
-            Container.Bind<ISlotPrizeOrderer>()
-                     .To<SlotPrizeOrderer>()
-                     .AsTransient();
         }
     }
 }

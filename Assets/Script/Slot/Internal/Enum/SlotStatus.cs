@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace MedalPusher.Slot
 {
+    /// <summary>
+    /// スロットの演出状況
+    /// </summary>
     public enum SlotProductionStatus
     {
         /// <summary>

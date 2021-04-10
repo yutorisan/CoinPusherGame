@@ -3,25 +3,34 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityUtility;
 
-namespace MedalPusher.Slot
+namespace MedalPusher.Slot.Internal.Core
 {
     /// <summary>
-    /// Roleのマーカーインターフェイス
+    /// RoleのGameObjectを操作可能
     /// </summary>
-    public interface IRole { }
-    public interface IRoleOperation : IRole
+    public interface IRoleOperation
     {
+        /// <summary>
+        /// Transformオブジェクトを取得する
+        /// </summary>
         Transform transform { get; }
+        /// <summary>
+        /// このRoleの値を取得する
+        /// </summary>
         RoleValue Value { get; }
+        /// <summary>
+        /// RoleのMaterialの透明度を設定する
+        /// </summary>
+        /// <param name="opacity"></param>
         void ChangeOpacity(float opacity);
     }
-    public class Role : MonoBehaviour, IRoleOperation, IRole
+    public class Role : MonoBehaviour, IRoleOperation
     {
         [SerializeField]
         private RoleValue m_value;
 
         private Material m_material;
-        // Start is called before the first frame update
+
         void Awake()
         {
             m_material = GetComponentInChildren<Renderer>().material;

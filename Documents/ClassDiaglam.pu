@@ -187,46 +187,56 @@ namespace Input #DDDDDD{
 
 
 namespace Slot {
+    class SlotInstaller <<Installer>>
+
     namespace Internal #DDDDDD{
         namespace Stock{
             interface IReadOnlyObservableStockCount{
                 +Stock { get; } : IReadOnlyReactiveProperty<int>
             }
-            interface IStockAdder
-            interface IStockCounter
+            interface IStockAdder{
+                +Add() : void
+            }
             class StockCounter
-            IReadOnlyObservableStockCount <|.. StockCounter
-            IStockAdder <. StockCounter
-            StockCounter ..|> IStockCounter
-
+            StockCounter ..|> IReadOnlyObservableStockCount
+            IStockAdder <|.. StockCounter
         }
-
-        class SlotStarter
-        Slot.Internal.Stock.IStockCounter <-- SlotStarter
-        SlotStarter *--  ISlotScenarioDeterminer
-
-        interface ISlotScenarioDeterminer{
-            +DetermineRole() : IObservable<Unit>
+        interface IStockCounter{
+            +Supplied { get; } : IObservable<Unit>
+            +IsSpendable { get; } : bool
+            +Spend() : void
         }
-        class SlotScenarioDeterminer
-        ISlotScenarioDeterminer <|.. SlotScenarioDeterminer
-        SlotScenarioDeterminer *-- ISlotProductionDeterminer
-        interface ISlotResultSubmitter
-        ISlotResultSubmitter <|.. SlotScenarioDeterminer
+        Slot.Internal.Stock.StockCounter .|> IStockCounter
+        interface ISlotResultSubmitter{
+            ObservableSlotResult { get; } : IObservable<SlotResult>
+        }
+        class SlotStartScheduler <<MonoBehaviour>>
+        IStockCounter <- SlotStartScheduler
+        SlotStartScheduler -->  ISlotStarter
+        ISlotResultSubmitter <|.. SlotStartScheduler
+
+        interface ISlotStarter{
+            +Start() : UniTask<SlotResult>
+        }
+        class SlotScenarioDeterminer <<MonoBehaviour>>
+        ISlotStarter <|.. SlotScenarioDeterminer
+        SlotScenarioDeterminer --> ISlotProductionDeterminer
 
         interface ISlotProductionDeterminer{
-            +DetermineProduction(RoleSet) : IObservable<Unit>
+            +DetermineProduction(Scenario) : UniTask
         }
-        class SlotProductionDeterminer
+        class SlotProductionDeterminer <<MonoBehaviour>>
         ISlotProductionDeterminer <|.. SlotProductionDeterminer
-        SlotProductionDeterminer *-- ISlotDriver
-        Slot.Internal.Stock.IReadOnlyObservableStockCount <-- SlotProductionDeterminer
+        SlotProductionDeterminer --> ISlotDriver
+        Slot.Internal.Stock.IReadOnlyObservableStockCount <-- SlotProductionDeterminer : 残ストックによって演出が変化
 
         interface ISlotDriver{
             +ControlBy(Production) : IObservable<Unit>
         }
-        interface IReadOnlyObservableSlotProdctionStatus
-        class SlotDriver
+        interface IReadOnlyObservableSlotProdctionStatus{
+            +ProductionStatus { get; } : IReadOnlyReactiveProperty<SlotProductionStatus>
+        }
+        class SlotDriver <<MonoBehaviour>>
         ISlotDriver <|.. SlotDriver
         IReadOnlyObservableSlotProdctionStatus <|. SlotDriver
 
@@ -249,38 +259,40 @@ namespace Slot {
             interface IRoleOperation{
                 +transform { get; } : Transform
                 +Value { get; } : RoleValue
+                +ChangeOpacity(float) : void
             }
-            class Role
+            class Role<<MonoBehaviour>>
             IRoleOperation <|.. Role
         }
 
         namespace Production{
-            namespace Light{
-                class SlotLightController
-                SlotLightController --> Slot.Internal.IReadOnlyObservableSlotProdctionStatus
+            
+            class LightEffectController
+            LightEffectController --> Slot.Internal.IReadOnlyObservableSlotProdctionStatus
 
-                class SlotLightColorChanger
-                class SlotLightIntensityChanger
-                class SlotLightLookAtChanger
+            class SlotLightColorChanger
+            class SlotLightIntensityChanger
+            class SlotLightLookAtChanger
+            class FireworksParticleController
 
-                SlotLightColorChanger <-- SlotLightController
-                SlotLightIntensityChanger <-- SlotLightController
-                SlotLightLookAtChanger <-- SlotLightController
-            }
+            SlotLightColorChanger <-- LightEffectController
+            SlotLightIntensityChanger <-- LightEffectController
+            SlotLightLookAtChanger <-- LightEffectController
+            FireworksParticleController <- LightEffectController
         }
     }
 
     namespace Interface{
         class StockCounterView<<View>>
-        StockCounterView --> Slot.Internal.Stock.IReadOnlyObservableStockCount
+        StockCounterView -> Slot.Internal.Stock.IReadOnlyObservableStockCount
 
-        class SlotResultToPrizeConverter
-        Slot.Internal.ISlotResultSubmitter <-- SlotResultToPrizeConverter
-        IMedalPayoutOperation ))-- SlotResultToPrizeConverter
+        class SlotResultToPrizeConverter <<MonoBehaviour>>
+        Slot.Internal.ISlotResultSubmitter <- SlotResultToPrizeConverter
+        SlotResultToPrizeConverter --(( IMedalPayoutOperation
 
-        class SlotStockSensor
+        class SlotStockSensor <<MonoBehaviour>>
         Slot.Internal.Stock.IStockAdder <- SlotStockSensor
-        SlotStockSensor ---(( IObservableMedalChecker
+        SlotStockSensor --(( IObservableMedalChecker
     }
 }
 

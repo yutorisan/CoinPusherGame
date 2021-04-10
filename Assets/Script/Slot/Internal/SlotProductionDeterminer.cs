@@ -3,35 +3,26 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Cysharp.Threading.Tasks;
-using MedalPusher.Slot.Stock;
+using MedalPusher.Slot.Internal.Stock;
+using MedalPusher.Slot;
 using Sirenix.OdinInspector;
 using UniRx;
 using UnityEngine;
 using Zenject;
 
-namespace MedalPusher.Slot
+
+namespace MedalPusher.Slot.Internal
 {
-    /// <summary>
-    /// スロットの演出を決定できる
-    /// </summary>
-    public interface ISlotProductionDeterminer
-    {
-        /// <summary>
-        /// スロットの演出の決定を依頼する
-        /// </summary>
-        /// <param name="scenario">スロットのシナリオ</param>
-        /// <returns>スロットの演出を決定して回したスロットの回転が完了したことを知らせる通知</returns>
-        UniTask DetermineProduction(Scenario scenario);
-    }
+
     /// <summary>
     /// スロットの演出を決定する
     /// </summary>
-    public class SlotProductionDeterminer : SerializedMonoBehaviour, ISlotProductionDeterminer
+    internal class SlotProductionDeterminer : SerializedMonoBehaviour, ISlotProductionDeterminer
     {
         [Inject]
-        private ISlotDriver m_slotDriver;
+        private ISlotDriver slotDriver;
         [Inject]
-        private IReadOnlyObservableStockCount m_stockCount;
+        private IReadOnlyObservableStockCount stockCount;
 
         [SerializeField, LabelText("通常モード"), TitleGroup("通常回転シーケンス")]
         private NormalRollProductionProperty m_normalProp;
@@ -44,17 +35,32 @@ namespace MedalPusher.Slot
 
         public UniTask DetermineProduction(Scenario scenario)
         {
-            Production production;
-            if (m_stockCount.StockCount.Value < m_fastModeThreshold)
+            Slot.Production production;
+            //ストックの残数を確認して、閾値より多かったら高速回転モードにする
+            if (stockCount.StockCount.Value < m_fastModeThreshold)
             {
-                production = new Production(scenario, m_normalProp, m_reachProp);
+                production = new Slot.Production(scenario, m_normalProp, m_reachProp);
             }
             else
             {
-                production = new Production(scenario, m_normalPropFast, m_reachProp);
+                production = new Slot.Production(scenario, m_normalPropFast, m_reachProp);
             }
 
-            return m_slotDriver.ControlBy(production);
+            //決定した演出に従ってスロットを制御する
+            return slotDriver.DriveBy(production);
         }
+    }
+
+    /// <summary>
+    /// スロットの動きを制御する
+    /// </summary>
+    internal interface ISlotDriver
+    {
+        /// <summary>
+        /// 指定した演出に従ってスロットを制御する
+        /// </summary>
+        /// <param name="production"></param>
+        /// <returns>スロットの制御タスク</returns>
+        UniTask DriveBy(Slot.Production production);
     }
 }
