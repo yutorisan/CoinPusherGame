@@ -8167,24 +8167,26 @@ MonoBehaviour:
   serializationData:
     SerializedFormat: 2
     SerializedBytes: 
-    ReferencedUnityObjects: []
+    ReferencedUnityObjects:
+    - {fileID: 1121059251}
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes:
     - Name: winMedalChecker
-      Entry: 6
-      Data: 
+      Entry: 10
+      Data: 0
   medalImage: {fileID: 1054331950930101446, guid: 6efc36171a8f14d06aba7ef693efbc5d,
     type: 3}
-  audioSource: {fileID: 0}
-  effectMaxHeight: 0
+  audioSource: {fileID: 7148623803032391468, guid: 6efc36171a8f14d06aba7ef693efbc5d,
+    type: 3}
+  effectMaxHeight: 270
   effectHeightCoefficient: {x: 0.8, y: 1.2}
-  riseDuration: 0
-  rotateDuration: 0
-  disappearanceDuration: 0
-  effectDestination: {fileID: 0}
+  riseDuration: 0.7
+  rotateDuration: 0.5
+  disappearanceDuration: 0.4
+  effectDestination: {fileID: 1902997978}
 --- !u!1001 &235690372
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -98087,16 +98089,17 @@ MonoBehaviour:
   serializationData:
     SerializedFormat: 2
     SerializedBytes: 
-    ReferencedUnityObjects: []
+    ReferencedUnityObjects:
+    - {fileID: 224763679}
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes:
     - Name: medalChecker
-      Entry: 6
-      Data: 
-  duration: 0
+      Entry: 10
+      Data: 0
+  duration: 0.5
 --- !u!1001 &1906782440
 PrefabInstance:
   m_ObjectHideFlags: 0
