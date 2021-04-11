@@ -6,13 +6,20 @@ using UniRx.Triggers;
 
 namespace MedalPusher.Item.Checker
 {
+    /// <summary>
+    /// コライダーによってメダルの通過を検知して、検出通知を外部に公開する
+    /// </summary>
     public class MedalChecker : MonoBehaviour, IObservableInColliderCountableMedalChecker, IObservableMedalChecker
     {
+        /// <summary>
+        /// メダルを検出したときに同時にDestroyするか
+        /// </summary>
         [SerializeField]
-        private bool m_isDestroyOnChecked;
-
-        private IObservable<IMedal> _triggertrigger;
-        private ReactiveProperty<int> _stayInCount = new ReactiveProperty<int>();
+        private bool isDestroyOnChecked;
+        /// <summary>
+        /// 
+        /// </summary>
+        private readonly ReactiveProperty<int> stayInCount = new ReactiveProperty<int>();
 
         // Use this for initialization
         void Awake()
@@ -23,7 +30,7 @@ namespace MedalPusher.Item.Checker
                           .Select(col => col.GetComponent<IMedal>())
                           .Share();
             //IsDestroyOnCheckedにチェックがはいっていたら、Checkedでプールに戻す
-            if (m_isDestroyOnChecked)
+            if (isDestroyOnChecked)
                 Checked.Subscribe(medal => medal.ReturnToPool());
 
             //EnterとExitの数を数えてCollider内にいるメダル数をカウント
@@ -33,11 +40,11 @@ namespace MedalPusher.Item.Checker
             var exit = this.OnTriggerExitAsObservable()
                            .Where(col => col.CompareTag("Medal"))
                            .Select(col => col.GetComponent<IMedal>());
-            enter.Subscribe(_ => ++_stayInCount.Value);
-            exit.Subscribe(_ => --_stayInCount.Value);
+            enter.Subscribe(_ => ++stayInCount.Value);
+            exit.Subscribe(_ => --stayInCount.Value);
         }
 
         public IObservable<IMedal> Checked { get; private set; }
-        public IObservable<int> InColliderCount => _stayInCount.AsObservable();
+        public IObservable<int> InColliderCount => stayInCount.AsObservable();
     }
 }

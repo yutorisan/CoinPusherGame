@@ -4,19 +4,20 @@ using Zenject;
 using TMPro;
 using UniRx;
 
-public class MedalInventoryView : MonoBehaviour
+namespace MedalPusher.Item.Inventory
 {
-    [Inject]
-    private IObservableMedalInventory m_medalInventory;
-    [SerializeField]
-    private TextMeshProUGUI m_target;
-
-    // Use this for initialization
-    void Start()
+    public class MedalInventoryView : MonoBehaviour
     {
-        m_medalInventory.ObservableMedalInventoryCount
-                        .Subscribe(medals => m_target.text = medals.ToString());
+        [Inject]
+        private IObservableMedalInventory m_medalInventory;
+        [SerializeField]
+        private TextMeshProUGUI m_target;
+
+        // Use this for initialization
+        void Start()
+        {
+            m_medalInventory.ObservableMedalInventoryCount
+                            .Subscribe(medals => m_target.text = medals.ToString());
+        }
     }
 }
-
-

@@ -1,22 +1,20 @@
 using MedalPusher.Item;
-using MedalPusher.Item.Checker;
-using MedalPusher.Item.Payout;
 using MedalPusher.Item.Pool;
 using UnityEngine;
 using Zenject;
 
-namespace MedalPusher
+namespace MedalPusher.Debug
 {
-    public class SceneInstaller : MonoInstaller
+    public class DebugSettingFacadeInstaller : MonoInstaller
     {
         public override void InstallBindings()
         {
-            Container.Bind<IMedalPayoutOperation>()
-                     .To<MedalPayouterStorage>()
+            Container.Bind<IInitialInstantiateMedalCountSetterFacade>()
+                     .To<MedalPool>()
                      .FromComponentInHierarchy()
                      .AsCached();
-            Container.Bind<IObservableMedalPoolInfo>()
-                     .To<MedalPool>()
+            Container.Bind<IInitialFillMedalCountSetterFacade>()
+                     .To<MedalFieldAutoFiller>()
                      .FromComponentInHierarchy()
                      .AsCached();
         }

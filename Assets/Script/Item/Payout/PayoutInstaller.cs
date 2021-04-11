@@ -7,7 +7,7 @@ public class PayoutInstaller : MonoInstaller
 {
     public override void InstallBindings()
     {
-        Container.Bind<IMedalPool>()
+        Container.Bind<IMedalPoolPickUper>()
                  .To<MedalPool>()
                  .FromComponentInHierarchy()
                  .AsCached();

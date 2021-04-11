@@ -3,37 +3,41 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityUtility;
 
-public class PusherMover : MonoBehaviour
+namespace MedalPusher
 {
     /// <summary>
-    /// 移動周期
+    /// プッシャーを動かす
     /// </summary>
-    [SerializeField]
-    private float m_cycleSecond = 6f;
-    /// <summary>
-    /// 移動する長さ
-    /// </summary>
-    [SerializeField]
-    private float m_moveLength = 0.05f;
-
-    /// <summary>
-    /// 初期位置
-    /// </summary>
-    private Vector3 m_initPos;
-    private Rigidbody m_rigidbody;
-
-    // Start is called before the first frame update
-    void Start()
+    public class PusherMover : MonoBehaviour
     {
-        m_initPos = transform.position;
-        m_rigidbody = GetComponent<Rigidbody>();
-    }
+        /// <summary>
+        /// 移動周期
+        /// </summary>
+        [SerializeField]
+        private float m_cycleSecond = 6f;
+        /// <summary>
+        /// 移動する長さ
+        /// </summary>
+        [SerializeField]
+        private float m_moveLength = 0.05f;
 
-    // Update is called once per frame
-    void Update()
-    {
-        Angle angle = Angle.FromDegree(360 * (Time.time % m_cycleSecond) / m_cycleSecond);
-        var diff = m_moveLength * Mathf.Sin(angle.TotalRadian);
-        m_rigidbody.MovePosition(m_initPos.PlusZ(diff));
+        /// <summary>
+        /// 初期位置
+        /// </summary>
+        private Vector3 m_initPos;
+        private Rigidbody m_rigidbody;
+
+        void Start()
+        {
+            m_initPos = transform.position;
+            m_rigidbody = GetComponent<Rigidbody>();
+        }
+
+        void Update()
+        {
+            Angle angle = Angle.FromDegree(360 * (Time.time % m_cycleSecond) / m_cycleSecond);
+            var diff = m_moveLength * Mathf.Sin(angle.TotalRadian);
+            m_rigidbody.MovePosition(m_initPos.PlusZ(diff));
+        }
     }
 }

@@ -1,13 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using MedalPusher.GameSystem.Facade;
+using MedalPusher.Debug;
 using MedalPusher.Item.Payout;
 using UnityEngine;
 using Zenject;
 
 namespace MedalPusher.Item
 {
-    public class MedalFieldAutoFiller : FacadeTargetMonoBehaviour, IInitialFillMedalCountSetterFacade
+    public class MedalFieldAutoFiller : DebugSettingFacadeTargetMonoBehaviour, IInitialFillMedalCountSetterFacade
     {
         [Inject]
         private IMedalPayoutOperation m_medalPayouter;

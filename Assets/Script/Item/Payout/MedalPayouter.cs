@@ -26,7 +26,7 @@ namespace MedalPusher.Item.Payout
         /// </summary>
         private ReactiveProperty<int> m_payoutMedalStocks = new ReactiveProperty<int>(0);
         [Inject]
-        private IMedalPool m_medalPool;
+        private IMedalPoolPickUper m_medalPool;
         /// <summary>
         /// 払出しステータス
         /// </summary>

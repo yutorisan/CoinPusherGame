@@ -15,11 +15,5 @@ namespace MedalPusher.Item.Checker
         {
 
         }
-
-        // Update is called once per frame
-        void Update()
-        {
-
-        }
     }
 }

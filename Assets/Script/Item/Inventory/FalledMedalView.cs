@@ -8,6 +8,9 @@ using UniRx;
 
 namespace MedalPusher.Case
 {
+    /// <summary>
+    /// フィールドから落下したメダルをカウントして表示する
+    /// </summary>
     public class FalledMedalView : SerializedMonoBehaviour
     {
         [SerializeField]
@@ -19,7 +22,6 @@ namespace MedalPusher.Case
         [SerializeField]
         private TextMeshProUGUI m_loseMedalView;
 
-        // Start is called before the first frame update
         void Start()
         {
             m_winMedalChecker.Checked.Count().Subscribe(n => m_winMedalView.text = n.ToString());

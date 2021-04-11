@@ -10,7 +10,7 @@ public static partial class ObservableEx
     /// <typeparam name="T"></typeparam>
     /// <param name="source"></param>
     /// <returns></returns>
-    public static IObservable<int> Count<T>(this IObservable<T> source)
+    public static IObservable<long> Count<T>(this IObservable<T> source)
     {
         return new CountObservable<T>(source);
     }
@@ -21,12 +21,12 @@ public static partial class ObservableEx
     /// <param name="source"></param>
     /// <param name="predicate"></param>
     /// <returns></returns>
-    public static IObservable<int> Count<T>(this IObservable<T> source, Predicate<T> predicate)
+    public static IObservable<long> Count<T>(this IObservable<T> source, Predicate<T> predicate)
     {
         return new CountObservable<T>(source, predicate);
     }
 
-    private class CountObservable<T> : OperatorObservableBase<int>
+    private class CountObservable<T> : OperatorObservableBase<long>
     {
         private readonly IObservable<T> source;
         private readonly Predicate<T> predicate;
@@ -42,17 +42,17 @@ public static partial class ObservableEx
             this.predicate = predicate;
         }
 
-        protected override IDisposable SubscribeCore(IObserver<int> observer, IDisposable cancel)
+        protected override IDisposable SubscribeCore(IObserver<long> observer, IDisposable cancel)
         {
             return source.Subscribe(new Count(this, observer, cancel));
         }
 
-        private class Count : OperatorObserverBase<T, int>
+        private class Count : OperatorObserverBase<T, long>
         {
             private readonly CountObservable<T> parent;
-            private int count;
+            private long count;
 
-            public Count(CountObservable<T> parent, IObserver<int> observer, IDisposable cancel)
+            public Count(CountObservable<T> parent, IObserver<long> observer, IDisposable cancel)
                 : base(observer, cancel)
             {
                 this.parent = parent;

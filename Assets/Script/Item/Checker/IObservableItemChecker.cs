@@ -26,6 +26,9 @@ namespace MedalPusher.Item.Checker
     /// メダルの検出通知を受け取る
     /// </summary>
     public interface IObservableMedalChecker : IObservableItemChecker<IMedal> { }
+    /// <summary>
+    /// アイテムの検出通知を受け取る
+    /// </summary>
     public interface IObservableInColliderCountableMedalChecker : IObservableInColliderCountableItemChecker<IMedal> { }
 
 }

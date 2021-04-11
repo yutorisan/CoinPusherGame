@@ -29,6 +29,9 @@ namespace MedalPusher.Item.Payout
         IObservable<int> PayoutStock { get; }
     }
 
+    /// <summary>
+    /// 各種MedalPayouterをまとめて保持して
+    /// </summary>
     public class MedalPayouterStorage : MonoBehaviour, IMedalPayoutOperation, IObservableMedalPayoutStock
     {
         [SerializeField]
