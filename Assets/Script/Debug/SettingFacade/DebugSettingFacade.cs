@@ -29,9 +29,9 @@ namespace MedalPusher.Debug
         private int fillMedals;
 
         [Inject]
-        private IInitialInstantiateMedalCountSetterFacade m_instantiateCntSetter;
+        private IInitialInstantiateMedalCountSetterFacade instantiateCntSetter;
         [Inject]
-        private IInitialFillMedalCountSetterFacade m_initialFillCntSetter;
+        private IInitialFillMedalCountSetterFacade initialFillCntSetter;
 
 
         // Start is called before the first frame update
@@ -40,17 +40,17 @@ namespace MedalPusher.Debug
             //Facadeが無効の場合は何もせずに準備完了状態にする
             if (!isEnabled)
             {
-                m_initialFillCntSetter.Already();
-                m_instantiateCntSetter.Already();
+                initialFillCntSetter.Already();
+                instantiateCntSetter.Already();
                 return;
             }
 
             //Facadeが有効の場合は、Inspectorにより設定された各種設定を各オブジェクトに発行する
             //各オブジェクトへの発行が完了したら準備完了通知を送る
-            m_instantiateCntSetter.SetInitialInstantiateMedalCount(instantiateMedals);
-            m_instantiateCntSetter.Already();
-            m_initialFillCntSetter.SetInitialFillMedalCount(fillMedals);
-            m_initialFillCntSetter.Already();
+            instantiateCntSetter.SetInitialInstantiateMedalCount(instantiateMedals);
+            instantiateCntSetter.Already();
+            initialFillCntSetter.SetInitialFillMedalCount(fillMedals);
+            initialFillCntSetter.Already();
         }
     }
 

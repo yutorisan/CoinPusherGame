@@ -12,7 +12,7 @@ public class PayoutInstaller : MonoInstaller
                  .FromComponentInHierarchy()
                  .AsCached();
         Container.Bind<IObservableMedalPayoutStock>()
-                 .To<MedalPayouterStorage>()
+                 .To<MedalPayouterFacade>()
                  .FromComponentInHierarchy()
                  .AsCached();
     }

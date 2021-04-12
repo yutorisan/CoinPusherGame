@@ -17,6 +17,9 @@ namespace MedalPusher.Item
     }
     public interface IMedal : IFieldObject, IReadOnlyMedal, IReturnOnlyPoolObject
     {
+        /// <summary>
+        /// Positionを取得する
+        /// </summary>
         Vector3 position { get; }
     }
     public class Medal : PoolObject, IMedal
@@ -29,6 +32,9 @@ namespace MedalPusher.Item
         public Vector3 position => transform.position;
     }
 
+    /// <summary>
+    /// メダルの種別（メダルの価値）
+    /// </summary>
     public enum MedalValue
     {
         Value1 = 1,

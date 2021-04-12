@@ -2,87 +2,90 @@
 using UniRx;
 using UniRx.Operators;
 
-public static partial class ObservableEx
+namespace MedalPusher.Utils
 {
-    /// <summary>
-    /// 流れてきた値の個数をカウントして次に流します
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="source"></param>
-    /// <returns></returns>
-    public static IObservable<long> Count<T>(this IObservable<T> source)
+    public static partial class ObservableEx
     {
-        return new CountObservable<T>(source);
-    }
-    /// <summary>
-    /// 流れてきた値のうち条件に合致するものの個数をカウントして次に流します
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="source"></param>
-    /// <param name="predicate"></param>
-    /// <returns></returns>
-    public static IObservable<long> Count<T>(this IObservable<T> source, Predicate<T> predicate)
-    {
-        return new CountObservable<T>(source, predicate);
-    }
-
-    private class CountObservable<T> : OperatorObservableBase<long>
-    {
-        private readonly IObservable<T> source;
-        private readonly Predicate<T> predicate;
-
-        public CountObservable(IObservable<T> source) : base(source.IsRequiredSubscribeOnCurrentThread())
+        /// <summary>
+        /// 流れてきた値の個数をカウントして次に流します
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static IObservable<long> Count<T>(this IObservable<T> source)
         {
-            this.source = source;
-            this.predicate = _ => true;
+            return new CountObservable<T>(source);
         }
-        public CountObservable(IObservable<T> source, Predicate<T> predicate) : base(source.IsRequiredSubscribeOnCurrentThread())
+        /// <summary>
+        /// 流れてきた値のうち条件に合致するものの個数をカウントして次に流します
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        public static IObservable<long> Count<T>(this IObservable<T> source, Predicate<T> predicate)
         {
-            this.source = source;
-            this.predicate = predicate;
+            return new CountObservable<T>(source, predicate);
         }
 
-        protected override IDisposable SubscribeCore(IObserver<long> observer, IDisposable cancel)
+        private class CountObservable<T> : OperatorObservableBase<long>
         {
-            return source.Subscribe(new Count(this, observer, cancel));
-        }
+            private readonly IObservable<T> source;
+            private readonly Predicate<T> predicate;
 
-        private class Count : OperatorObserverBase<T, long>
-        {
-            private readonly CountObservable<T> parent;
-            private long count;
-
-            public Count(CountObservable<T> parent, IObserver<long> observer, IDisposable cancel)
-                : base(observer, cancel)
+            public CountObservable(IObservable<T> source) : base(source.IsRequiredSubscribeOnCurrentThread())
             {
-                this.parent = parent;
+                this.source = source;
+                this.predicate = _ => true;
+            }
+            public CountObservable(IObservable<T> source, Predicate<T> predicate) : base(source.IsRequiredSubscribeOnCurrentThread())
+            {
+                this.source = source;
+                this.predicate = predicate;
             }
 
-            public override void OnCompleted()
+            protected override IDisposable SubscribeCore(IObserver<long> observer, IDisposable cancel)
             {
-                try { observer.OnCompleted(); } finally { Dispose(); }
+                return source.Subscribe(new Count(this, observer, cancel));
             }
 
-            public override void OnError(Exception error)
+            private class Count : OperatorObserverBase<T, long>
             {
-                try { observer.OnError(error); } finally { Dispose(); }
-            }
+                private readonly CountObservable<T> parent;
+                private long count;
 
-            public override void OnNext(T value)
-            {
-                try
+                public Count(CountObservable<T> parent, IObserver<long> observer, IDisposable cancel)
+                    : base(observer, cancel)
                 {
-                    checked
+                    this.parent = parent;
+                }
+
+                public override void OnCompleted()
+                {
+                    try { observer.OnCompleted(); } finally { Dispose(); }
+                }
+
+                public override void OnError(Exception error)
+                {
+                    try { observer.OnError(error); } finally { Dispose(); }
+                }
+
+                public override void OnNext(T value)
+                {
+                    try
                     {
-                        if (parent.predicate(value)) ++count;
+                        checked
+                        {
+                            if (parent.predicate(value)) ++count;
+                        }
                     }
+                    catch (Exception ex)
+                    {
+                        try { observer.OnError(ex); } finally { Dispose(); }
+                        return;
+                    }
+                    observer.OnNext(count);
                 }
-                catch (Exception ex)
-                {
-                    try { observer.OnError(ex); } finally { Dispose(); }
-                    return;
-                }
-                observer.OnNext(count);
             }
         }
     }

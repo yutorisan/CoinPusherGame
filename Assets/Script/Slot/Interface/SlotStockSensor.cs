@@ -17,7 +17,7 @@ namespace MedalPusher.Slot.Interface
         /// <summary>
         /// スロットのストックを追加するメダルチェッカー
         /// </summary>
-        [SerializeField]
+        [SerializeField, Required]
         private IObservableMedalChecker stockMedalChecker;
         /// <summary>
         /// ストックを追加する窓口

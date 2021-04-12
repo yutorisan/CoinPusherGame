@@ -24,17 +24,17 @@ namespace MedalPusher.Effects
         /// <summary>
         /// エフェクト本体の画像
         /// </summary>
-        [SerializeField]
+        [SerializeField, Required]
         private Image medalImage;
         /// <summary>
         /// エフェクト再生時のSE
         /// </summary>
-        [SerializeField]
+        [SerializeField, Required]
         private AudioSource audioSource;
         /// <summary>
         /// エフェクト再生トリガーとなるMedalChecker
         /// </summary>
-        [SerializeField]
+        [SerializeField, Required]
         private IObservableMedalChecker winMedalChecker;
         /// <summary>
         /// メダルエフェクトが上がる高さ
@@ -64,7 +64,7 @@ namespace MedalPusher.Effects
         /// <summary>
         /// エフェクトの消失場所のTransform
         /// </summary>
-        [SerializeField]
+        [SerializeField, Required]
         private RectTransform effectDestination;
 
         /// <summary>

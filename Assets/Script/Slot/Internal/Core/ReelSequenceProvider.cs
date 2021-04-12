@@ -12,6 +12,7 @@ using UnityUtility;
 using UnityUtility.Linq;
 using Zenject;
 using Cysharp.Threading.Tasks;
+using MedalPusher.Utils;
 
 namespace MedalPusher.Slot.Internal.Core
 {
@@ -84,8 +85,8 @@ namespace MedalPusher.Slot.Internal.Core
             //このReelが受け持つ各RoleからRoleDriverを生成して格納する
             tweenProvider =
                 roles.Select((ope, index) => (ope, initAngle: (Angle.Round / roleCount * index + FrontAngle).PositiveNormalize())) //indexの順番に均等に円形配置
-                          .ToDictionary(pair => pair.ope.Value,
-                                        pair => new RoleTweenProvider(pair.ope, pair.initAngle, reelRadius, FrontAngle, RoleIntervalAngle));
+                     .ToDictionary(pair => pair.ope.Value,
+                                   pair => new RoleTweenProvider(pair.ope, pair.initAngle, reelRadius, FrontAngle, RoleIntervalAngle));
 
         }
 
@@ -191,8 +192,8 @@ namespace MedalPusher.Slot.Internal.Core
         {
             var table = frontRoleAngleTable.GetAngleTable(frontRole);
             return tweenProvider.DictionarySelect(provider => provider.BackToReelPosition(table[provider.RoleValue], duration)
-                                                                        .ToSequence())
-                                  .ToReelSequence();
+                                                                      .ToSequence())
+                                .ToReelSequence();
         }
 
 
@@ -203,7 +204,7 @@ namespace MedalPusher.Slot.Internal.Core
         /// <returns></returns>
         public IReelSequence Create(Func<Transform, Sequence> sequenceSelector) =>
             tweenProvider.DictionarySelect(provider => provider.Create(sequenceSelector))
-                           .ToReelSequence();
+                         .ToReelSequence();
 
         /// <summary>
         /// 任意のRoleに任意のTweenを当てはめたReelaSequenceを生成します

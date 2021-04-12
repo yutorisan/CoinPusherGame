@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using Sirenix.OdinInspector;
 using UniRx;
 using UnityEngine;
 using UnityUtility;
-using Zenject;
 
 namespace MedalPusher.Item.Payout
 {
@@ -30,24 +30,28 @@ namespace MedalPusher.Item.Payout
     }
 
     /// <summary>
-    /// 各種MedalPayouterをまとめて保持して
+    /// 各種MedalPayouterを保持して適切に操作するMedalPayouterのFacade
     /// </summary>
-    public class MedalPayouterStorage : MonoBehaviour, IMedalPayoutOperation, IObservableMedalPayoutStock
+    public class MedalPayouterFacade : MonoBehaviour, IMedalPayoutOperation, IObservableMedalPayoutStock
     {
-        [SerializeField]
-        private NormalMedalPayouter m_normal;
-        [SerializeField]
-        private ShowerMedalPayouter m_shower;
+        [SerializeField, Required]
+        private NormalMedalPayouter normalPayouter;
+        [SerializeField, Required]
+        private ShowerMedalPayouter showerPayouter;
 
-        private UniReadOnly<IReadOnlyDictionary<MedalPayoutMethod, IMedalPayouter>> _medalPayouterTable = new UniReadOnly<IReadOnlyDictionary<MedalPayoutMethod, IMedalPayouter>>();
+        /// <summary>
+        /// 払い出し方法と、それに対応するPayouter
+        /// </summary>
+        private IReadOnlyDictionary<MedalPayoutMethod, IMedalPayouter> medalPayouterTable;
 
         void Awake()
         {
-            _medalPayouterTable.Initialize(new Dictionary<MedalPayoutMethod, IMedalPayouter>()
+            //各種Payouterをテーブルに格納
+            medalPayouterTable = new Dictionary<MedalPayoutMethod, IMedalPayouter>()
             {
-                {MedalPayoutMethod.Normal, m_normal },
-                {MedalPayoutMethod.Shower, m_shower }
-            });
+                {MedalPayoutMethod.Normal, normalPayouter },
+                {MedalPayoutMethod.Shower, showerPayouter }
+            };
         }
 
         public IObservable<int> PayoutStock
@@ -56,7 +60,7 @@ namespace MedalPusher.Item.Payout
             {
                 //すべてのPayouterの最後の値を合計したものを返す
                 var ret = Observable.Return<int>(0);
-                foreach (var payouter in _medalPayouterTable.Value.Values)
+                foreach (var payouter in medalPayouterTable.Values)
                 {
                     ret = ret.CombineLatest(payouter.PayoutStock, (i, j) => i + j);
                 }
@@ -66,7 +70,7 @@ namespace MedalPusher.Item.Payout
 
         public void PayoutRequest(int medals, MedalPayoutMethod method = MedalPayoutMethod.Normal)
         {
-            _medalPayouterTable.Value[method].AddPayoutStock(medals);
+            medalPayouterTable[method].AddPayoutStock(medals);
         }
     }
 

@@ -16,7 +16,7 @@ namespace MedalPusher.Effects
         /// <summary>
         /// エフェクト再生開始トリガーとなるMedalChecker
         /// </summary>
-        [SerializeField]
+        [SerializeField, Required]
         private IObservableMedalChecker medalChecker;
         /// <summary>
         /// エフェクトの継続時間
@@ -36,15 +36,7 @@ namespace MedalPusher.Effects
                              .SetAutoKill(false);
 
             //トリガーがかかったらポップアップエフェクトを開始させる
-            medalChecker.Checked.Subscribe(_ =>
-            {
-                //エフェクト完了なら初期化する
-                if (tweener.IsComplete()) tweener.Rewind();
-                //前のエフェクトの途中なら最初から再生し直す
-                if (tweener.IsPlaying()) tweener.Restart();
-                //そうでないなら最初から再生する
-                else tweener.Play();
-            });
+            medalChecker.Checked.Subscribe(_ => tweener.Restart());
         }
     }
 }

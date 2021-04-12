@@ -10,6 +10,7 @@ using DG.Tweening;
 using Sirenix.OdinInspector;
 using MedalPusher.Slot.Internal.Core;
 using UnityUtility;
+using MedalPusher.Utils;
 
 namespace MedalPusher.Slot.Internal
 {

@@ -7,155 +7,158 @@ using System.Security.Cryptography.X509Certificates;
 using UniRx;
 using UnityEditor;
 
-public static partial class ObservableEx
+namespace MedalPusher.Utils
 {
-    public static IDisposable SubscribeIfs<T>(this IObservable<T> source, SubscribeIfParams<T> onNexts)
+    public static partial class ObservableEx
     {
-        return SubscribeIfs(source, onNexts, OnErrorNone, OnCompletedNone);
-    }
-    public static IDisposable SubscribeIfs<T>(this IObservable<T> source, SubscribeIfParams<T> onNexts, Action<Exception> onError)
-    {
-        return SubscribeIfs(source, onNexts, onError, OnCompletedNone);
-    }
-    public static IDisposable SubscribeIfs<T>(this IObservable<T> source, SubscribeIfParams<T> onNexts, Action onCompleted)
-    {
-        return SubscribeIfs(source, onNexts, OnErrorNone, onCompleted);
-    }
-    public static IDisposable SubscribeIfs<T>(this IObservable<T> source, SubscribeIfParams<T> onNexts, Action<Exception> onError, Action onCompleted)
-    {
-        return new SubscribeIfsOperator<T>(source, onNexts).Subscribe(avp => avp.Action(avp.Value), onError, onCompleted);
-    }
-
-    private class SubscribeIfsOperator<T> : IObservable<ActionValuePair<T>>
-    {
-        private IObservable<T> m_observable;
-        private SubscribeIfParams<T> m_switchParams;
-        public SubscribeIfsOperator(IObservable<T> source, SubscribeIfParams<T> switchParams)
+        public static IDisposable SubscribeIfs<T>(this IObservable<T> source, SubscribeIfParams<T> onNexts)
         {
-            m_observable = source;
-            m_switchParams = switchParams;
+            return SubscribeIfs(source, onNexts, OnErrorNone, OnCompletedNone);
+        }
+        public static IDisposable SubscribeIfs<T>(this IObservable<T> source, SubscribeIfParams<T> onNexts, Action<Exception> onError)
+        {
+            return SubscribeIfs(source, onNexts, onError, OnCompletedNone);
+        }
+        public static IDisposable SubscribeIfs<T>(this IObservable<T> source, SubscribeIfParams<T> onNexts, Action onCompleted)
+        {
+            return SubscribeIfs(source, onNexts, OnErrorNone, onCompleted);
+        }
+        public static IDisposable SubscribeIfs<T>(this IObservable<T> source, SubscribeIfParams<T> onNexts, Action<Exception> onError, Action onCompleted)
+        {
+            return new SubscribeIfsOperator<T>(source, onNexts).Subscribe(avp => avp.Action(avp.Value), onError, onCompleted);
         }
 
-        public IDisposable Subscribe(IObserver<ActionValuePair<T>> observer)
+        private class SubscribeIfsOperator<T> : IObservable<ActionValuePair<T>>
         {
-            return m_observable.Subscribe(new SubscribeIfsObserver(m_switchParams, observer));
-        }
-
-        private class SubscribeIfsObserver : IObserver<T>
-        {
-            private SubscribeIfParams<T> m_ifs;
-            private IObserver<ActionValuePair<T>> m_observer;
-            private object lockObj = new object();
-
-            public SubscribeIfsObserver(SubscribeIfParams<T> switchParams, IObserver<ActionValuePair<T>> observer)
+            private IObservable<T> m_observable;
+            private SubscribeIfParams<T> m_switchParams;
+            public SubscribeIfsOperator(IObservable<T> source, SubscribeIfParams<T> switchParams)
             {
-                m_ifs = switchParams;
-                m_observer = observer;
+                m_observable = source;
+                m_switchParams = switchParams;
             }
 
-            public void OnCompleted()
+            public IDisposable Subscribe(IObserver<ActionValuePair<T>> observer)
             {
-                lock (lockObj)
+                return m_observable.Subscribe(new SubscribeIfsObserver(m_switchParams, observer));
+            }
+
+            private class SubscribeIfsObserver : IObserver<T>
+            {
+                private SubscribeIfParams<T> m_ifs;
+                private IObserver<ActionValuePair<T>> m_observer;
+                private object lockObj = new object();
+
+                public SubscribeIfsObserver(SubscribeIfParams<T> switchParams, IObserver<ActionValuePair<T>> observer)
                 {
-                    m_observer.OnCompleted();
-                    m_observer = null;
+                    m_ifs = switchParams;
+                    m_observer = observer;
                 }
-            }
 
-            public void OnError(Exception error)
-            {
-                lock (lockObj)
+                public void OnCompleted()
                 {
-                    m_observer.OnError(error);
-                    m_observer = null;
-                }
-            }
-
-            public void OnNext(T value)
-            {
-                lock (lockObj)
-                {
-                    if (m_observer == null) return;
-                    try
+                    lock (lockObj)
                     {
-                        foreach (var ifStatement in m_ifs)
-                        {
-                            //どのケースにあたるかをひとつずつチェック
-                            if (ifStatement.Condition(value))
-                            {
-                                //最初にあたったケースのアクションを発行して終了
-                                m_observer.OnNext(new ActionValuePair<T>(ifStatement.OnNextAction, value));
-                                return;
-                            }
-                        }
-                        //どのケースにも当てはまらなかった場合、default句が定義されている場合はそのアクションを発行
-                        if (m_ifs.IsExistElse)
-                        {
-                            m_observer.OnNext(new ActionValuePair<T>(m_ifs.ElseAction, value));
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        m_observer.OnError(ex);
+                        m_observer.OnCompleted();
                         m_observer = null;
                     }
                 }
+
+                public void OnError(Exception error)
+                {
+                    lock (lockObj)
+                    {
+                        m_observer.OnError(error);
+                        m_observer = null;
+                    }
+                }
+
+                public void OnNext(T value)
+                {
+                    lock (lockObj)
+                    {
+                        if (m_observer == null) return;
+                        try
+                        {
+                            foreach (var ifStatement in m_ifs)
+                            {
+                                //どのケースにあたるかをひとつずつチェック
+                                if (ifStatement.Condition(value))
+                                {
+                                    //最初にあたったケースのアクションを発行して終了
+                                    m_observer.OnNext(new ActionValuePair<T>(ifStatement.OnNextAction, value));
+                                    return;
+                                }
+                            }
+                            //どのケースにも当てはまらなかった場合、default句が定義されている場合はそのアクションを発行
+                            if (m_ifs.IsExistElse)
+                            {
+                                m_observer.OnNext(new ActionValuePair<T>(m_ifs.ElseAction, value));
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            m_observer.OnError(ex);
+                            m_observer = null;
+                        }
+                    }
+                }
             }
         }
     }
-}
 
-public class ElseIfStatement<T>
-{
-    public ElseIfStatement(Predicate<T> condition, Action<T> onNext)
+    public class ElseIfStatement<T>
     {
-        if (condition == null) throw new ArgumentNullException(nameof(condition));
-        if (onNext == null) throw new ArgumentNullException(nameof(onNext));
-        this.Condition = condition;
-        this.OnNextAction = onNext;
-    }
-    public Predicate<T> Condition { get; }
-    public Action<T> OnNextAction { get; }
-}
-
-public class SubscribeIfParams<T> : IEnumerable<ElseIfStatement<T>>
-{
-    private IEnumerable<ElseIfStatement<T>> m_ifStatements;
-
-    /// <summary>
-    /// elseなしバージョン
-    /// </summary>
-    /// <param name="ifs"></param>
-    public SubscribeIfParams(params ElseIfStatement<T>[] ifs)
-    {
-        m_ifStatements = ifs;
-    }
-    /// <summary>
-    /// elseありバージョン
-    /// </summary>
-    /// <param name="elseAction"></param>
-    /// <param name="ifs"></param>
-    public SubscribeIfParams(Action<T> elseAction, params ElseIfStatement<T>[] ifs) : this(ifs)
-    {
-        this.ElseAction = elseAction;
+        public ElseIfStatement(Predicate<T> condition, Action<T> onNext)
+        {
+            if (condition == null) throw new ArgumentNullException(nameof(condition));
+            if (onNext == null) throw new ArgumentNullException(nameof(onNext));
+            this.Condition = condition;
+            this.OnNextAction = onNext;
+        }
+        public Predicate<T> Condition { get; }
+        public Action<T> OnNextAction { get; }
     }
 
-    /// <summary>
-    /// else句のアクション
-    /// </summary>
-    public Action<T> ElseAction { get; }
-    /// <summary>
-    /// else句が存在するか
-    /// </summary>
-    public bool IsExistElse => ElseAction != null;
-
-    public IEnumerator<ElseIfStatement<T>> GetEnumerator()
+    public class SubscribeIfParams<T> : IEnumerable<ElseIfStatement<T>>
     {
-        return m_ifStatements.GetEnumerator();
-    }
+        private IEnumerable<ElseIfStatement<T>> m_ifStatements;
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return ((IEnumerable)m_ifStatements).GetEnumerator();
+        /// <summary>
+        /// elseなしバージョン
+        /// </summary>
+        /// <param name="ifs"></param>
+        public SubscribeIfParams(params ElseIfStatement<T>[] ifs)
+        {
+            m_ifStatements = ifs;
+        }
+        /// <summary>
+        /// elseありバージョン
+        /// </summary>
+        /// <param name="elseAction"></param>
+        /// <param name="ifs"></param>
+        public SubscribeIfParams(Action<T> elseAction, params ElseIfStatement<T>[] ifs) : this(ifs)
+        {
+            this.ElseAction = elseAction;
+        }
+
+        /// <summary>
+        /// else句のアクション
+        /// </summary>
+        public Action<T> ElseAction { get; }
+        /// <summary>
+        /// else句が存在するか
+        /// </summary>
+        public bool IsExistElse => ElseAction != null;
+
+        public IEnumerator<ElseIfStatement<T>> GetEnumerator()
+        {
+            return m_ifStatements.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable)m_ifStatements).GetEnumerator();
+        }
     }
 }

@@ -7,6 +7,9 @@ using System;
 
 namespace MedalPusher.Item.Payout
 {
+    /// <summary>
+    /// MedalPayouterへのアクセス
+    /// </summary>
     public interface IMedalPayouter
     {
         /// <summary>
@@ -19,25 +22,33 @@ namespace MedalPusher.Item.Payout
         /// </summary>
         IObservable<int> PayoutStock { get; }
     }
+
+    /// <summary>
+    /// メダルの払い出しを担当するベースクラス
+    /// </summary>
     public abstract class MedalPayouter : MonoBehaviour, IMedalPayouter
     {
         /// <summary>
         /// 払出し中のメダル数
         /// </summary>
-        private ReactiveProperty<int> m_payoutMedalStocks = new ReactiveProperty<int>(0);
+        private readonly ReactiveProperty<int> payoutMedalStocks = new ReactiveProperty<int>(0);
+        /// <summary>
+        /// メダルプールからメダルを取得する
+        /// </summary>
         [Inject]
-        private IMedalPoolPickUper m_medalPool;
+        private IMedalPoolPickUper medalPickuper;
         /// <summary>
         /// 払出しステータス
         /// </summary>
-        protected PayoutStatus m_status = PayoutStatus.Idol;
+        protected PayoutStatus status = PayoutStatus.Idol;
+
         /// <summary>
         /// フィールドにメダルを出現させる
         /// </summary>
         protected void PayoutToField(Vector3 position, Quaternion rotation)
         {
-            m_medalPool.PickUp(MedalValue.Value1, position, rotation);
-            --m_payoutMedalStocks.Value;
+            medalPickuper.PickUp(MedalValue.Value1, position, rotation);
+            --payoutMedalStocks.Value;
         }
         /// <summary>
         /// フィールドにメダルを出現させる
@@ -49,24 +60,24 @@ namespace MedalPusher.Item.Payout
         protected IObservable<Unit> PowerOnTiming =>
             PayoutStock.Pairwise()
                        //Idol中のみ
-                       .Where(_ => m_status == PayoutStatus.Idol)
+                       .Where(_ => status == PayoutStatus.Idol)
                        //前より増えている
                        .Where(pair => pair.Current > pair.Previous)
                        .AsUnitObservable()
                        //払出しを開始するのでステータスを変える
-                       .Do(_ => m_status = PayoutStatus.Payouting);
+                       .Do(_ => status = PayoutStatus.Payouting);
 
         public void AddPayoutStock(int medals)
         {
-            m_payoutMedalStocks.Value += medals;
+            payoutMedalStocks.Value += medals;
         }
 
-        public IObservable<int> PayoutStock => m_payoutMedalStocks.AsObservable();
-    }
+        public IObservable<int> PayoutStock => payoutMedalStocks.AsObservable();
 
-    public enum PayoutStatus
-    {
-        Idol,
-        Payouting
+        protected enum PayoutStatus
+        {
+            Idol,
+            Payouting
+        }
     }
 }

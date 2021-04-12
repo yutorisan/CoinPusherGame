@@ -1,8 +1,16 @@
 ﻿using System;
 using DG.Tweening;
 
-public static class DOTweenEx
+namespace MedalPusher.Utils
 {
-    public static Sequence ToSequence(this Tween tween) =>
-        DOTween.Sequence().Append(tween);
+    public static class DOTweenEx
+    {
+        /// <summary>
+        /// TweenをSequenceに変換する
+        /// </summary>
+        /// <param name="tween"></param>
+        /// <returns></returns>
+        public static Sequence ToSequence(this Tween tween) =>
+            DOTween.Sequence().Append(tween);
+    }
 }

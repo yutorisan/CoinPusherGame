@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
-public static class UniTaskEx
+namespace MedalPusher.Utils
 {
-    public static UniTask ContinueWithIf(this UniTask task, bool condition, Func<UniTask> continueTask)
+    public static class UniTaskEx
     {
-        if (!condition) return task;
-        else return task.ContinueWith(continueTask);
+        public static UniTask ContinueWithIf(this UniTask task, bool condition, Func<UniTask> continueTask)
+        {
+            if (!condition) return task;
+            else return task.ContinueWith(continueTask);
+        }
+        public static UniTask WhenAll(this IEnumerable<UniTask> source) => UniTask.WhenAll(source);
     }
-    public static UniTask WhenAll(this IEnumerable<UniTask> source) => UniTask.WhenAll(source);
 }

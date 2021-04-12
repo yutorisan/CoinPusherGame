@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Permissions;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using MedalPusher.Utils;
 using UnityUtility.Linq;
 
 namespace MedalPusher.Slot.Internal.Core

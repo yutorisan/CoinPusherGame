@@ -12,26 +12,32 @@ using Zenject;
 
 namespace MedalPusher.Item.Inventory
 {
+    /// <summary>
+    /// インベントリ内のメダル数を購読可能
+    /// </summary>
     public interface IObservableMedalInventory
     {
         /// <summary>
-        /// インベントリ内のメダル枚数を取得します。
+        /// インベントリ内のメダル枚数を購読します。
         /// </summary>
         IObservable<int> ObservableMedalInventoryCount { get; }
     }
 
+    /// <summary>
+    /// 所持しているメダルを管理する
+    /// </summary>
     public class MedalInventory : SerializedMonoBehaviour, IObservableMedalInventory
     {
         /// <summary>
         /// メダルの獲得通知を受け取る
         /// </summary>
-        [SerializeField]
-        private IObservableMedalChecker m_winMedalChecker;
+        [SerializeField, Required]
+        private IObservableMedalChecker winMedalChecker;
         /// <summary>
         /// メダル投入時に払出し司令を行う
         /// </summary>
         [Inject]
-        private IMedalPayoutOperation m_medalPayoutOperator;
+        private IMedalPayoutOperation medalPayoutOperator;
         /// <summary>
         /// ゲームコマンド投入司令を受け取る
         /// </summary>
@@ -42,7 +48,7 @@ namespace MedalPusher.Item.Inventory
         /// インベントリ内のメダル枚数
         /// </summary>
         [SerializeField]
-        private IntReactiveProperty m_inventoryMedalCount = new IntReactiveProperty();
+        private IntReactiveProperty medalCount = new IntReactiveProperty();
 
         /// <summary>
         /// インスペクタのメダルからフィールドに支払う
@@ -50,31 +56,29 @@ namespace MedalPusher.Item.Inventory
         private void PayoutFromInventory()
         {
             //メダルが1枚以上あったら支払う
-            if (m_inventoryMedalCount.Value > 0)
+            if (medalCount.Value > 0)
             {
-                m_medalPayoutOperator.PayoutRequest(1);
-                --m_inventoryMedalCount.Value;
+                medalPayoutOperator.PayoutRequest(1);
+                --medalCount.Value;
             }
         }
 
         private void Start()
         {
             //獲得メダルを購読してインベントリに追加
-            m_winMedalChecker.Checked
-                          .Subscribe(medal => m_inventoryMedalCount.Value += medal.Value);
+            winMedalChecker.Checked
+                           .Subscribe(medal => medalCount.Value += medal.Value);
             //メダル投入コマンドを受け取ったらメダルを投入
             gameCommandProvider.ObservableGameCommand
                                .Where(cmd => cmd == GameCommand.InputInspectorMedal)
                                .Subscribe(_ => PayoutFromInventory());
+            //デバッグ用500枚投入コマンドで500枚シャワーで投入
             gameCommandProvider.ObservableGameCommand
                                .Where(cmd => cmd == GameCommand.debug_Input500Medals)
-                               .Subscribe(_ => m_medalPayoutOperator.PayoutRequest(500, MedalPayoutMethod.Shower));
+                               .Subscribe(_ => medalPayoutOperator.PayoutRequest(500, MedalPayoutMethod.Shower));
 
         }
 
-
-        public IObservable<int> ObservableMedalInventoryCount => m_inventoryMedalCount.AsObservable();
-
-
+        public IObservable<int> ObservableMedalInventoryCount => medalCount.AsObservable();
     }
 }

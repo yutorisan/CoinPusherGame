@@ -5,6 +5,7 @@ using MedalPusher.Slot;
 using UnityEngine;
 using UniRx;
 using DG.Tweening;
+using MedalPusher.Utils;
 
 namespace MedalPusher.Slot.Internal.Productions
 {
@@ -19,7 +20,7 @@ namespace MedalPusher.Slot.Internal.Productions
         public SlotLightColorChanger(UnityEngine.Light light, IObservable<SlotProductionStatus> observableStatus)
         {
             //当たったときに再生するSequenceを登録
-            sequenceSwitcher.Add(SlotProductionStatus.Winning,
+            sequenceSwitcher.Register(SlotProductionStatus.Winning,
                                  DOTween.Sequence()
                                         .Append(light.DOColor(new Color(0, 0, 1), .5f))
                                         .Append(light.DOColor(new Color(0, 1, 0), .5f))

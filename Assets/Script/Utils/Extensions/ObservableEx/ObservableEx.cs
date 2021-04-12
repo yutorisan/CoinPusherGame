@@ -1,18 +1,21 @@
 ﻿using System;
 
-public static partial class ObservableEx
+namespace MedalPusher.Utils
 {
-    private static readonly Action<Exception> OnErrorNone = e => throw e;
-    private static readonly Action OnCompletedNone = () => { };
-
-    private struct ActionValuePair<T>
+    public static partial class ObservableEx
     {
-        public ActionValuePair(Action<T> action, T value)
+        private static readonly Action<Exception> OnErrorNone = e => throw e;
+        private static readonly Action OnCompletedNone = () => { };
+
+        private struct ActionValuePair<T>
         {
-            this.Action = action;
-            this.Value = value;
+            public ActionValuePair(Action<T> action, T value)
+            {
+                this.Action = action;
+                this.Value = value;
+            }
+            public Action<T> Action { get; }
+            public T Value { get; }
         }
-        public Action<T> Action { get; }
-        public T Value { get; }
     }
 }

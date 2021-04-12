@@ -1,27 +1,28 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using MedalPusher.Item.Checker;
-using UnityEngine;
+﻿using UnityEngine;
 using UniRx;
 using DG.Tweening;
 using Sirenix.OdinInspector;
-using System;
 
 namespace MedalPusher.Item.Checker
 {
     /// <summary>
     /// MedalCheckerにメダルがはいったら発光させる
     /// </summary>
-    public class MedalCheckerIndicator : MonoBehaviour
+    public class MedalCheckerIndicator : SerializedMonoBehaviour
     {
+        [SerializeField, Required]
+        private Light indicator;
+        [SerializeField, Required]
+        private IObservableMedalChecker checker;
+
         private void Start()
         {
-            Material material = this.GetComponent<Renderer>().material;
-
-            this.GetComponentInChildren<IObservableInColliderCountableMedalChecker>()
-                .InColliderCount
-                .Select(count => count > 0 ? Color.red : Color.gray)
-                .Subscribe(color => material.color = color);
+            //インジケータが発行してもとに戻るTween
+            var tween = indicator.DOIntensity(10f, .5f)
+                                 .SetLoops(2, LoopType.Yoyo)
+                                 .SetAutoKill(false);
+            //チェッカーが検知したらTweenを再生
+            checker.Checked.Subscribe(_ => tween.Restart());
         }
     }
 }

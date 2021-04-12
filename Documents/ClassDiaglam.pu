@@ -48,13 +48,13 @@ namespace Item{
         IReadOnlyPoolObject <|-- Item.IReadOnlyMedal
         
 
-        interface IMedalPool{
+        interface IMedalPoolPicker{
             +IMedal PickUp()
         }
         interface IObservableMedalPoolInfo
         class MedalPool
 
-        IMedalPool <|.. MedalPool
+        IMedalPoolPicker <|.. MedalPool
         IObservableMedalPoolInfo <|.. MedalPool
 
         MedalPool --> Item.Medal
@@ -84,21 +84,28 @@ namespace Item{
     }
     
     namespace Payout{
-        interface IMedalPayoutOperation
-        interface IObservableMedalPayoutStock
-        class MedalPayouterStorage
-        MedalPayouterStorage ..|> IMedalPayoutOperation
-        IObservableMedalPayoutStock <|.. MedalPayouterStorage
-        IMedalPayouter ---* MedalPayouterStorage
+        interface IMedalPayoutOperation{
+            +PayoutRequest(int, MedalPayoutMethod) : void
+        }
+        interface IObservableMedalPayoutStock{
+            +PayoutStock { get; } : IObservable<int>
+        }
+        class MedalPayouterFacade
+        MedalPayouterFacade ..|> IMedalPayoutOperation
+        IObservableMedalPayoutStock <|.. MedalPayouterFacade
+        IMedalPayouter ---* MedalPayouterFacade
 
-        interface IMedalPayouter
+        interface IMedalPayouter{
+            +AddPayoutStock(int) : void
+            +PayoutStock { get; } : IObservable<int>
+        }
         abstract MedalPayouter
         class NormalMedalPayouter
         class DeployMedalPayouter
         IMedalPayouter <|.. MedalPayouter
         MedalPayouter <|-- NormalMedalPayouter
         MedalPayouter <|-- DeployMedalPayouter
-        MedalPayouter --> Item.Pool.IMedalPool
+        MedalPayouter --> Item.Pool.IMedalPoolPicker
 
 
         interface IObservableFieldItemPayouter{

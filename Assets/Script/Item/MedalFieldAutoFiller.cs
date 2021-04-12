@@ -7,25 +7,33 @@ using Zenject;
 
 namespace MedalPusher.Item
 {
+    /// <summary>
+    /// 自動的にフィールド上にメダルを充填する
+    /// </summary>
     public class MedalFieldAutoFiller : DebugSettingFacadeTargetMonoBehaviour, IInitialFillMedalCountSetterFacade
     {
+        /// <summary>
+        /// メダルのPayouter
+        /// </summary>
         [Inject]
-        private IMedalPayoutOperation m_medalPayouter;
-
+        private IMedalPayoutOperation medalPayouter;
+        /// <summary>
+        /// 充填するメダル数
+        /// </summary>
         [SerializeField]
-        private int m_initialMedals;
+        private int initialFillMedals;
 
         public void SetInitialFillMedalCount(int count)
         {
-            m_initialMedals = count;
+            initialFillMedals = count;
         }
 
-        // Start is called before the first frame update
         async void Start()
         {
+            //DebugFacadeによる設定を待機する
             await this.FacadeAlreadyOKAsync;
-
-            m_medalPayouter.PayoutRequest(m_initialMedals, MedalPayoutMethod.Shower);
+            //充填を実行する
+            medalPayouter.PayoutRequest(initialFillMedals, MedalPayoutMethod.Shower);
         }
     }
 }

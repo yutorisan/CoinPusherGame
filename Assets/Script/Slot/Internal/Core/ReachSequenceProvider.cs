@@ -4,6 +4,7 @@ using DG.Tweening;
 using UnityEngine;
 using System;
 using System.Collections;
+using MedalPusher.Utils;
 
 namespace MedalPusher.Slot.Internal.Core
 {

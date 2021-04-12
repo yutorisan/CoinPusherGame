@@ -10,10 +10,9 @@ namespace MedalPusher.Item.Checker
 
         public IObservable<int> Count => throw new NotImplementedException();
 
-        // Use this for initialization
         void Start()
         {
-
+            throw new NotImplementedException();
         }
     }
 }

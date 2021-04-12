@@ -9,6 +9,6 @@ namespace MedalPusher.Item.Payout
     /// </summary>
     public interface IObservableFieldItemPayouter
     {
-
+        //未実装
     }
 }

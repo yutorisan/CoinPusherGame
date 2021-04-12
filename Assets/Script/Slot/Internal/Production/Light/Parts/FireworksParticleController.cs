@@ -6,6 +6,7 @@ using System;
 using MedalPusher.Slot;
 using Cysharp.Threading.Tasks;
 using System.Threading.Tasks;
+using MedalPusher.Utils;
 
 namespace MedalPusher.Slot.Internal.Productions
 {
@@ -20,6 +21,9 @@ namespace MedalPusher.Slot.Internal.Productions
             status.Where(s => s == SlotProductionStatus.Winning)
                   .SelectMany(_ => ObservableEx.RandomTiming(0, 1500, particles.Count))
                   .Subscribe(index => particles[index].Play());
+
+            Observable.EveryUpdate().Count();
+            
         }
     }
 }

@@ -23,7 +23,6 @@ namespace MedalPusher.Item.Pool
         /// </summary>
         /// <param name="valueType"></param>
         /// <param name="position"></param>
-        /// <param name="rotation"></param>
         /// <returns></returns>
         IMedal PickUp(MedalValue valueType, Vector3 position);
         /// <summary>

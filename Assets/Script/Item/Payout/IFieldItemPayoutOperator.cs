@@ -9,6 +9,6 @@ namespace MedalPusher.Item.Payout
     /// </summary>
     public interface IFieldItemPayoutOperator
     {
-
+        //未実装
     }
 }

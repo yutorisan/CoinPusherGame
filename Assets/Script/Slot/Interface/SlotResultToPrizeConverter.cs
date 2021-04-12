@@ -20,12 +20,17 @@ namespace MedalPusher.Slot.Interface
         [Inject]
         private IMedalPayoutOperation medalPayoutOperation;
 
+        /// <summary>
+        /// 当たったときに払い出すメダル数
+        /// </summary>
+        private static readonly int winMedals = 30;
+
         private void Start()
         {
             //当たったら30枚の払い出し要求
             resultSubmitter.ObservableSlotResult
                            .Where(result => result.IsWin)
-                           .Subscribe(_ => medalPayoutOperation.PayoutRequest(30));
+                           .Subscribe(_ => medalPayoutOperation.PayoutRequest(winMedals));
         }
     }
 }

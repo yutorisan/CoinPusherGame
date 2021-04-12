@@ -1,10 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using MedalPusher.Item.Checker;
+﻿using MedalPusher.Item.Checker;
 using Sirenix.OdinInspector;
 using TMPro;
 using UnityEngine;
 using UniRx;
+using MedalPusher.Utils;
 
 namespace MedalPusher.Case
 {
@@ -13,13 +12,13 @@ namespace MedalPusher.Case
     /// </summary>
     public class FalledMedalView : SerializedMonoBehaviour
     {
-        [SerializeField]
+        [SerializeField, Required]
         private IObservableMedalChecker m_winMedalChecker;
-        [SerializeField]
+        [SerializeField, Required]
         private IObservableMedalChecker m_loseMedalChecker;
-        [SerializeField]
+        [SerializeField, Required]
         private TextMeshProUGUI m_winMedalView;
-        [SerializeField]
+        [SerializeField, Required]
         private TextMeshProUGUI m_loseMedalView;
 
         void Start()
