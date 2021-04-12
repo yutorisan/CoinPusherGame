@@ -294,12 +294,12 @@ namespace Slot {
         StockCounterView -> Slot.Internal.Stock.IReadOnlyObservableStockCount
 
         class SlotResultToPrizeConverter <<MonoBehaviour>>
-        Slot.Internal.ISlotResultSubmitter <- SlotResultToPrizeConverter
-        SlotResultToPrizeConverter --(( IMedalPayoutOperation
+        SlotResultToPrizeConverter --> Slot.Internal.ISlotResultSubmitter
+        IMedalPayoutOperation ))-- SlotResultToPrizeConverter
 
         class SlotStockSensor <<MonoBehaviour>>
-        Slot.Internal.Stock.IStockAdder <- SlotStockSensor
-        SlotStockSensor --(( IObservableMedalChecker
+        SlotStockSensor --> Slot.Internal.Stock.IStockAdder
+        IObservableMedalChecker ))-- SlotStockSensor
     }
 }
 
