@@ -35,7 +35,9 @@ namespace MedalPusher.Item.Payout
                                                   UnityEngine.Random.Range(transform.position.z - size.z / 2,
                                                                transform.position.z + size.z / 2)))
                          //メダルを投入
-                         .Subscribe(pos => PayoutToField(pos));
+                         .Subscribe(pos => PayoutToField(pos, Quaternion.Euler(UnityEngine.Random.Range(-180f, 180f),
+                                                                               UnityEngine.Random.Range(-180f, 180f),
+                                                                               UnityEngine.Random.Range(-180f, 180f))));
         }
 
     }

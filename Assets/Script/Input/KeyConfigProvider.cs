@@ -8,7 +8,7 @@ namespace MedalPusher.Input
     /// <summary>
     /// 使用するキーコンフィグを選択する
     /// </summary>
-    internal static class KeyConfigSelector 
+    internal static class KeyConfigProvider 
     {
         /// <summary>
         /// 現在のキーコンフィグ設定を取得する
@@ -22,7 +22,7 @@ namespace MedalPusher.Input
         {
             //シングルトン
             private static IKeyConfig _instance;
-            public static IKeyConfig Instance => _instance ?? (_instance = new DefalutKeyConfig());
+            public static IKeyConfig Instance => _instance ??= new DefalutKeyConfig();
 
             /// <summary>
             /// キーコンフィグ本体

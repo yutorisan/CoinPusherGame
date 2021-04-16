@@ -5,27 +5,29 @@ namespace Case{
 }
 
 namespace Item{
-    interface IFieldItem
-    class FieldItem
-    interface IFieldItemEvent
-    class FieldItemEvent
-    IFieldItem <|.. FieldItem
-    IFieldItemEvent <|.. FieldItemEvent
-    FieldItem *- IFieldItemEvent
+    namespace Item{
+        interface IFieldItem
+        class FieldItem
+        interface IFieldItemEvent
+        class FieldItemEvent
+        IFieldItem <|.. FieldItem
+        IFieldItemEvent <|.. FieldItemEvent
+        FieldItem *- IFieldItemEvent
 
 
-    interface IReadOnlyMedal{
-        +Value { get; } : int
-        +ValueType { get; } : MedalValue
+        interface IReadOnlyMedal{
+            +Value { get; } : int
+            +ValueType { get; } : MedalValue
+        }
+        interface IMedal
+        class Medal
+        IReadOnlyMedal <|-- IMedal
+        IMedal <|.. Medal
+
+        interface IFieldObject
+        IFieldObject <|-- IMedal
+        IFieldObject <|-- IFieldItem
     }
-    interface IMedal
-    class Medal
-    IReadOnlyMedal <|-- IMedal
-    IMedal <|.. Medal
-
-    interface IFieldObject
-    IFieldObject <|-- IMedal
-    IFieldObject <|-- IFieldItem
 
     namespace Pool{
         interface IReadOnlyPoolObject{
@@ -42,10 +44,10 @@ namespace Item{
         
         IReadOnlyPoolObject <|-- IReturnOnlyPoolObject
         IReturnOnlyPoolObject <|-- IPoolObject
-        IReturnOnlyPoolObject <|-- Item.IMedal
+        IReturnOnlyPoolObject <|-- Item.Item.IMedal
         IPoolObject <|.. PoolObject
-        PoolObject <|-- Item.Medal
-        IReadOnlyPoolObject <|-- Item.IReadOnlyMedal
+        PoolObject <|-- Item.Item.Medal
+        IReadOnlyPoolObject <|-- Item.Item.IReadOnlyMedal
         
 
         interface IMedalPoolPicker{
@@ -57,7 +59,7 @@ namespace Item{
         IMedalPoolPicker <|.. MedalPool
         IObservableMedalPoolInfo <|.. MedalPool
 
-        MedalPool --> Item.Medal
+        MedalPool --> Item.Item.Medal
     }
     
     namespace Checker{
@@ -93,7 +95,7 @@ namespace Item{
         class MedalPayouterFacade
         MedalPayouterFacade ..|> IMedalPayoutOperation
         IObservableMedalPayoutStock <|.. MedalPayouterFacade
-        IMedalPayouter ---* MedalPayouterFacade
+        IMedalPayouter ---o MedalPayouterFacade
 
         interface IMedalPayouter{
             +AddPayoutStock(int) : void
@@ -134,22 +136,16 @@ namespace Item{
         interface IObservableMedalInventory{
             +IObservable<int> MedalInventoryCount
         }
-        class MedalInventory{
-            -ReactiveProperty<int> m_medalCount
-        }
+        class MedalInventory
         IObservableMedalInventory <|.. MedalInventory
 
-        interface IObservableFieldItemInventory{
-            +IObservable<IReadOnlyList<IFieldItem>> 
-        }
-        class FieldItemInventory{
-            -ReactiveCollection<IFieldItem> m_items
-        }
+        interface IObservableFieldItemInventory
+        class FieldItemInventory
         IObservableFieldItemInventory <|.. FieldItemInventory
 
         MedalInventory --(( IObservableMedalChecker
         FieldItemInventory --(( IObservableFieldItemChecker
-        Input.IGameCommandProvider <--- MedalInventory : 入力を監視
+        Input.IGameCommandProvider <--- MedalInventory
 
         class FieldItemApplyer
         Item.Payout.IMedalPayoutOperation <--- FieldItemApplyer : メダル払い出しを要求
@@ -164,31 +160,42 @@ namespace Item{
 
         class InventoryInstaller<<Installer>>
     }
+}
 
-
+namespace UnityEngine{
+    class Input<<static>>
 }
 
 namespace Input #DDDDDD{
+    class InputInstaller<<Installer>>
+
     enum GameCommand
+    
     interface IGameCommandProvider{
         +IObservable<GameCommand> InputedCommand { get; }
     }
+    class GameCommandProvider
+    IGameCommandProvider <|.. GameCommandProvider
+
+    interface IInputProvider
     class UserInputProvider
-    class Input<<static>>
-    UserInputProvider --> Input
+    IInputProvider <|.. UserInputProvider
+    UserInputProvider --> UnityEngine.Input
+    GameCommandProvider --> IInputProvider
 
     interface IKeyConfig
     abstract KeyConfig
     class DefaultKeyConfig
 
     IKeyConfig <|.. KeyConfig
-    KeyConfig <|-- DefaultKeyConfig
+    KeyConfig <|-up- DefaultKeyConfig
     GameCommand <- KeyConfig
 
-    class KeyConfigSelector
-    KeyConfigSelector --> IKeyConfig
-    UserInputProvider -> KeyConfigSelector
-    IGameCommandProvider <|.. UserInputProvider
+    class KeyConfigProvider<<static>>
+    KeyConfigProvider --+ IKeyConfig
+    GameCommandProvider -> KeyConfigProvider
+
+    
     
 }
 

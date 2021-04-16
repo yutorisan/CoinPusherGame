@@ -19,7 +19,7 @@ namespace MedalPusher.Item.Payout
         /// 払出しポイント
         /// </summary>
         [SerializeField, Required]
-        private Transform payoutPoint;
+        private GameObject payoutPoint;
         /// <summary>
         /// 払出しの間隔
         /// </summary>
@@ -34,7 +34,7 @@ namespace MedalPusher.Item.Payout
                                                     //0になったらステータスをIdolにする
                                                     .DoOnCompleted(() => status = PayoutStatus.Idol))
                          //メダルを投入
-                         .Subscribe(_ => PayoutToField(payoutPoint.position, Quaternion.Euler(90, 0, 0)));
+                         .Subscribe(_ => PayoutToField(payoutPoint.transform.position, Quaternion.Euler(90, 0, 0)));
         }
     }
 }

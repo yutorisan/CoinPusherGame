@@ -3,6 +3,7 @@ using UnityEngine.EventSystems;
 using UniRx.Triggers;
 using UnityEngine;
 using UniRx;
+using Zenject;
 
 namespace MedalPusher.Input
 {
@@ -12,7 +13,7 @@ namespace MedalPusher.Input
     public interface IGameCommandProvider
     {
         /// <summary>
-        /// 発行されたGameCommandの購読権
+        /// 発行されたGameCommand
         /// </summary>
         IObservable<GameCommand> ObservableGameCommand { get; }
     }
@@ -20,39 +21,31 @@ namespace MedalPusher.Input
     /// ユーザーからのキー入力を監視して
     /// キーコンフィグに従ってGameCommandを発行する
     /// </summary>
-    internal class GameCommandProvider : IGameCommandProvider
+    internal class GameCommandProvider : IGameCommandProvider, IInitializable
     {
-        /// <summary>
-        /// 入力されたKeyCodeを発行するIObservable
-        /// </summary>
-        private readonly IObservable<KeyCode> observableKeyCode = Observable.Empty<KeyCode>();
-        /// <summary>
-        /// 使用するキーコンフィグ
-        /// </summary>
-        private readonly IKeyConfig keyConfig = KeyConfigSelector.Now;
+        [Inject]
+        private IInputProvider input;
 
-        public GameCommandProvider()
+        //IInputProviderが注入されてから初期化を行うため
+        //コンストラクタではなくInitializeを使用
+        public void Initialize()
         {
-            //使用中のKeyCodeを取得して、入力監視対象に追加する
-            foreach (var key in keyConfig.UsedKeyCodes)
-            {
-                observableKeyCode = observableKeyCode.Merge(KeyInputed(key));
-            }
+            ObservableGameCommand =
+                input.ObservableKeyCode
+                     .Select(key => KeyConfigProvider.Now.KeyCommandTable[key]) //KeyCodeをKeyConfigによってGameCommandに変換する
+                     .Share();
         }
 
+        public IObservable<GameCommand> ObservableGameCommand { get; private set; }
 
-        public IObservable<GameCommand> ObservableGameCommand =>
-            observableKeyCode.Select(key => keyConfig.KeyCommandTable[key]) //KeyCodeをGameCommandに変換する
-                             .Share();
 
-        /// <summary>
-        /// 特定のキーが押されたことを示すIObservableを取得する
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        private IObservable<KeyCode> KeyInputed(KeyCode key) =>
-            Observable.EveryUpdate()
-                      .Where(_ => UnityEngine.Input.GetKey(key))
-                      .Select(_ => key);
+    }
+
+    /// <summary>
+    /// 入力情報を提供する
+    /// </summary>
+    internal interface IInputProvider
+    {
+        IObservable<KeyCode> ObservableKeyCode { get; }
     }
 }

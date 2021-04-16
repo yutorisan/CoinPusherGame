@@ -18,7 +18,7 @@ namespace MedalPusher.Item.Checker
         private void Start()
         {
             //インジケータが発行してもとに戻るTween
-            var tween = indicator.DOIntensity(10f, .5f)
+            var tween = indicator.DOIntensity(1.5f, .5f)
                                  .SetLoops(2, LoopType.Yoyo)
                                  .SetAutoKill(false);
             //チェッカーが検知したらTweenを再生

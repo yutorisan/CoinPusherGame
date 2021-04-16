@@ -6,9 +6,13 @@ namespace MedalPusher.Input
     {
         public override void InstallBindings()
         {
-            Container.Bind<IGameCommandProvider>()
+            Container.Bind<IInputProvider>()
+                     .To<UserInputProvider>()
+                     .AsCached();
+            Container.Bind(typeof(IGameCommandProvider), typeof(IInitializable))
                      .To<GameCommandProvider>()
                      .AsCached();
+
         }
     }
 }

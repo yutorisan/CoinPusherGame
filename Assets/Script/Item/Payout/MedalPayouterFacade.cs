@@ -52,21 +52,17 @@ namespace MedalPusher.Item.Payout
                 {MedalPayoutMethod.Normal, normalPayouter },
                 {MedalPayoutMethod.Shower, showerPayouter }
             };
+
+            //PayoutStockは、すべてのMedalPayouterのPayoutStockの最後の値を合計したものを発行する
+            var ret = Observable.Return<int>(0);
+            foreach (var payouter in medalPayouterTable.Values)
+            {
+                ret = ret.CombineLatest(payouter.PayoutStock, (i, j) => i + j);
+            }
+            this.PayoutStock = ret.Share();
         }
 
-        public IObservable<int> PayoutStock
-        {
-            get
-            {
-                //すべてのPayouterの最後の値を合計したものを返す
-                var ret = Observable.Return<int>(0);
-                foreach (var payouter in medalPayouterTable.Values)
-                {
-                    ret = ret.CombineLatest(payouter.PayoutStock, (i, j) => i + j);
-                }
-                return ret;
-            }
-        }
+        public IObservable<int> PayoutStock { get; private set; }
 
         public void PayoutRequest(int medals, MedalPayoutMethod method = MedalPayoutMethod.Normal)
         {
