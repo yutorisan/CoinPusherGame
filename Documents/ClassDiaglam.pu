@@ -331,50 +331,59 @@ namespace Slot {
 
 
 
-' namespace Lottery{
-'     interface IObservableLotteryRotater{
-'         +IObservable<float> ObservableRotate { get; }
-'     }
-'     class LotteryBowlRotater
-'     IObservableLotteryRotater <|.. LotteryBowlRotater
+namespace Lottery{
 
-'     class LotteryPrizeInfo{
-'         IFieldObject Prize { get; }
-'     }
-'     interface ILotteryPocketPositionOperation
-'     class LotteryPocket
-'     LotteryPocket ..|> ILotteryPocketPositionOperation
+    interface IObservableLotteryRotater{
+        +IObservable<float> ObservableRotate { get; }
+    }
+    class LotteryBowlRotater
+    IObservableLotteryRotater <|.. LotteryBowlRotater
 
-'     class LotteryPocketPositionOperator
-'     LotteryPocketPositionOperator --> IObservableLotteryRotater 
-'     ILotteryPocketPositionOperation "*" --o "1" LotteryPocketPositionOperator
+    class LotteryPrizeInfo{
+        IFieldObject Prize { get; }
+    }
+    interface ILotteryPocketPositionOperation
+    class LotteryPocket
+    LotteryPocket ..|> ILotteryPocketPositionOperation
 
-'     class LotteryPrize3DView
-'     LotteryPrize3DView -* LotteryPocket
+    class LotteryPocketPositionOperator
+    LotteryPocketPositionOperator --> IObservableLotteryRotater 
+    ILotteryPocketPositionOperation "*" --o "1" LotteryPocketPositionOperator
 
-'     interface ILotteryPrizeInsertionSlot
-'     class LotteryPrizeCollector
-'     LotteryPrizeCollector ..|> ILotteryPrizeInsertionSlot
+    class LotteryPrize3DView
+    LotteryPrize3DView -* LotteryPocket
 
-'     ILotteryPrizeInsertionSlot <-- LotteryPocket
-'     LotteryPocket *- LotteryPrizeInfo
+    interface ILotteryPrizeInsertionSlot
+    class LotteryPrizeCollector
+    LotteryPrizeCollector ..|> ILotteryPrizeInsertionSlot
 
-'     Item.Payout.IFieldItemPayoutOperation <-- LotteryPrizeCollector
-'     Item.Payout.IMedalPayoutOperation <-- LotteryPrizeCollector
+    ILotteryPrizeInsertionSlot <-- LotteryPocket
+    LotteryPocket *- LotteryPrizeInfo
 
-'     interface IBallBornOperator{
-'         +Born() : void
-'     }
-'     class BallBorner
-'     IBallBornOperator <|.. BallBorner
+    Item.Payout.IFieldItemPayoutOperation <-- LotteryPrizeCollector
+    Item.Payout.IMedalPayoutOperation <-- LotteryPrizeCollector
 
+    interface IBallBornOperator{
+        +Born() : void
+    }
+    interface IObservableBallBorned{
+        +BallBorned : void <<event>>
+    }
+    class BallBorner
+    IBallBornOperator <|.. BallBorner
+    BallBorner ..|> IObservableBallBorned
+    Item.Item.JPBall ----> IBallBornOperator
 
-'     class LotteryStockCollector
-'     IObservableMedalChecker ))-- LotteryStockCollector
-'     LotteryStockCollector --> IBallBornOperator
+    interface IObservableBallCounter{
+        +BallCount { get; } : IObservable<int>
+    }
+    class OnLotteryBallCounter
+    OnLotteryBallCounter ..|> IObservableBallCounter
+    IObservableBallBorned <-- OnLotteryBallCounter
+    IObservableBallCounter <--- LotteryBowlRotater
 
-'     class LotteryInstaller<<Installer>>{}
-' }
+    class LotteryInstaller<<Installer>>{}
+}
 
 namespace Debug{
     class MedalPoolDebug
