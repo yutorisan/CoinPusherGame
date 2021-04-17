@@ -4,7 +4,6 @@ using UnityEngine;
 using UniRx;
 using UniRx.Triggers;
 using System;
-using MedalPusher.Item;
 using Zenject;
 
 namespace MedalPusher.Lottery {
