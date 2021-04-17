@@ -9,48 +9,42 @@ namespace Item{
         interface IFieldItem{
             +Use() : void
         }
-        class FieldItem
-        interface IGameEvent
+        abstract FieldItem
+        interface IGameEvent{
+            +Occur() : void
+        }
         class GameEvent
         IFieldItem <|.. FieldItem
         IGameEvent <|.. GameEvent
         FieldItem *- IGameEvent
 
+        FieldItem <|-- JPBall
 
-        interface IReadOnlyMedal{
-            +Value { get; } : int
+        interface IMedal{
             +ValueType { get; } : MedalValue
+            +position { get; } : Vector3
         }
-        interface IMedal
         class Medal
-        IReadOnlyMedal <|-- IMedal
         IMedal <|.. Medal
 
         interface IFieldObject
+        IDisposable ()-- IFieldObject
         IFieldObject <|-- IMedal
         IFieldObject <|-- IFieldItem
     }
 
     namespace Pool{
-        interface IReadOnlyPoolObject{
-            +IsUsed {get;} : bool
-            +UsedChanged<<event>> : bool
+        interface IObservablePoolObjectStatus{
+            +Status { get; } : IReadOnlyReactiveProperty<PoolObjectUseStatus>
         }
-        interface IReturnOnlyPoolObject{
-            +ReturnToPool() : void
-        }
-        interface IPoolObject{
-            +Takeout() : void
-        }
+        interface IPoolObject
         abstract PoolObject
         
-        IReadOnlyPoolObject <|-- IReturnOnlyPoolObject
-        IReturnOnlyPoolObject <|-- IPoolObject
-        IReturnOnlyPoolObject <|-- Item.Item.IMedal
+        IObservablePoolObjectStatus <|-- IPoolObject
         IPoolObject <|.. PoolObject
+        IPoolObject <|-- Item.Item.IMedal
         PoolObject <|-- Item.Item.Medal
-        IReadOnlyPoolObject <|-- Item.Item.IReadOnlyMedal
-        
+       
 
         interface IMedalPoolPicker{
             +IMedal PickUp()
@@ -59,9 +53,9 @@ namespace Item{
         class MedalPool
 
         IMedalPoolPicker <|.. MedalPool
-        IObservableMedalPoolInfo <|.. MedalPool
+        IObservableMedalPoolInfo <|... MedalPool
 
-        MedalPool -- Item.Item.Medal
+        MedalPool --- Item.Item.Medal
     }
     
     namespace Checker{
@@ -234,7 +228,7 @@ namespace Slot {
         interface ISlotResultSubmitter{
             ObservableSlotResult { get; } : IObservable<SlotResult>
         }
-        class SlotStartScheduler <<MonoBehaviour>>
+        class SlotStartScheduler 
         IStockCounter <-- SlotStartScheduler
         SlotStartScheduler -->  ISlotStarter
         ISlotResultSubmitter <|.. SlotStartScheduler
@@ -242,14 +236,14 @@ namespace Slot {
         interface ISlotStarter{
             +Start() : UniTask<SlotResult>
         }
-        class SlotScenarioDeterminer <<MonoBehaviour>>
+        class SlotScenarioDeterminer 
         ISlotStarter <|.. SlotScenarioDeterminer
         SlotScenarioDeterminer --> ISlotProductionDeterminer
 
         interface ISlotProductionDeterminer{
             +DetermineProduction(Scenario) : UniTask
         }
-        class SlotProductionDeterminer <<MonoBehaviour>>
+        class SlotProductionDeterminer 
         ISlotProductionDeterminer <|.. SlotProductionDeterminer
         SlotProductionDeterminer --> ISlotDriver
         Slot.Internal.Stock.IReadOnlyObservableStockCount <-- SlotProductionDeterminer : 残ストックによって演出が変化
@@ -260,7 +254,7 @@ namespace Slot {
         interface IReadOnlyObservableSlotProdctionStatus{
             +ProductionStatus { get; } : IReadOnlyReactiveProperty<SlotProductionStatus>
         }
-        class SlotDriver <<MonoBehaviour>>
+        class SlotDriver 
         ISlotDriver <|.. SlotDriver
         IReadOnlyObservableSlotProdctionStatus <|. SlotDriver
 
@@ -285,7 +279,7 @@ namespace Slot {
                 +Value { get; } : RoleValue
                 +ChangeOpacity(float) : void
             }
-            class Role<<MonoBehaviour>>
+            class Role
             IRoleOperation <|.. Role
         }
 
@@ -310,12 +304,12 @@ namespace Slot {
         class StockCounterView<<View>>
         StockCounterView -> Slot.Internal.Stock.IReadOnlyObservableStockCount
 
-        class SlotResultToPrizeConverter <<MonoBehaviour>>
+        class SlotResultToPrizeConverter 
         SlotResultToPrizeConverter --> Slot.Internal.ISlotResultSubmitter
         Item.Payout.IFieldItemPayoutOperation <- SlotResultToPrizeConverter
         Item.Payout.IMedalPayoutOperation <-- SlotResultToPrizeConverter
 
-        class SlotStockSensor <<MonoBehaviour>>
+        class SlotStockSensor 
         SlotStockSensor --> Slot.Internal.Stock.IStockAdder
         IObservableMedalChecker ))-- SlotStockSensor
     ' }

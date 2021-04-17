@@ -67,7 +67,7 @@ namespace MedalPusher.Item.Inventory
         {
             //獲得メダルを購読してインベントリに追加
             winMedalChecker.Checked
-                           .Subscribe(medal => medalCount.Value += medal.Value);
+                           .Subscribe(medal => medalCount.Value += (int)medal.ValueType);
             //メダル投入コマンドを受け取ったらメダルを投入
             gameCommandProvider.ObservableGameCommand
                                .Where(cmd => cmd == GameCommand.InputInspectorMedal)
