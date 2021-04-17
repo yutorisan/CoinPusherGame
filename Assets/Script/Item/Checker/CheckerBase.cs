@@ -8,6 +8,26 @@ using UnityEngine;
 namespace MedalPusher.Item.Checker
 {
     /// <summary>
+    /// アイテムの検出通知を受け取る
+    /// </summary>
+    /// <typeparam name="TItem"></typeparam>
+    public interface IObservableItemChecker<out TItem> where TItem : IFieldObject
+    {
+        /// <summary>
+        /// アイテムを検出した
+        /// </summary>
+        IObservable<TItem> Checked { get; }
+    }
+    /// <summary>
+    /// メダルの検出通知を受け取る
+    /// </summary>
+    public interface IObservableMedalChecker : IObservableItemChecker<IMedal> { }
+    /// <summary>
+    /// アイテムの検出通知を受け取る
+    /// </summary>
+    public interface IObservableFieldItemChecker : IObservableItemChecker<IFieldItem> { }
+
+    /// <summary>
     /// コライダーによって<see cref="IFieldObject"/>の通過を検知して、検出通知を外部に公開する
     /// </summary>
     /// <typeparam name="T"><see cref="IFieldObject"/>を実装した検出対処アイテム</typeparam>
