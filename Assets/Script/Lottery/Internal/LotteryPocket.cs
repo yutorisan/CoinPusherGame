@@ -5,9 +5,11 @@ using UniRx;
 using UniRx.Triggers;
 using System;
 using Zenject;
+using MedalPusher.Item.Checker;
 
-namespace MedalPusher.Lottery {
-    public class LotteryPocket : MonoBehaviour
+namespace MedalPusher.Lottery
+{
+    public class LotteryPocket : CheckerBase<LotteryBall>
     {
         [SerializeField, HideInInspector]
         private TextMesh _priseView;
@@ -20,11 +22,9 @@ namespace MedalPusher.Lottery {
 
         [Inject]
         private ILotteryPrizeInsertionSlot _prizeInsertionSlot;
-        //[Inject]
-        //private IObservableLotteryRotater _observableLotteryRotater;
 
+        protected override string DetectTag => "LotteryBall";
 
-        // Start is called before the first frame update
         void Start()
         {
             //子オブジェクトのコンポーネントを取得する
@@ -32,13 +32,11 @@ namespace MedalPusher.Lottery {
             _particle = GetComponentInChildren<ParticleSystem>();
 
             //自分のポケットにボールが入ったら、自身の持つ景品を投入する
-            this.OnTriggerEnterAsObservable()
-                .Where(col => col.CompareTag("LotteryBall"))
-                .Subscribe(_ =>
-                {
-                    _prizeInsertionSlot.InsertPrize(m_prizeInfo);
-                    _particle.Play();
-                });
+            this.Checked.Subscribe(_ =>
+            {
+                _prizeInsertionSlot.InsertPrize(m_prizeInfo);
+                _particle.Play();
+            }).AddTo(this);
         }
 
         private void OnValidate()

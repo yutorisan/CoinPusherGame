@@ -36,7 +36,7 @@ namespace MedalPusher.Slot.Interface
                            .Subscribe(_ => medalPayoutOperation.PayoutRequest(winMedals));
             //7で当たったらJPChanceボールを払い出す
             resultSubmitter.ObservableSlotResult
-                           .Where(result => result.WinRole == RoleValue.Role7)
+                           //.Where(result => result.WinRole == RoleValue.Role7)
                            .Subscribe(_ => fieldItemPayoutOperation.PayoutRequest<JPBall>());
         }
     }

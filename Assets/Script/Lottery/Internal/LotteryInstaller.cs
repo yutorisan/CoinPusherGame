@@ -6,17 +6,30 @@ public class LotteryInstaller : MonoInstaller
 {
     public override void InstallBindings()
     {
+        Container.Bind<IBallBornOperator>()
+                 .To<BallBorner>()
+                 .FromComponentInHierarchy()
+                 .AsCached();
+        Container.Bind<IObservableBallBorned>()
+                 .To<BallBorner>()
+                 .FromComponentInHierarchy()
+                 .AsCached();
+        Container.Bind(typeof(IObservableBallCount), typeof(IInitializable))
+                 .To<OnLotteryBallCounter>()
+                 .AsCached();
         Container.Bind<IObservableLotteryRotater>()
                  .To<LotteryBowlRotater>()
                  .FromComponentInHierarchy()
                  .AsCached();
+
+        LotteryPrizeCollector lotteryPrizeCollector = new LotteryPrizeCollector();
         Container.Bind<ILotteryPrizeInsertionSlot>()
                  .To<LotteryPrizeCollector>()
-                 .FromComponentInHierarchy()
+                 .FromInstance(lotteryPrizeCollector)
                  .AsCached();
-        Container.Bind<IBallBornOperator>()
-                 .To<BallBorner>()
-                 .FromComponentInHierarchy()
+        Container.Bind<ILotteryResultSubmitter>()
+                 .To<LotteryPrizeCollector>()
+                 .FromInstance(lotteryPrizeCollector)
                  .AsCached();
     }
 }

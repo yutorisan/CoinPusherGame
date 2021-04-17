@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 128458110491645819}
   - component: {fileID: 128458110491645818}
   - component: {fileID: 128458110491645822}
+  - component: {fileID: 1247802505810532925}
   m_Layer: 0
   m_Name: BigBall
   m_TagString: LotteryBall
@@ -53,10 +54,12 @@ MeshRenderer:
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -81,6 +84,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!135 &128458110491645818
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -110,3 +114,15 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &1247802505810532925
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 128458110491645817}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa44e7428e11245748c7af4204341e78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

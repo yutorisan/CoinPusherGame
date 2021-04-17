@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using MedalPusher.Item;
 using UnityEngine;
+using Zenject;
+using MedalPusher.Lottery;
 
 namespace MedalPusher
 {
@@ -10,9 +12,16 @@ namespace MedalPusher
     /// </summary>
     public class PayoutJPBallEvent : GameEvent
     {
+        private readonly IBallBornOperator ballBornOperator;
+
+        public PayoutJPBallEvent(IBallBornOperator ballBornOperator)
+        {
+            this.ballBornOperator = ballBornOperator;
+        }
+
         public override void Occur()
         {
-            UnityEngine.Debug.Log("たまを獲得！");
+            ballBornOperator.BornRequest();
         }
     }
 }
