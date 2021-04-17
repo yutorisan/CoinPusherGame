@@ -17,5 +17,16 @@ namespace MedalPusher.Slot
         /// 当たっているかどうか
         /// </summary>
         public bool IsWin => roleSet.IsBingo;
+        /// <summary>
+        /// 当たっている場合、当たった役
+        /// </summary>
+        public RoleValue? WinRole
+        {
+            get
+            {
+                if (IsWin) return roleSet.Left;
+                else return null;
+            }
+        }
     }
 }

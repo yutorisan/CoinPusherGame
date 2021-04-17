@@ -12,7 +12,11 @@ namespace MedalPusher
         public override void InstallBindings()
         {
             Container.Bind<IMedalPayoutOperation>()
-                     .To<MedalPayouterFacade>()
+                     .To<MedalPayoutOperator>()
+                     .FromComponentInHierarchy()
+                     .AsCached();
+            Container.Bind<IFieldItemPayoutOperation>()
+                     .To<FieldItemPayoutOperator>()
                      .FromComponentInHierarchy()
                      .AsCached();
             Container.Bind<IObservableMedalPoolInfo>()

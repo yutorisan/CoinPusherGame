@@ -7,6 +7,7 @@ using MedalPusher.Item.Checker;
 using Zenject;
 using MedalPusher.Slot.Internal;
 using MedalPusher.Item.Payout;
+using MedalPusher.Item;
 
 namespace MedalPusher.Slot.Interface
 {
@@ -19,6 +20,8 @@ namespace MedalPusher.Slot.Interface
         private ISlotResultSubmitter resultSubmitter;
         [Inject]
         private IMedalPayoutOperation medalPayoutOperation;
+        [Inject]
+        private IFieldItemPayoutOperation fieldItemPayoutOperation;
 
         /// <summary>
         /// 当たったときに払い出すメダル数
@@ -31,6 +34,10 @@ namespace MedalPusher.Slot.Interface
             resultSubmitter.ObservableSlotResult
                            .Where(result => result.IsWin)
                            .Subscribe(_ => medalPayoutOperation.PayoutRequest(winMedals));
+            //7で当たったらJPChanceボールを払い出す
+            resultSubmitter.ObservableSlotResult
+                           .Where(result => result.WinRole == RoleValue.Role7)
+                           .Subscribe(_ => fieldItemPayoutOperation.PayoutRequest<JPBall>());
         }
     }
 }

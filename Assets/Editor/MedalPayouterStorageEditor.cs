@@ -5,16 +5,16 @@ using UnityEditor;
 using UnityEngine;
 using UnityUtility;
 
-[CustomEditor(typeof(MedalPayouterFacade))]
+[CustomEditor(typeof(MedalPayoutOperator))]
 public class MedalPayouterStorageEditor : Editor
 {
-    private MedalPayouterFacade _payouter;
+    private MedalPayoutOperator _payouter;
     private int clones = 50;
     private int index = 0;
 
     private void OnEnable()
     {
-        _payouter = target as MedalPayouterFacade;
+        _payouter = target as MedalPayoutOperator;
     }
 
     public override void OnInspectorGUI()

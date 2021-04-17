@@ -6,13 +6,15 @@ namespace Case{
 
 namespace Item{
     namespace Item{
-        interface IFieldItem
+        interface IFieldItem{
+            +Use() : void
+        }
         class FieldItem
-        interface IFieldItemEvent
-        class FieldItemEvent
+        interface IGameEvent
+        class GameEvent
         IFieldItem <|.. FieldItem
-        IFieldItemEvent <|.. FieldItemEvent
-        FieldItem *- IFieldItemEvent
+        IGameEvent <|.. GameEvent
+        FieldItem *- IGameEvent
 
 
         interface IReadOnlyMedal{
@@ -59,7 +61,7 @@ namespace Item{
         IMedalPoolPicker <|.. MedalPool
         IObservableMedalPoolInfo <|.. MedalPool
 
-        MedalPool --> Item.Item.Medal
+        MedalPool -- Item.Item.Medal
     }
     
     namespace Checker{
@@ -92,10 +94,10 @@ namespace Item{
         interface IObservableMedalPayoutStock{
             +PayoutStock { get; } : IObservable<int>
         }
-        class MedalPayouterFacade
-        MedalPayouterFacade ..|> IMedalPayoutOperation
-        IObservableMedalPayoutStock <|.. MedalPayouterFacade
-        IMedalPayouter ---o MedalPayouterFacade
+        class MedalPayoutOperator
+        MedalPayoutOperator ..|> IMedalPayoutOperation
+        IObservableMedalPayoutStock <|.. MedalPayoutOperator
+        IMedalPayouter ---o MedalPayoutOperator
 
         interface IMedalPayouter{
             +AddPayoutStock(int) : void
@@ -103,21 +105,29 @@ namespace Item{
         }
         abstract MedalPayouter
         class NormalMedalPayouter
-        class DeployMedalPayouter
+        class ShowerMedalPayouter
         IMedalPayouter <|.. MedalPayouter
         MedalPayouter <|-- NormalMedalPayouter
-        MedalPayouter <|-- DeployMedalPayouter
+        MedalPayouter <|-- ShowerMedalPayouter
         MedalPayouter --> Item.Pool.IMedalPoolPicker
+
+        interface IFieldItemPayouter{
+            +Payout(FieldItem) : void
+        }
+        class FieldItemPayouter
+        IFieldItemPayouter <|.. FieldItemPayouter
 
 
         interface IObservableFieldItemPayouter{
         }
-        interface IFieldItemPayoutOperator{
+        interface IFieldItemPayoutOperation{
             +void Payout(IFieldItem)
         }
-        class FieldItemPayouter
-        FieldItemPayouter ..|> IFieldItemPayoutOperator
-        IObservableFieldItemPayouter <|.. FieldItemPayouter
+
+        class FieldItemPayoutOperator
+        FieldItemPayoutOperator ..|> IFieldItemPayoutOperation
+        IObservableFieldItemPayouter <|.. FieldItemPayoutOperator
+        IFieldItemPayouter --o FieldItemPayoutOperator
 
         class PayoutMedalView<<View>>
         class PayoutFieldItemView<<View>>
@@ -225,7 +235,7 @@ namespace Slot {
             ObservableSlotResult { get; } : IObservable<SlotResult>
         }
         class SlotStartScheduler <<MonoBehaviour>>
-        IStockCounter <- SlotStartScheduler
+        IStockCounter <-- SlotStartScheduler
         SlotStartScheduler -->  ISlotStarter
         ISlotResultSubmitter <|.. SlotStartScheduler
 
@@ -296,18 +306,19 @@ namespace Slot {
         }
     }
 
-    namespace Interface{
+    ' namespace Interface{
         class StockCounterView<<View>>
         StockCounterView -> Slot.Internal.Stock.IReadOnlyObservableStockCount
 
         class SlotResultToPrizeConverter <<MonoBehaviour>>
         SlotResultToPrizeConverter --> Slot.Internal.ISlotResultSubmitter
-        IMedalPayoutOperation ))-- SlotResultToPrizeConverter
+        Item.Payout.IFieldItemPayoutOperation <- SlotResultToPrizeConverter
+        Item.Payout.IMedalPayoutOperation <-- SlotResultToPrizeConverter
 
         class SlotStockSensor <<MonoBehaviour>>
         SlotStockSensor --> Slot.Internal.Stock.IStockAdder
         IObservableMedalChecker ))-- SlotStockSensor
-    }
+    ' }
 }
 
 
@@ -354,7 +365,7 @@ namespace Slot {
 '     ILotteryPrizeInsertionSlot <-- LotteryPocket
 '     LotteryPocket *- LotteryPrizeInfo
 
-'     Item.Payout.IFieldItemPayoutOperator <-- LotteryPrizeCollector
+'     Item.Payout.IFieldItemPayoutOperation <-- LotteryPrizeCollector
 '     Item.Payout.IMedalPayoutOperation <-- LotteryPrizeCollector
 
 '     interface IBallBornOperator{
