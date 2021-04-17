@@ -6,7 +6,7 @@ namespace MedalPusher.Item.Checker
     /// アイテムの検出通知を受け取る
     /// </summary>
     /// <typeparam name="TItem"></typeparam>
-    public interface IObservableItemChecker<TItem> where TItem : IFieldObject
+    public interface IObservableItemChecker<out TItem> where TItem : IFieldObject
     {
         /// <summary>
         /// アイテムを検出した
@@ -18,4 +18,8 @@ namespace MedalPusher.Item.Checker
     /// メダルの検出通知を受け取る（SerializeField用非ジェネリクス版）
     /// </summary>
     public interface IObservableMedalChecker : IObservableItemChecker<IMedal> { }
+    /// <summary>
+    /// アイテムの検出通知を受け取る（SerializeField用非ジェネリクス版）
+    /// </summary>
+    public interface IObservableFieldItemChecker : IObservableItemChecker<IFieldItem> { }
 }

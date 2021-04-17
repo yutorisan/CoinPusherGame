@@ -6,13 +6,20 @@ namespace MedalPusher.Item
 
     public interface IFieldItem : IFieldObject
     {
-        //未実装
+        /// <summary>
+        /// アイテムを使用する
+        /// </summary>
+        void Use();
     }
-
-    public class FieldItem : MonoBehaviour, IFieldItem
+    /// <summary>
+    /// フィールド上に出現するアイテム
+    /// </summary>
+    public abstract class FieldItem : MonoBehaviour, IFieldItem
     {
-        private IFieldItemEvent m_event;
+        protected abstract IGameEvent GameEvent { get; }
 
-        //未実装
+        public void Dispose() => Destroy(gameObject);
+
+        public void Use() => GameEvent.Occur();
     }
 }

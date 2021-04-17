@@ -2,8 +2,10 @@
 
 namespace MedalPusher.Item
 {
-    public interface IFieldObject
+    /// <summary>
+    /// フィールド上に出現するオブジェクトであることを表す
+    /// </summary>
+    public interface IFieldObject : IDisposable
     {
-        //未実装
     }
 }

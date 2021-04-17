@@ -173,7 +173,7 @@ namespace MedalPusher.Item.Pool
             /// メダルのアクティブ状態のチェックを委託する
             /// </summary>
             /// <param name="medal"></param>
-            public void OutsourceCounting(IReadOnlyMedal medal)
+            public void OutsourceCounting(IMedal medal)
             {
                 //メダルのアクティブ状態の変化を購読して、全体のアクティブメダル数をカウントする
                 //各々のメダルがアクティブになれば+1, 非アクティブになれば-1する
@@ -184,7 +184,7 @@ namespace MedalPusher.Item.Pool
                 //インスタンス生成数を更新
                 ++instantiatedMedalCountTable[medal.ValueType].Value;
             }
-            public void OutsourceCounting(IEnumerable<IReadOnlyMedal> medals)
+            public void OutsourceCounting(IEnumerable<IMedal> medals)
             {
                 foreach (var medal in medals) OutsourceCounting(medal);
             }
