@@ -1,5 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using MedalPusher.Item.Payout;
+using MedalPusher.Lottery;
+using UniRx;
 using UnityEngine;
 using Zenject;
 
@@ -11,17 +14,16 @@ namespace MedalPusher
     public class LotteryResultToPrizeConverter : MonoBehaviour
     {
         [Inject]
+        ILotteryResultSubmitter resultSubmitter;
+        [Inject]
+        IMedalPayoutOperation medalPayoutOperation;
+        [Inject]
+        IFieldItemPayoutOperation fieldItemPayoutOperation;
 
-        // Start is called before the first frame update
         void Start()
         {
-        
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-        
+            //景品を受け取ったらメダルを払い出す
+            resultSubmitter.LotteryResult.Subscribe(info => medalPayoutOperation.PayoutRequest(info.PrizeMedals, MedalPayoutMethod.Shower));
         }
     }
 }

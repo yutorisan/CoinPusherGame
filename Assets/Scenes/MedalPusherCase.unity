@@ -6603,17 +6603,17 @@ PrefabInstance:
     - target: {fileID: 8100620504409734382, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_Text
-      value: 5
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 8100620504409734382, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_FontSize
-      value: 20
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 8100620505272672460, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_fontSize
-      value: 20
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 8100620505272672460, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
@@ -6623,7 +6623,7 @@ PrefabInstance:
     - target: {fileID: 8100620505272672460, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_prizeInfo.m_prizeMedals
-      value: 5
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 8100620505272672462, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
@@ -15798,17 +15798,17 @@ PrefabInstance:
     - target: {fileID: 8100620504409734382, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_Text
-      value: 100
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 8100620504409734382, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_FontSize
-      value: 70
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 8100620505272672460, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_fontSize
-      value: 70
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 8100620505272672460, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
@@ -15818,7 +15818,7 @@ PrefabInstance:
     - target: {fileID: 8100620505272672460, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_prizeInfo.m_prizeMedals
-      value: 100
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 8100620505272672462, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
@@ -16094,9 +16094,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6323d1f09ffa54f91adc1f84444ba7a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  directWinningProbability: 1
-  reachProbability: 0
-  reachWinningProbability: 0.6
+  directWinningProbability: 0.01
+  reachProbability: 0.3
+  reachWinningProbability: 0.65
 --- !u!1 &540353792
 GameObject:
   m_ObjectHideFlags: 0
@@ -49855,17 +49855,17 @@ PrefabInstance:
     - target: {fileID: 8100620504409734382, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_Text
-      value: 10
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 8100620504409734382, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_FontSize
-      value: 30
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 8100620505272672460, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_fontSize
-      value: 30
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 8100620505272672460, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
@@ -49875,7 +49875,7 @@ PrefabInstance:
     - target: {fileID: 8100620505272672460, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_prizeInfo.m_prizeMedals
-      value: 10
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 8100620505272672462, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
@@ -61595,6 +61595,49 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1254350663}
   m_CullTransparentMesh: 0
+--- !u!1 &1259927618
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1259927619}
+  - component: {fileID: 1259927620}
+  m_Layer: 0
+  m_Name: LotteryResultToPrizeConverter
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1259927619
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259927618}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 820073635}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1259927620
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259927618}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fb3634ba9c754f1886fd863e7585c2e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1284379366
 GameObject:
   m_ObjectHideFlags: 0
@@ -75134,7 +75177,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1470467246}
   m_LocalRotation: {x: 0.39604384, y: -0, z: -0, w: 0.9182316}
-  m_LocalPosition: {x: -1.002, y: 0.4876055, z: 0.50683916}
+  m_LocalPosition: {x: -1.002, y: 0.21, z: 0.522}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 687592642}
@@ -100407,12 +100450,12 @@ PrefabInstance:
     - target: {fileID: 8100620504409734382, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_FontSize
-      value: 40
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 8100620505272672460, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_fontSize
-      value: 40
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 8100620505272672460, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
@@ -100767,17 +100810,17 @@ PrefabInstance:
     - target: {fileID: 8100620504409734382, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_Text
-      value: 200
+      value: 500
       objectReference: {fileID: 0}
     - target: {fileID: 8100620504409734382, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_FontSize
-      value: 100
+      value: 130
       objectReference: {fileID: 0}
     - target: {fileID: 8100620505272672460, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_fontSize
-      value: 100
+      value: 130
       objectReference: {fileID: 0}
     - target: {fileID: 8100620505272672460, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
@@ -100787,7 +100830,7 @@ PrefabInstance:
     - target: {fileID: 8100620505272672460, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_prizeInfo.m_prizeMedals
-      value: 200
+      value: 500
       objectReference: {fileID: 0}
     - target: {fileID: 8100620505272672462, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
@@ -101231,17 +101274,17 @@ PrefabInstance:
     - target: {fileID: 8100620504409734382, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_Text
-      value: 50
+      value: 200
       objectReference: {fileID: 0}
     - target: {fileID: 8100620504409734382, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_FontSize
-      value: 40
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 8100620505272672460, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_fontSize
-      value: 40
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 8100620505272672460, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
@@ -101251,7 +101294,7 @@ PrefabInstance:
     - target: {fileID: 8100620505272672460, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
       propertyPath: m_prizeInfo.m_prizeMedals
-      value: 50
+      value: 200
       objectReference: {fileID: 0}
     - target: {fileID: 8100620505272672462, guid: 8c4d799be33d444bdb9da1686eb8d876,
         type: 3}
