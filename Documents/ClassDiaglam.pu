@@ -1,0 +1,393 @@
+@startuml MedalPusher
+
+namespace Case{
+    class PusherMover
+}
+
+namespace Item{
+    namespace Item{
+        interface IFieldItem{
+            +Use() : void
+        }
+        abstract FieldItem
+        interface IGameEvent{
+            +Occur() : void
+        }
+        class GameEvent
+        IFieldItem <|.. FieldItem
+        IGameEvent <|.. GameEvent
+        FieldItem *- IGameEvent
+
+        FieldItem <|-- JPBall
+
+        interface IMedal{
+            +ValueType { get; } : MedalValue
+            +position { get; } : Vector3
+        }
+        class Medal
+        IMedal <|.. Medal
+
+        interface IFieldObject
+        IDisposable ()-- IFieldObject
+        IFieldObject <|-- IMedal
+        IFieldObject <|-- IFieldItem
+    }
+
+    namespace Pool{
+        interface IObservablePoolObjectStatus{
+            +Status { get; } : IReadOnlyReactiveProperty<PoolObjectUseStatus>
+        }
+        interface IPoolObject
+        abstract PoolObject
+        
+        IObservablePoolObjectStatus <|-- IPoolObject
+        IPoolObject <|.. PoolObject
+        IPoolObject <|-- Item.Item.IMedal
+        PoolObject <|-- Item.Item.Medal
+       
+
+        interface IMedalPoolPicker{
+            +IMedal PickUp()
+        }
+        interface IObservableMedalPoolInfo
+        class MedalPool
+
+        IMedalPoolPicker <|.. MedalPool
+        IObservableMedalPoolInfo <|... MedalPool
+
+        MedalPool --- Item.Item.Medal
+    }
+    
+    namespace Checker{
+        namespace Base #DDDDDD{
+            interface IObservableItemChecker<TItem>{
+                +Checked { get; } : IObservable<TItem>
+            }
+            abstract CheckerBase<TItem>{
+                #isDisposeOnChecked : bool
+                #{abstract}DetectTag { get; } : string
+            }
+            IObservableItemChecker <|.. CheckerBase
+        }
+
+        class MedalChecker
+        class FieldItemChecker
+        Item.Checker.Base.CheckerBase <|-- MedalChecker
+        Item.Checker.Base.CheckerBase <|-- FieldItemChecker
+    }
+    
+    namespace Payout{
+        interface IMedalPayoutOperation{
+            +PayoutRequest(int, MedalPayoutMethod) : void
+        }
+        interface IObservableMedalPayoutStock{
+            +PayoutStock { get; } : IObservable<int>
+        }
+        class MedalPayoutOperator
+        MedalPayoutOperator ..|> IMedalPayoutOperation
+        IObservableMedalPayoutStock <|.. MedalPayoutOperator
+        IMedalPayouter ---o MedalPayoutOperator
+
+        interface IMedalPayouter{
+            +AddPayoutStock(int) : void
+            +PayoutStock { get; } : IObservable<int>
+        }
+        abstract MedalPayouter
+        class NormalMedalPayouter
+        class ShowerMedalPayouter
+        IMedalPayouter <|.. MedalPayouter
+        MedalPayouter <|-- NormalMedalPayouter
+        MedalPayouter <|-- ShowerMedalPayouter
+        MedalPayouter --> Item.Pool.IMedalPoolPicker
+
+        interface IFieldItemPayouter{
+            +Payout(FieldItem) : void
+        }
+        class FieldItemPayouter
+        IFieldItemPayouter <|.. FieldItemPayouter
+
+
+        interface IObservableFieldItemPayouter{
+        }
+        interface IFieldItemPayoutOperation{
+            +void Payout(IFieldItem)
+        }
+
+        class FieldItemPayoutOperator
+        FieldItemPayoutOperator ..|> IFieldItemPayoutOperation
+        IObservableFieldItemPayouter <|.. FieldItemPayoutOperator
+        IFieldItemPayouter --o FieldItemPayoutOperator
+
+        class PayoutMedalView<<View>>
+        class PayoutFieldItemView<<View>>
+        PayoutMedalView --> IObservableMedalPayoutStock : 払い出しメダル数を監視
+        PayoutFieldItemView --> IObservableFieldItemPayouter : 払出し待機アイテムを監視
+
+
+
+        class PayoutInstaller<<Installer>>
+    }
+
+    'ゲーム開始時のメダル充填
+    Item.Payout.IMedalPayoutOperation <-- MedalFieldAutoFiller
+    
+    namespace Inventory{
+        interface IObservableMedalInventory{
+            +IObservable<int> MedalInventoryCount
+        }
+        class MedalInventory
+        IObservableMedalInventory <|.. MedalInventory
+
+        interface IObservableFieldItemInventory
+        class FieldItemInventory
+        IObservableFieldItemInventory <|.. FieldItemInventory
+
+        MedalInventory --(( IObservableMedalChecker
+        FieldItemInventory --(( IObservableFieldItemChecker
+        Input.IGameCommandProvider <--- MedalInventory
+
+        class FieldItemApplyer
+        Item.Payout.IMedalPayoutOperation <--- FieldItemApplyer : メダル払い出しを要求
+
+        class MedalInventoryView<<View>>
+        MedalInventoryView --> IObservableMedalInventory
+        class FieldItemInventoryView<<View>>
+        FieldItemInventoryView --> IObservableFieldItemInventory
+
+        FieldItemApplyer --> IObservableFieldItemInventory
+        MedalInventory --> Item.Payout.IMedalPayoutOperation : メダル払い出しを要求
+
+        class InventoryInstaller<<Installer>>
+    }
+}
+
+namespace UnityEngine{
+    class Input<<static>>
+}
+
+namespace Input #DDDDDD{
+    class InputInstaller<<Installer>>
+
+    enum GameCommand
+    
+    interface IGameCommandProvider{
+        +IObservable<GameCommand> InputedCommand { get; }
+    }
+    class GameCommandProvider
+    IGameCommandProvider <|.. GameCommandProvider
+
+    interface IInputProvider
+    class UserInputProvider
+    IInputProvider <|.. UserInputProvider
+    UserInputProvider --> UnityEngine.Input
+    GameCommandProvider --> IInputProvider
+
+    interface IKeyConfig
+    abstract KeyConfig
+    class DefaultKeyConfig
+
+    IKeyConfig <|.. KeyConfig
+    KeyConfig <|-up- DefaultKeyConfig
+    GameCommand <- KeyConfig
+
+    class KeyConfigProvider<<static>>
+    KeyConfigProvider --+ IKeyConfig
+    GameCommandProvider -> KeyConfigProvider
+
+    
+    
+}
+
+
+namespace Slot {
+    class SlotInstaller <<Installer>>
+
+    namespace Internal #DDDDDD{
+        namespace Stock{
+            interface IReadOnlyObservableStockCount{
+                +Stock { get; } : IReadOnlyReactiveProperty<int>
+            }
+            interface IStockAdder{
+                +Add() : void
+            }
+            class StockCounter
+            StockCounter ..|> IReadOnlyObservableStockCount
+            IStockAdder <|.. StockCounter
+        }
+        interface IStockCounter{
+            +Supplied { get; } : IObservable<Unit>
+            +IsSpendable { get; } : bool
+            +Spend() : void
+        }
+        Slot.Internal.Stock.StockCounter .|> IStockCounter
+        interface ISlotResultSubmitter{
+            ObservableSlotResult { get; } : IObservable<SlotResult>
+        }
+        class SlotStartScheduler 
+        IStockCounter <-- SlotStartScheduler
+        SlotStartScheduler -->  ISlotStarter
+        ISlotResultSubmitter <|.. SlotStartScheduler
+
+        interface ISlotStarter{
+            +Start() : UniTask<SlotResult>
+        }
+        class SlotScenarioDeterminer 
+        ISlotStarter <|.. SlotScenarioDeterminer
+        SlotScenarioDeterminer --> ISlotProductionDeterminer
+
+        interface ISlotProductionDeterminer{
+            +DetermineProduction(Scenario) : UniTask
+        }
+        class SlotProductionDeterminer 
+        ISlotProductionDeterminer <|.. SlotProductionDeterminer
+        SlotProductionDeterminer --> ISlotDriver
+        Slot.Internal.Stock.IReadOnlyObservableStockCount <-- SlotProductionDeterminer : 残ストックによって演出が変化
+
+        interface ISlotDriver{
+            +ControlBy(Production) : IObservable<Unit>
+        }
+        interface IReadOnlyObservableSlotProdctionStatus{
+            +ProductionStatus { get; } : IReadOnlyReactiveProperty<SlotProductionStatus>
+        }
+        class SlotDriver 
+        ISlotDriver <|.. SlotDriver
+        IReadOnlyObservableSlotProdctionStatus <|. SlotDriver
+
+        namespace Core #AAAAAA{
+            class ReelSequenceProvider
+            interface IReelSequenceProvider
+            IReelSequenceProvider <|.. ReelSequenceProvider
+            Slot.Internal.SlotDriver "1"*--"3" IReelSequenceProvider
+
+            class RoleTweenProvider
+            ReelSequenceProvider "1"*--"*" RoleTweenProvider
+            RoleTweenProvider *-- IRoleOperation
+
+            interface IReachAntagonistSequenceProvider
+            class ReachAntagonistSequenceProvider
+            IReachAntagonistSequenceProvider <|.. ReachAntagonistSequenceProvider
+
+            ReelSequenceProvider +- IReachAntagonistSequenceProvider
+
+            interface IRoleOperation{
+                +transform { get; } : Transform
+                +Value { get; } : RoleValue
+                +ChangeOpacity(float) : void
+            }
+            class Role
+            IRoleOperation <|.. Role
+        }
+
+        namespace Production{
+            
+            class LightEffectController
+            LightEffectController --> Slot.Internal.IReadOnlyObservableSlotProdctionStatus
+
+            class SlotLightColorChanger
+            class SlotLightIntensityChanger
+            class SlotLightLookAtChanger
+            class FireworksParticleController
+
+            SlotLightColorChanger <-- LightEffectController
+            SlotLightIntensityChanger <-- LightEffectController
+            SlotLightLookAtChanger <-- LightEffectController
+            FireworksParticleController <- LightEffectController
+        }
+    }
+
+    ' namespace Interface{
+        class StockCounterView<<View>>
+        StockCounterView -> Slot.Internal.Stock.IReadOnlyObservableStockCount
+
+        class SlotResultToPrizeConverter 
+        SlotResultToPrizeConverter --> Slot.Internal.ISlotResultSubmitter
+        Item.Payout.IFieldItemPayoutOperation <- SlotResultToPrizeConverter
+        Item.Payout.IMedalPayoutOperation <-- SlotResultToPrizeConverter
+
+        class SlotStockSensor 
+        SlotStockSensor --> Slot.Internal.Stock.IStockAdder
+        IObservableMedalChecker ))-- SlotStockSensor
+    ' }
+}
+
+
+' namespace PayoutPinball{
+'     interface IPinballPocket
+'     class PinballPocket
+'     IPinballPocket <|.. PinballPocket
+
+'     interface IPinballEvent
+'     class PinballEvent
+'     IPinballEvent <|.. PinballEvent
+
+'     PinballPocket *- IPinballEvent
+'     PinballPocket --(( IObservableMedalChecker
+' }
+
+
+
+namespace Lottery{
+    namespace Internal #DDDDDD{
+        interface IObservableLotteryStatus{
+            +Status { get; } : IReadOnlyReactiveProperty<LotteryStatus>
+        }
+        class LotteryBowlRotater
+        IObservableLotteryStatus <|. LotteryBowlRotater
+
+        class LotteryPocket
+        Item.Checker.Base.CheckerBase <|-- LotteryPocket
+
+        class LotteryPrize3DView
+        LotteryPocket *-- LotteryPrize3DView
+
+        interface ILotteryResultSubmitter{
+            +LotteryResult { get; } : IObservable<LotteryPrize>
+        }
+        interface ILotteryPrizeInsertionSlot
+        class LotteryPrizeCollector
+        LotteryPrizeCollector ..|> ILotteryPrizeInsertionSlot
+        ILotteryResultSubmitter <|.. LotteryPrizeCollector
+
+        ILotteryPrizeInsertionSlot <-- LotteryPocket
+
+        interface IBallBornOperator{
+            +Born() : void
+        }
+        interface IObservableBallBorned{
+            +BallBorned : void <<event>>
+        }
+        class BallBorner
+        IBallBornOperator <|.. BallBorner
+        BallBorner ..|> IObservableBallBorned
+        Item.Item.JPBall ------> IBallBornOperator
+
+        interface IObservableBallCounter{
+            +BallCount { get; } : IObservable<int>
+        }
+        class OnLotteryBallCounter
+        OnLotteryBallCounter ..|> IObservableBallCounter
+        IObservableBallBorned <-- OnLotteryBallCounter
+        IObservableBallCounter <-- LotteryBowlRotater
+
+        class LotteryInstaller<<Installer>>{}
+    }
+    class LotteryResultToPrizeConverter
+    Item.Payout.IFieldItemPayoutOperation <-- LotteryResultToPrizeConverter
+    Item.Payout.IMedalPayoutOperation <-- LotteryResultToPrizeConverter
+    LotteryResultToPrizeConverter --> Lottery.Internal.ILotteryResultSubmitter
+}
+
+namespace Camera{
+    class CameraSwitcher
+    Lottery.Internal.IObservableLotteryStatus <-- CameraSwitcher
+}
+
+namespace Item.Debug{
+    class MedalPoolDebug
+
+    MedalPoolDebug --> Item.Pool.IObservableMedalPoolInfo
+}
+
+class SceneInstaller<<Installer>>
+
+@enduml

@@ -1,0 +1,9 @@
+newmtl Medal1Material
+map_Kd Star-Gold-Coin.png
+Kd 1 0.9947889 0.2588235
+d 1
+
+newmtl MedalSideMaterial
+Kd 0.7490196 0.5803922 0.2078432
+d 1
+

@@ -1,0 +1,18 @@
+{
+    "name": "Slot.Core",
+    "references": [
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:2905820f54c7b452f8a1f2a3df38399b",
+        "GUID:ef7ade95bd604483f893d1e6fcd76c2c",
+        "GUID:6ad6c27cb50f74596b745816d2723b46"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
