@@ -30,6 +30,10 @@ namespace MedalPusher.Lottery
 
         public IReadOnlyReactiveProperty<LotteryStatus> Status => status;
 
+        private void Awake()
+        {
+            print("Awake:" + GetHashCode());
+        }
         void Start()
         {
             _rigidbody = GetComponent<Rigidbody>();
@@ -37,6 +41,7 @@ namespace MedalPusher.Lottery
 
         void Update()
         {
+            print("Update:" + GetHashCode());
             //抽選台の上にボールが1個以上存在したら回転させる
             if(onBallCount.BallCount.Value > 0)
             {
