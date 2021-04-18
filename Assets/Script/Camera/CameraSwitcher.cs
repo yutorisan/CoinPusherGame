@@ -1,48 +1,38 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using UnityEngine.UI;
-using UnityUtility;
+using System.Collections;
+using System.Collections.Generic;
 using DG.Tweening;
+using MedalPusher.Lottery;
+using UniRx;
+using UnityEngine;
+using Zenject;
 
 namespace MedalPusher.Camera
 {
     /// <summary>
-    /// カメラ位置を変更する
+    /// ゲーム状況に応じてカメラ位置を変更する
     /// </summary>
     public class CameraSwitcher : MonoBehaviour
     {
-        /// <summary>
-        /// カメラ位置を選択するドロップダウン
-        /// </summary>
-        [SerializeField]
-        private Dropdown m_cameraCombobox;
+        [Inject]
+        private IObservableLotteryStatus lotteryStatus;
 
-        // Start is called before the first frame update
+        [SerializeField]
+        private Transform mainTransform;
+        [SerializeField]
+        private Transform lotteryTransform;
+
         void Start()
         {
-            //メインカメラを取得
-            UnityEngine.Camera mainCamera = UnityEngine.Camera.main;
-
-            //メインカメラのTransformのクローンを生成して子オブジェクトにまとめる
-            Transform mainCameraTransform = new GameObject("MainCamera").transform;
-            mainCameraTransform.parent = this.transform;
-            mainCameraTransform.position = mainCamera.transform.position;
-            mainCameraTransform.rotation = mainCamera.transform.rotation;
-            mainCameraTransform.localScale = mainCamera.transform.localScale;
-
-            //子オブジェクトのTransform（CameraSwitch対象のTransform）を列挙
-            IReadOnlyList<Transform> cameraPoss = this.transform.Cast<Transform>().ToList();
-            //DropDownの項目に追加
-            m_cameraCombobox.options = cameraPoss.Select(tr => new Dropdown.OptionData(tr.name)).ToList();
-
-            //DropDownのOnChangedイベントを設定
-            var ddEvent = new Dropdown.DropdownEvent();
-            //DropDownが変更されたら、そのTransformにカメラを移動させる
-            ddEvent.AddListener(index => mainCamera.transform.DOMove(cameraPoss[index].position, 0.5f)
-                                                             .SetEase(Ease.OutCirc));
-            m_cameraCombobox.onValueChanged = ddEvent;
-
+            //Lotterが抽選中ならカメラをLotteryに、
+            //そうでなかったらデフォルトの位置にする
+            lotteryStatus.Status
+                .DistinctUntilChanged()
+                .Select(status => status == LotteryStatus.Lotterying ? lotteryTransform : mainTransform)
+                .Subscribe(targetTr =>
+                {
+                    transform.DOMove(targetTr.position, 0.5f).Play();
+                    transform.DORotateQuaternion(targetTr.rotation, 0.5f).Play();
+                });
         }
     }
 }

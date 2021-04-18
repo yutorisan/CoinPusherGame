@@ -2,6 +2,7 @@ using MedalPusher.Item;
 using MedalPusher.Item.Checker;
 using MedalPusher.Item.Payout;
 using MedalPusher.Item.Pool;
+using MedalPusher.Lottery;
 using UnityEngine;
 using Zenject;
 
@@ -23,6 +24,12 @@ namespace MedalPusher
                      .To<MedalPool>()
                      .FromComponentInHierarchy()
                      .AsCached();
+
+            Container.Bind<IObservableLotteryStatus>()
+                     .To<LotteryBowlRotater>()
+                     .FromComponentInHierarchy()
+                     .AsCached();
+
         }
     }
 }
