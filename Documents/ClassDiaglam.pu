@@ -328,7 +328,11 @@ namespace Slot {
 
 namespace Lottery{
     namespace Internal #DDDDDD{
+        interface IObservableLotteryStatus{
+            +Status { get; } : IReadOnlyReactiveProperty<LotteryStatus>
+        }
         class LotteryBowlRotater
+        IObservableLotteryStatus <|. LotteryBowlRotater
 
         class LotteryPocket
         Item.Checker.Base.CheckerBase <|-- LotteryPocket
@@ -373,12 +377,15 @@ namespace Lottery{
     LotteryResultToPrizeConverter --> Lottery.Internal.ILotteryResultSubmitter
 }
 
+namespace Camera{
+    class CameraSwitcher
+    Lottery.Internal.IObservableLotteryStatus <-- CameraSwitcher
+}
 
-
-namespace Debug{
+namespace Item.Debug{
     class MedalPoolDebug
 
-    Item.Pool.IObservableMedalPoolInfo <-- MedalPoolDebug
+    MedalPoolDebug --> Item.Pool.IObservableMedalPoolInfo
 }
 
 class SceneInstaller<<Installer>>
