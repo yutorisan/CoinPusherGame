@@ -1,3 +1,4 @@
+using MedalPusher.Item.Checker;
 using MedalPusher.Lottery;
 using UnityEngine;
 using Zenject;
@@ -16,10 +17,6 @@ public class LotteryInstaller : MonoInstaller
                  .AsCached();
         Container.Bind(typeof(IObservableBallCount), typeof(IInitializable))
                  .To<OnLotteryBallCounter>()
-                 .AsCached();
-        Container.Bind<IObservableLotteryRotater>()
-                 .To<LotteryBowlRotater>()
-                 .FromComponentInHierarchy()
                  .AsCached();
 
         LotteryPrizeCollector lotteryPrizeCollector = new LotteryPrizeCollector();

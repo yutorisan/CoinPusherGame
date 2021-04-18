@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Sirenix.OdinInspector;
 using UniRx;
 using UniRx.Diagnostics;
 using UnityEngine;
@@ -39,10 +40,11 @@ namespace MedalPusher.Lottery
 
         public IObservable<Unit> BallBorned => ballBornedSubject.AsObservable();
 
+        [Button]
         public void BornRequest()
         {
             Instantiate(m_ballPrefab, this.transform.position, Quaternion.identity);
             ballBornedSubject.OnNext(Unit.Default);
         }
     }
-}
+}   
