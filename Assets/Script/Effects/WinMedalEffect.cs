@@ -10,6 +10,7 @@ using UniRx.Toolkit;
 using UnityUtility;
 using DG.Tweening;
 using MedalPusher.Item;
+using MedalPusher.Sound;
 
 namespace MedalPusher.Effects
 {
@@ -30,7 +31,7 @@ namespace MedalPusher.Effects
         /// エフェクト再生時のSE
         /// </summary>
         [SerializeField, Required]
-        private AudioSource audioSource;
+        private ISEPlayer sePlayer;
         /// <summary>
         /// エフェクト再生トリガーとなるMedalChecker
         /// </summary>
@@ -113,7 +114,7 @@ namespace MedalPusher.Effects
                            .Subscribe(sq =>
                            {
                                sq.Play();
-                               audioSource.Play();
+                               sePlayer.Play();
                            });
         }
 
