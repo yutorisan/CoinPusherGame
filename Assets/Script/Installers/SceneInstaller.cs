@@ -3,6 +3,7 @@ using MedalPusher.Item.Checker;
 using MedalPusher.Item.Payout;
 using MedalPusher.Item.Pool;
 using MedalPusher.Lottery;
+using MedalPusher.Slot.Internal;
 using UnityEngine;
 using Zenject;
 
@@ -29,7 +30,10 @@ namespace MedalPusher
                      .To<LotteryBowlRotater>()
                      .FromComponentInHierarchy()
                      .AsCached();
-
+            Container.Bind<IReadOnlyObservableSlotProdctionStatus>()
+                     .To<SlotDriver>()
+                     .FromComponentInHierarchy()
+                     .AsCached();
         }
     }
 }

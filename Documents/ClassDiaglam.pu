@@ -377,6 +377,20 @@ namespace Lottery{
     LotteryResultToPrizeConverter --> Lottery.Internal.ILotteryResultSubmitter
 }
 
+namespace Sound{
+    interface ISEPlayer{
+        +Play() : void
+    }
+    class MedalGetSEPlayer
+    ISEPlayer <|.. MedalGetSEPlayer
+
+    class BGMPlayer
+
+    ISEPlayer -> Item.Checker.Base.IObservableItemChecker
+    BGMPlayer --> Slot.Internal.IReadOnlyObservableSlotProdctionStatus
+    BGMPlayer --> Lottery.Internal.IObservableLotteryStatus
+}
+
 namespace Camera{
     class CameraSwitcher
     Lottery.Internal.IObservableLotteryStatus <-- CameraSwitcher

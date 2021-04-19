@@ -17,7 +17,7 @@ namespace MedalPusher.Slot.Internal
     /// <summary>
     /// スロットの演出状況を取得または購読できる
     /// </summary>
-    internal interface IReadOnlyObservableSlotProdctionStatus
+    public interface IReadOnlyObservableSlotProdctionStatus
     {
         /// <summary>
         /// 現在のスロットの演出状況を取得または購読する
@@ -27,7 +27,7 @@ namespace MedalPusher.Slot.Internal
     /// <summary>
     /// スロットの動きを制御する
     /// </summary>
-    internal class SlotDriver : MonoBehaviour, ISlotDriver, IReadOnlyObservableSlotProdctionStatus
+    public class SlotDriver : MonoBehaviour, ISlotDriver, IReadOnlyObservableSlotProdctionStatus
     {
         /// <summary>
         /// スロットリールの半径
