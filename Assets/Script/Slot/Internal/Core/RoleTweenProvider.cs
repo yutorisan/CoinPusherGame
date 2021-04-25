@@ -50,10 +50,6 @@ namespace MedalPusher.Slot.Internal.Core
         /// このProviderが担当するRoleの値
         /// </summary>
         public RoleValue RoleValue => role.Value;
-        ///// <summary>
-        ///// Roleの識別子
-        ///// </summary>
-        //public IRole RoleID => m_operation;
 
         /// <summary>
         /// 

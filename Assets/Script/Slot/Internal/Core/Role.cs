@@ -24,26 +24,29 @@ namespace MedalPusher.Slot.Internal.Core
         /// <param name="opacity"></param>
         void ChangeOpacity(float opacity);
     }
+    /// <summary>
+    /// スロットの役
+    /// </summary>
     public class Role : MonoBehaviour, IRoleOperation
     {
         [SerializeField]
-        private RoleValue m_value;
+        private RoleValue value;
 
-        private Material m_material;
+        private Material material;
 
         void Awake()
         {
-            m_material = GetComponentInChildren<Renderer>().material;
+            material = GetComponentInChildren<Renderer>().material;
         }
 
         public void ChangeOpacity(float opacity)
         {
-            m_material.color = new Color(m_material.color.r,
-                                         m_material.color.g,
-                                         m_material.color.b,
-                                         opacity);
+            material.color = new Color(material.color.r,
+                                       material.color.g,
+                                       material.color.b,
+                                       opacity);
         }
 
-        public RoleValue Value => m_value;
+        public RoleValue Value => value;
     }
 }

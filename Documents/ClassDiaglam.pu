@@ -16,7 +16,7 @@ namespace Item{
         class GameEvent
         IFieldItem <|.. FieldItem
         IGameEvent <|.. GameEvent
-        FieldItem *- IGameEvent
+        IGameEvent -* FieldItem
 
         FieldItem <|-- JPBall
 
@@ -34,28 +34,38 @@ namespace Item{
     }
 
     namespace Pool{
-        interface IObservablePoolObjectStatus{
-            +Status { get; } : IReadOnlyReactiveProperty<PoolObjectUseStatus>
+        interface IPoolObjectReleaser{
+            +Release() : void
         }
-        interface IPoolObject
-        abstract PoolObject
+        interface IPoolObjectKeeper{
+            +Keep(Vector3) : void
+            +Keep(Vector3, Quaternion) : void
+        }
+        interface IObservablePoolObjectStatus{
+            +Status { get; } : IReadOnlyReactiveProperty<UseStatus>
+        }
+        abstract PoolObject{
+            -useStatus : UseStatus
+        }
         
-        IObservablePoolObjectStatus <|-- IPoolObject
-        IPoolObject <|.. PoolObject
-        IPoolObject <|-- Item.Item.IMedal
+        IObservablePoolObjectStatus <|-- IPoolObjectReleaser
+        IObservablePoolObjectStatus <|-- IPoolObjectKeeper
+        IPoolObjectReleaser <|.. PoolObject
+        IPoolObjectKeeper <|.. PoolObject
+
         PoolObject <|-- Item.Item.Medal
        
 
-        interface IMedalPoolPicker{
+        interface IMedalPoolPickUper{
             +IMedal PickUp()
         }
         interface IObservableMedalPoolInfo
         class MedalPool
 
-        IMedalPoolPicker <|.. MedalPool
+        IMedalPoolPickUper <|... MedalPool
         IObservableMedalPoolInfo <|... MedalPool
 
-        MedalPool --- Item.Item.Medal
+        IPoolObjectKeeper <- MedalPool
     }
     
     namespace Checker{
@@ -86,7 +96,7 @@ namespace Item{
         class MedalPayoutOperator
         MedalPayoutOperator ..|> IMedalPayoutOperation
         IObservableMedalPayoutStock <|.. MedalPayoutOperator
-        IMedalPayouter ---o MedalPayoutOperator
+        IMedalPayouter --o MedalPayoutOperator
 
         interface IMedalPayouter{
             +AddPayoutStock(int) : void
@@ -98,7 +108,7 @@ namespace Item{
         IMedalPayouter <|.. MedalPayouter
         MedalPayouter <|-- NormalMedalPayouter
         MedalPayouter <|-- ShowerMedalPayouter
-        MedalPayouter --> Item.Pool.IMedalPoolPicker
+        MedalPayouter -> Item.Pool.IMedalPoolPickUper
 
         interface IFieldItemPayouter{
             +Payout(FieldItem) : void
@@ -144,17 +154,13 @@ namespace Item{
 
         MedalInventory --(( IObservableMedalChecker
         FieldItemInventory --(( IObservableFieldItemChecker
-        Input.IGameCommandProvider <--- MedalInventory
-
-        class FieldItemApplyer
-        Item.Payout.IMedalPayoutOperation <--- FieldItemApplyer : メダル払い出しを要求
+        Input.IGameCommandProvider <-- MedalInventory : 払い出しコマンドを購読
 
         class MedalInventoryView<<View>>
         MedalInventoryView --> IObservableMedalInventory
         class FieldItemInventoryView<<View>>
         FieldItemInventoryView --> IObservableFieldItemInventory
 
-        FieldItemApplyer --> IObservableFieldItemInventory
         MedalInventory --> Item.Payout.IMedalPayoutOperation : メダル払い出しを要求
 
         class InventoryInstaller<<Installer>>
@@ -226,7 +232,7 @@ namespace Slot {
         class SlotStartScheduler 
         IStockCounter <-- SlotStartScheduler
         SlotStartScheduler -->  ISlotStarter
-        ISlotResultSubmitter <|.. SlotStartScheduler
+        ISlotResultSubmitter <|... SlotStartScheduler
 
         interface ISlotStarter{
             +Start() : UniTask<SlotResult>
@@ -244,7 +250,7 @@ namespace Slot {
         Slot.Internal.Stock.IReadOnlyObservableStockCount <-- SlotProductionDeterminer : 残ストックによって演出が変化
 
         interface ISlotDriver{
-            +ControlBy(Production) : IObservable<Unit>
+            +ControlBy(Production) : UniTask
         }
         interface IReadOnlyObservableSlotProdctionStatus{
             +ProductionStatus { get; } : IReadOnlyReactiveProperty<SlotProductionStatus>
@@ -297,12 +303,12 @@ namespace Slot {
 
     ' namespace Interface{
         class StockCounterView<<View>>
-        StockCounterView -> Slot.Internal.Stock.IReadOnlyObservableStockCount
+        StockCounterView --> Slot.Internal.Stock.IReadOnlyObservableStockCount
 
         class SlotResultToPrizeConverter 
         SlotResultToPrizeConverter --> Slot.Internal.ISlotResultSubmitter
         Item.Payout.IFieldItemPayoutOperation <- SlotResultToPrizeConverter
-        Item.Payout.IMedalPayoutOperation <-- SlotResultToPrizeConverter
+        Item.Payout.IMedalPayoutOperation <--- SlotResultToPrizeConverter
 
         class SlotStockSensor 
         SlotStockSensor --> Slot.Internal.Stock.IStockAdder
@@ -311,39 +317,23 @@ namespace Slot {
 }
 
 
-' namespace PayoutPinball{
-'     interface IPinballPocket
-'     class PinballPocket
-'     IPinballPocket <|.. PinballPocket
-
-'     interface IPinballEvent
-'     class PinballEvent
-'     IPinballEvent <|.. PinballEvent
-
-'     PinballPocket *- IPinballEvent
-'     PinballPocket --(( IObservableMedalChecker
-' }
-
-
-
 namespace Lottery{
     namespace Internal #DDDDDD{
         interface IObservableLotteryStatus{
             +Status { get; } : IReadOnlyReactiveProperty<LotteryStatus>
         }
         class LotteryBowlRotater
-        IObservableLotteryStatus <|. LotteryBowlRotater
+        LotteryBowlRotater ..|> IObservableLotteryStatus
 
         class LotteryPocket
-        Item.Checker.Base.CheckerBase <|-- LotteryPocket
-
-        class LotteryPrize3DView
-        LotteryPocket *-- LotteryPrize3DView
+        Item.Checker.Base.CheckerBase <|--left- LotteryPocket
 
         interface ILotteryResultSubmitter{
             +LotteryResult { get; } : IObservable<LotteryPrize>
         }
-        interface ILotteryPrizeInsertionSlot
+        interface ILotteryPrizeInsertionSlot{
+            +InsertPrize(LotteryPrizeInfo) : void
+        }
         class LotteryPrizeCollector
         LotteryPrizeCollector ..|> ILotteryPrizeInsertionSlot
         ILotteryResultSubmitter <|.. LotteryPrizeCollector
@@ -359,7 +349,7 @@ namespace Lottery{
         class BallBorner
         IBallBornOperator <|.. BallBorner
         BallBorner ..|> IObservableBallBorned
-        Item.Item.JPBall ------> IBallBornOperator
+        Item.Item.JPBall -----> IBallBornOperator
 
         interface IObservableBallCounter{
             +BallCount { get; } : IObservable<int>
@@ -368,13 +358,23 @@ namespace Lottery{
         OnLotteryBallCounter ..|> IObservableBallCounter
         IObservableBallBorned <-- OnLotteryBallCounter
         IObservableBallCounter <-- LotteryBowlRotater
+        ILotteryResultSubmitter <-- OnLotteryBallCounter
 
         class LotteryInstaller<<Installer>>{}
     }
     class LotteryResultToPrizeConverter
-    Item.Payout.IFieldItemPayoutOperation <-- LotteryResultToPrizeConverter
-    Item.Payout.IMedalPayoutOperation <-- LotteryResultToPrizeConverter
-    LotteryResultToPrizeConverter --> Lottery.Internal.ILotteryResultSubmitter
+    Item.Payout.IFieldItemPayoutOperation <---- LotteryResultToPrizeConverter
+    Item.Payout.IMedalPayoutOperation <------ LotteryResultToPrizeConverter
+    LotteryResultToPrizeConverter ----> Lottery.Internal.ILotteryResultSubmitter
+}
+
+namespace Item.Payout{
+    interface IMedalPayoutOperation
+    interface IFieldItemPayoutOperation
+}
+
+namespace Item.Checker.Base{
+    abstract CheckerBase
 }
 
 namespace Sound{

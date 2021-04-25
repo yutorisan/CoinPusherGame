@@ -8,25 +8,44 @@ using UnityUtility;
 namespace MedalPusher.Item.Pool
 {
     /// <summary>
-    /// PoolObjectの使用状況を購読・確認可能
+    /// このオブジェクトの使用状況を参照可能
     /// </summary>
     public interface IObservablePoolObjectStatus
     {
         /// <summary>
-        /// PoolObjectの使用状況
+        /// PoolObjectの使用状況を取得・購読します。
         /// </summary>
         IReadOnlyReactiveProperty<PoolObjectUseStatus> Status { get; }
     }
     /// <summary>
-    /// <see cref="PoolObject"/>であることを示す
+    /// このオブジェクトを使用できるようにマーク可能
     /// </summary>
-    public interface IPoolObject : IObservablePoolObjectStatus { }
-
+    public interface IPoolObjectKeeper : IObservablePoolObjectStatus
+    {
+        /// <summary>
+        /// このオブジェクトの出現位置を指定して、このオブジェクトを使用中とマークする
+        /// </summary>
+        void Keep(Vector3 position);
+        /// <summary>
+        /// このオブジェクトの出現位置と回転を指定して、このオブジェクトを使用中とマークする
+        /// </summary>
+        void Keep(Vector3 position, Quaternion rotation);
+    }
+    /// <summary>
+    /// このオブジェクトを使用しなくなったとマーク可能
+    /// </summary>
+    public interface IPoolObjectReleaser : IObservablePoolObjectStatus
+    {
+        /// <summary>
+        /// このオブジェクトを使用していないとマークする
+        /// </summary>
+        void Release();
+    }
     /// <summary>
     /// オブジェクトプールで管理されるオブジェクト
     /// 初期化時のactive状態はfalse
     /// </summary>
-    public abstract class PoolObject : MonoBehaviour, IPoolObject
+    public abstract class PoolObject : MonoBehaviour, IPoolObjectKeeper, IPoolObjectReleaser
     {
         private IUseStatus useStatus;
 
@@ -43,20 +62,20 @@ namespace MedalPusher.Item.Pool
         /// rotationはQuaternion.identity
         /// </summary>
         /// <param name="position"></param>
-        public void Takeout(Vector3 position) => Takeout(position, Quaternion.identity);
+        public void Keep(Vector3 position) => Keep(position, Quaternion.identity);
         /// <summary>
         /// プールオブジェクトをプールから取り出して使用可能にする
         /// </summary>
         /// <param name="position"></param>
         /// <param name="rotation"></param>
-        public void Takeout(Vector3 position, Quaternion rotation)
+        public void Keep(Vector3 position, Quaternion rotation)
         {
             this.gameObject.transform.position = position;
             this.gameObject.transform.rotation = rotation;
             useStatus.ChangeUseStatus(PoolObjectUseStatus.Used);
         }
 
-        public void ReturnToPool()
+        public void Release()
         {
             useStatus.ChangeUseStatus(PoolObjectUseStatus.Idol);
         }
