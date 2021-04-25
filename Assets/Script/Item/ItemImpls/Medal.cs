@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace MedalPusher.Item
 {
-    public interface IMedal : IFieldObject, IPoolObject
+    public interface IMedal : IFieldObject
     {
         /// <summary>
         /// メダル価値の種類
@@ -23,7 +23,7 @@ namespace MedalPusher.Item
         public MedalValue ValueType => m_value;
         public Vector3 position => transform.position;
 
-        public void Dispose() => ReturnToPool();
+        public void Dispose() => Release();
     }
 
     /// <summary>

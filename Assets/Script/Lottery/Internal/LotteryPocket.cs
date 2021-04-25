@@ -12,38 +12,38 @@ namespace MedalPusher.Lottery
     public class LotteryPocket : CheckerBase<LotteryBall>
     {
         [SerializeField, HideInInspector]
-        private TextMesh _priseView;
-        private ParticleSystem _particle;
+        private TextMesh priseView;
+        private ParticleSystem particle;
 
         [SerializeField]
-        private LotteryPrizeInfo m_prizeInfo;
+        private LotteryPrizeInfo prizeInfo;
         [SerializeField]
-        private int m_fontSize = 80;
+        private int fontSize = 80;
 
         [Inject]
-        private ILotteryPrizeInsertionSlot _prizeInsertionSlot;
+        private ILotteryPrizeInsertionSlot prizeInsertionSlot;
 
         protected override string DetectTag => "LotteryBall";
 
         void Start()
         {
             //子オブジェクトのコンポーネントを取得する
-            _priseView = GetComponentInChildren<TextMesh>();
-            _particle = GetComponentInChildren<ParticleSystem>();
+            priseView = GetComponentInChildren<TextMesh>();
+            particle = GetComponentInChildren<ParticleSystem>();
 
             //自分のポケットにボールが入ったら、自身の持つ景品を投入する
             this.Checked.Subscribe(_ =>
             {
-                _prizeInsertionSlot.InsertPrize(m_prizeInfo);
-                _particle.Play();
+                prizeInsertionSlot.InsertPrize(prizeInfo);
+                particle.Play();
             }).AddTo(this);
         }
 
         private void OnValidate()
         {
-            _priseView = GetComponentInChildren<TextMesh>();
-            _priseView.text = m_prizeInfo.PrizeMedals.ToString();
-            _priseView.fontSize = m_fontSize;
+            priseView = GetComponentInChildren<TextMesh>();
+            priseView.text = prizeInfo.PrizeMedals.ToString();
+            priseView.fontSize = fontSize;
         }
 
 

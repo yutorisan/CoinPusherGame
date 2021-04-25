@@ -50,7 +50,7 @@ namespace MedalPusher.Item.Pool
         /// <summary>
         /// メダルプール本体
         /// </summary>
-        private readonly Dictionary<MedalValue, IReactiveCollection<Medal>> medalPool = new Dictionary<MedalValue, IReactiveCollection<Medal>>();
+        private readonly Dictionary<MedalValue, IReactiveCollection<IPoolObjectKeeper>> medalPool = new Dictionary<MedalValue, IReactiveCollection<IPoolObjectKeeper>>();
         /// <summary>
         /// メダルのカウント情報を管理するモジュール
         /// </summary>
@@ -81,7 +81,7 @@ namespace MedalPusher.Item.Pool
                                        .ToArray(); //遅延評価回避
                 
                 //メダルプールに入れる
-                medalPool.Add(set.ValueType, new ReactiveCollection<Medal>(medals));//ReactiveCollectionの初期値を発行したいよぉ
+                medalPool.Add(set.ValueType, new ReactiveCollection<IPoolObjectKeeper>(medals));//ReactiveCollectionの初期値を発行したいよぉ
                 //メダルのアクティブ数のカウントを委託する
                 couter.OutsourceCounting(medals);
             }
@@ -91,12 +91,12 @@ namespace MedalPusher.Item.Pool
         public IMedal PickUp(MedalValue valueType, Vector3 position, Quaternion rotation)
         {
             //activeでないメダルを見つける
-            var idolMedal = medalPool[valueType].FirstOrDefault(m => m.gameObject.activeSelf == false);
+            var idolMedal = medalPool[valueType].FirstOrDefault(m => m.Status.Value == PoolObjectUseStatus.Idol);
             //見つかったらそれを返す
             if (idolMedal != null)
             {
-                idolMedal.Takeout(position, rotation);
-                return idolMedal;
+                idolMedal.Keep(position, rotation);
+                return (IMedal)idolMedal; //MedalであることはInstantiateから保証されているのでダウンキャストでも問題ない
             }
             else
             {
@@ -113,7 +113,7 @@ namespace MedalPusher.Item.Pool
 
         public void SetInitialInstantiateMedalCount(int count)
         {
-            //MedalValue1の
+            //MedalValue1の初期生成数を上書きする
             this.poolList.Find(n => n.ValueType == MedalValue.Value1).Capacity = count;
         }
 
@@ -173,7 +173,7 @@ namespace MedalPusher.Item.Pool
             /// メダルのアクティブ状態のチェックを委託する
             /// </summary>
             /// <param name="medal"></param>
-            public void OutsourceCounting(IMedal medal)
+            public void OutsourceCounting(Medal medal)
             {
                 //メダルのアクティブ状態の変化を購読して、全体のアクティブメダル数をカウントする
                 //各々のメダルがアクティブになれば+1, 非アクティブになれば-1する
@@ -184,7 +184,7 @@ namespace MedalPusher.Item.Pool
                 //インスタンス生成数を更新
                 ++instantiatedMedalCountTable[medal.ValueType].Value;
             }
-            public void OutsourceCounting(IEnumerable<IMedal> medals)
+            public void OutsourceCounting(IEnumerable<Medal> medals)
             {
                 foreach (var medal in medals) OutsourceCounting(medal);
             }
