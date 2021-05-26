@@ -156,10 +156,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isDisposeOnChecked: 0
-  _priseView: {fileID: 8100620504409734382}
-  m_prizeInfo:
+  priseView: {fileID: 8100620504409734382}
+  prizeInfo:
     m_prizeMedals: 0
-  m_fontSize: 80
+  fontSize: 80
 --- !u!65 &8100620505272672461
 BoxCollider:
   m_ObjectHideFlags: 0
