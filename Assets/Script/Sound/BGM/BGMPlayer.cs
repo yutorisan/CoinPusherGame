@@ -1,7 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using MedalPusher.Lottery;
+using MedalPusher.Slot;
 using MedalPusher.Slot.Internal;
+using MedalPusher.Utils;
 using UniRx;
 using UnityEngine;
 using Zenject;
@@ -37,7 +40,7 @@ namespace MedalPusher.Sound
             audioSource = GetComponent<AudioSource>();
 
             //スロットのステータスによってBGMを切り替え
-            slotStatus.ProductionStatus.Subscribe(status =>
+            slotStatus.ProductionStatus.Stabilize(TimeSpan.FromMilliseconds(100), SlotProductionStatus.Idol).Subscribe(status =>
             {
                 var audio = status switch
                 {
