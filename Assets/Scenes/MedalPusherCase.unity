@@ -16129,8 +16129,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directWinningProbability: 0.01
-  reachProbability: 0.3
-  reachWinningProbability: 0.65
+  reachProbability: 0.1
+  reachWinningProbability: 0.75
 --- !u!1 &540353792
 GameObject:
   m_ObjectHideFlags: 0
