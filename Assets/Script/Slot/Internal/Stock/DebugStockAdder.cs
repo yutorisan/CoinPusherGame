@@ -17,6 +17,6 @@ namespace MedalPusher.Slot.Internal.Stock
         private IStockAdder adder;
 
         [Button("Add")]
-        private void Add() => adder.Add();
+        private void Add() => adder.AddStock();
     }
 }

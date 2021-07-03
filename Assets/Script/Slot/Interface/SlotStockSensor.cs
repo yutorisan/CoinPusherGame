@@ -28,7 +28,7 @@ namespace MedalPusher.Slot.Interface
         private void Start()
         {
             //チェッカーが反応したらストックを追加する
-            stockMedalChecker.Checked.Subscribe(_ => stockAdder.Add());
+            stockMedalChecker.Checked.Subscribe(_ => stockAdder.AddStock());
         }
     }
 }

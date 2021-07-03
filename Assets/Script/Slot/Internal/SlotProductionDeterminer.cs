@@ -22,7 +22,7 @@ namespace MedalPusher.Slot.Internal
         [Inject]
         private ISlotDriver slotDriver;
         [Inject]
-        private IReadOnlyObservableStockCount stockCount;
+        private IObservableStockCount stockCount;
 
         [SerializeField, LabelText("通常モード"), TitleGroup("通常回転シーケンス")]
         private NormalRollProductionProperty m_normalProp;

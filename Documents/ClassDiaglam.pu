@@ -210,27 +210,41 @@ namespace Slot {
 
     namespace Internal #DDDDDD{
         namespace Stock{
-            interface IReadOnlyObservableStockCount{
-                +Stock { get; } : IReadOnlyReactiveProperty<int>
-            }
             interface IStockAdder{
-                +Add() : void
+                +AddStock() : void
             }
-            class StockCounter
-            StockCounter ..|> IReadOnlyObservableStockCount
-            IStockAdder <|.. StockCounter
+            IStockAdder <|.. StockList
+
+            interface IObservableStockLevel{
+
+            }
+            IObservableStockLevel <|.. StockList
+
+            interface IObservableStockCount
+            StockList ..|> IObservableStockCount
+
+            enum StockLevel
+            StockList -left> StockLevel
+
+            class StockList
+
+            interface IStock
+            class Stock
+            IStock <|.. Stock
+
+            StockList *-- IStock
         }
-        interface IStockCounter{
-            +Supplied { get; } : IObservable<Unit>
+        interface IStockList{
+            +StockSupplied { get; } : IObservable<Unit>
             +IsSpendable { get; } : bool
-            +Spend() : void
+            +SpendStock() : StockLevel
         }
-        Slot.Internal.Stock.StockCounter .|> IStockCounter
+        Slot.Internal.Stock.StockList .|> IStockList
         interface ISlotResultSubmitter{
             ObservableSlotResult { get; } : IObservable<SlotResult>
         }
         class SlotStartScheduler 
-        IStockCounter <-- SlotStartScheduler
+        IStockList <-- SlotStartScheduler
         SlotStartScheduler -->  ISlotStarter
         ISlotResultSubmitter <|... SlotStartScheduler
 
@@ -247,7 +261,7 @@ namespace Slot {
         class SlotProductionDeterminer 
         ISlotProductionDeterminer <|.. SlotProductionDeterminer
         SlotProductionDeterminer --> ISlotDriver
-        Slot.Internal.Stock.IReadOnlyObservableStockCount <-- SlotProductionDeterminer : 残ストックによって演出が変化
+        Slot.Internal.Stock.IObservableStockCount <-- SlotProductionDeterminer : 残ストックによって演出が変化
 
         interface ISlotDriver{
             +ControlBy(Production) : UniTask
@@ -303,7 +317,7 @@ namespace Slot {
 
     ' namespace Interface{
         class StockCounterView<<View>>
-        StockCounterView --> Slot.Internal.Stock.IReadOnlyObservableStockCount
+        StockCounterView --> Slot.Internal.Stock.IObservableStockLevel
 
         class SlotResultToPrizeConverter 
         SlotResultToPrizeConverter --> Slot.Internal.ISlotResultSubmitter

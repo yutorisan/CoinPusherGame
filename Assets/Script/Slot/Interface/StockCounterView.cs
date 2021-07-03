@@ -17,7 +17,7 @@ namespace MedalPusher.Slot.Stock
         [SerializeField, Required]
         private TextMeshProUGUI stockText;
         [Inject]
-        private IReadOnlyObservableStockCount stockCount;
+        private IObservableStockCount stockCount;
 
         void Start()
         {

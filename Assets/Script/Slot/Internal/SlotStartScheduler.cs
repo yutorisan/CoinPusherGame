@@ -19,7 +19,7 @@ namespace MedalPusher.Slot.Internal
         [Inject]
         private ISlotStarter slotStarter;
         [Inject]
-        private IStockCounter stockCounter;
+        private IStockList stockCounter;
         /// <summary>
         /// スロットの結果を発行するためのSubject
         /// </summary>
@@ -34,14 +34,14 @@ namespace MedalPusher.Slot.Internal
             //★Schedulerを指定しているのは、StockCounterからのストック追加通知を受けてViewが数字を更新するよりも先に、
             //★スロット開始指令が送られてしまってViewの数字がおかしくなってしまうのを防ぐため。
             //★MainThreadEndOfFrameを指定することで、StockCounterからの他の通知よりも後にスロット開始指令が送られるようになる。
-            stockCounter.Supplied.ObserveOn(Scheduler.MainThreadEndOfFrame)             //ストックが供給された
+            stockCounter.StockSupplied.ObserveOn(Scheduler.MainThreadEndOfFrame)        //ストックが供給された
                         .Where(_ => slotTask.Status == UniTaskStatus.Succeeded)         //かつ前回のスロット回転ステータスが完了している
                         .Merge(slotResultSubject.Where(_ => stockCounter.IsSpendable)   //または、前のスロットの回転が終了して、かつまだストックがある
                                                 .AsUnitObservable())   
                         .Subscribe(async _ =>                                           //ならば、ストックを消費してスロットの回転を開始させる
                         {
                             //ストックを消費してスロットの回転を開始させる
-                            stockCounter.Spend();
+                            stockCounter.SpendStock();
                             slotTask = slotStarter.StartAsync().Preserve();  //Preserveはawait後にStatus参照するのに必要
 
                             //スロットの回転が完了したら、結果を発行する
@@ -57,12 +57,12 @@ namespace MedalPusher.Slot.Internal
     /// <summary>
     /// StockCounterへのアクセス定義
     /// </summary>
-    internal interface IStockCounter
+    internal interface IStockList
     {
         /// <summary>
         /// ストックが0の状態からストックが供給されたときに通知される
         /// </summary>
-        IObservable<Unit> Supplied { get; }
+        IObservable<Unit> StockSupplied { get; }
         /// <summary>
         /// ストックを消費可能か
         /// </summary>
@@ -70,7 +70,7 @@ namespace MedalPusher.Slot.Internal
         /// <summary>
         /// ストックを1つ消費する
         /// </summary>
-        void Spend();
+        StockLevelInfo SpendStock();
     }
     /// <summary>
     /// スロットの回転を開始させる

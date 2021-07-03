@@ -271,7 +271,7 @@ namespace MedalPusher.Slot.Internal.Core
             /// <param name="roleList"></param>
             public FrontRoleAndEachAngleTable(IReadOnlyList<RoleValue> roleList)
             {
-                frontRoleAngleTable = roleList.ToDictionary(role => role, role => GetBringToFrontAngleTable(role));
+                frontRoleAngleTable = roleList.ToDictionary(role =>  role, role => GetBringToFrontAngleTable(role));
 
                 /// <summary>
                 /// 特定のRoleを正面に表示したときの、各RoleのAngleの対応テーブルを取得する

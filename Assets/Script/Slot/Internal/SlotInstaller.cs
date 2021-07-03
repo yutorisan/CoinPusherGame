@@ -1,28 +1,36 @@
 using Zenject;
 using MedalPusher.Slot.Internal.Stock;
 using MedalPusher.Slot.Internal;
+using UnityEngine;
 
 namespace MedalPusher.Slot
 {
     public class SlotInstaller : MonoInstaller
     {
+        [SerializeField]
+        private StockLevelSetting stockLevelSetting;
+
         public override void InstallBindings()
         {
-            StockCounter stockCounter = new StockCounter();
-            //StockCounter
-            Container.Bind<IStockCounter>()
-                     .To<StockCounter>()
-                     .FromInstance(stockCounter)
+            StockList stockList = new StockList(stockLevelSetting);
+            //StockList
+            Container.Bind<IStockList>()
+                     .To<StockList>()
+                     .FromInstance(stockList)
                      .AsCached();
-            Container.Bind<IReadOnlyObservableStockCount>()
-                     .To<StockCounter>()
-                     .FromInstance(stockCounter)
+            Container.Bind<IObservableStockCount>()
+                     .To<StockList>()
+                     .FromInstance(stockList)
+                     .AsCached();
+            Container.Bind<IObservableStockList>()
+                     .To<StockList>()
+                     .FromInstance(stockList)
                      .AsCached();
             Container.Bind<IStockAdder>()
-                     .To<StockCounter>()
-                     .FromInstance(stockCounter)
+                     .To<StockList>()
+                     .FromInstance(stockList)
                      .AsCached();
-
+            //other
             Container.Bind<ISlotResultSubmitter>()
                      .To<SlotStartScheduler>()
                      .FromComponentInHierarchy()
@@ -39,6 +47,7 @@ namespace MedalPusher.Slot
                      .To<SlotDriver>()
                      .FromComponentInHierarchy()
                      .AsCached();
+
 
         }
     }
