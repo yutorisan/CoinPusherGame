@@ -316,8 +316,8 @@ namespace Slot {
     }
 
     ' namespace Interface{
-        class StockCounterView<<View>>
-        StockCounterView --> Slot.Internal.Stock.IObservableStockLevel
+        class StockView<<View>>
+        StockView --> Slot.Internal.Stock.IObservableStockLevel
 
         class SlotResultToPrizeConverter 
         SlotResultToPrizeConverter --> Slot.Internal.ISlotResultSubmitter
