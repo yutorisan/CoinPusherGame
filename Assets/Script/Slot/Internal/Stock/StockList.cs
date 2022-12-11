@@ -3,11 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using ModestTree;
 using UniRx;
 using UnityEngine;
 using UnityUtility.Collections;
 using UnityUtility.Linq;
+using UnityUtility.Linq.Core;
 using Zenject;
 
 namespace MedalPusher.Slot.Internal.Stock
@@ -37,7 +39,7 @@ namespace MedalPusher.Slot.Internal.Stock
         /// <summary>
         /// ストックが追加されたときに通知を受ける
         /// </summary>
-        IObservable<StockLevelInfo> ObserveStockAdd { get; }
+        IObservable<WithIndex<StockLevelInfo>> ObserveStockAdd { get; }
         /// <summary>
         /// ストックを消費したときに通知を受ける
         /// </summary>
@@ -45,11 +47,15 @@ namespace MedalPusher.Slot.Internal.Stock
         /// <summary>
         /// いずれかのストックのレベルが変更されたときに通知を受ける
         /// </summary>
-        IObservable<StockListLevelChangedEvent> ObserveStockLevelChanged { get; }
+        IObservable<WithIndex<StockLevelInfo>> ObserveStockLevelChanged { get; }
         /// <summary>
         /// 保持している<see cref="Stock"/>インスタンスの数
         /// </summary>
         int Count { get; }
+        /// <summary>
+        /// 現在のストックリストを取得します
+        /// </summary>
+        IReadOnlyList<StockLevelInfo> StockLevelList { get; }
     }
 
     /// <summary>
@@ -64,14 +70,15 @@ namespace MedalPusher.Slot.Internal.Stock
 
         private readonly FixedCapacityReactiveQueue<IStock> stockQueue = new FixedCapacityReactiveQueue<IStock>(StockCapacity);
         private readonly IReadOnlyStockLevelSetting stockLevelSetting;
+        private readonly Subject<WithIndex<StockLevelInfo>> levelChangedSubject = new Subject<WithIndex<StockLevelInfo>>();
 
         public StockList(IReadOnlyStockLevelSetting setting) => stockLevelSetting = setting;
 
         public int Count => stockQueue.Count;
 
-        public IObservable<StockLevelInfo> ObserveStockAdd =>
+        public IObservable<WithIndex<StockLevelInfo>> ObserveStockAdd =>
             stockQueue.ObserveEnqueue()
-                      .Select(stock => GetStockLevelInfo(stock))
+                      .Select(stock => GetStockLevelInfo(stock).WithIndex(stockQueue.Count - 1))
                       .Share();
 
         public IObservable<Unit> ObserveStockSpend =>
@@ -79,19 +86,22 @@ namespace MedalPusher.Slot.Internal.Stock
                       .AsUnitObservable()
                       .Share();
 
-        private readonly Subject<StockListLevelChangedEvent> levelChangedSubject = new Subject<StockListLevelChangedEvent>();
-        public IObservable<StockListLevelChangedEvent> ObserveStockLevelChanged => levelChangedSubject.AsObservable();
-
+        public IObservable<WithIndex<StockLevelInfo>> ObserveStockLevelChanged => levelChangedSubject.AsObservable();
         
         public IObservable<Unit> StockSupplied =>
             //ストックがEnqueueされて、ストック数が1の場合に、0状態からストックが供給されたとみなす
             stockQueue.ObserveEnqueue()
                       .Where(_ => Count == 1)
-                      .AsUnitObservable();
+                      .AsUnitObservable()
+                      .Share();
 
         public bool IsSpendable => !stockQueue.IsEmpty();
 
         public IReadOnlyReactiveProperty<int> StockCount => stockQueue.ObserveCountChanged().ToReactiveProperty();
+
+        public IReadOnlyList<StockLevelInfo> StockLevelList =>
+            stockQueue.Select(stock => GetStockLevelInfo(stock))
+                      .ToList();
 
         public IStock this[int index]
         {
@@ -107,6 +117,7 @@ namespace MedalPusher.Slot.Internal.Stock
             //空きがあればストックインスタンスを新規追加
             if (stockQueue.HasVacancy)
             {
+                UnityEngine.Debug.Log($"enqueue: {stockQueue.Count}");
                 stockQueue.Enqueue(new Stock());
             }
             else //空きがなければ
@@ -116,7 +127,7 @@ namespace MedalPusher.Slot.Internal.Stock
                 //そのストックをアップグレード
                 stock.UpGrade();
                 //レベルが変化したことを通知する
-                levelChangedSubject.OnNext(new StockListLevelChangedEvent(index, GetStockLevelInfo(stock)));
+                levelChangedSubject.OnNext(GetStockLevelInfo(stock).WithIndex(index));
             }
         }
 
@@ -134,13 +145,5 @@ namespace MedalPusher.Slot.Internal.Stock
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         private StockLevelInfo GetStockLevelInfo(IStock stock) => stockLevelSetting.StockLevelSettingList[stock.Level];
-    }
-
-    public readonly struct StockListLevelChangedEvent
-    {
-        public int Index { get; }
-        public StockLevelInfo Stock { get; }
-
-        public StockListLevelChangedEvent(int index, StockLevelInfo stock) => (Index, Stock) = (index, stock);
     }
 }

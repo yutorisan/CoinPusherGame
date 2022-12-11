@@ -36,9 +36,9 @@ namespace MedalPusher.Slot.Internal.Stock
     /// </summary>
     internal class Stock : IStock
     {
-        private int level;
+        private int level = 1; //初期レベルは1
         private readonly BooleanDisposable disposable = new BooleanDisposable();
-        public static readonly int MaxLevel = 5;
+        public static readonly int MaxLevel = 5; //最大レベルは5
 
         public void UpGrade()
         {
