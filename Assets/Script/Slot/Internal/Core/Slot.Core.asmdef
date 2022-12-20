@@ -1,5 +1,6 @@
 {
     "name": "Slot.Core",
+    "rootNamespace": "",
     "references": [
         "GUID:f51ebe6a0ceec4240a699833d6309b23",
         "GUID:2905820f54c7b452f8a1f2a3df38399b",

@@ -102811,17 +102811,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stockLevels:
-  - rewardMultiple: 0
+  - level: 1
+    dividend: 30
     stockImage: {fileID: 0}
-  - rewardMultiple: 1
+  - level: 2
+    dividend: 50
     stockImage: {fileID: 21300016, guid: 954e7fb58ae745147bc0ca46e2f9652f, type: 3}
-  - rewardMultiple: 2
+  - level: 3
+    dividend: 70
     stockImage: {fileID: 21300016, guid: a03797bb54019e749a88e85157ebd2a5, type: 3}
-  - rewardMultiple: 3
+  - level: 4
+    dividend: 100
     stockImage: {fileID: 21300018, guid: ec90f62b052d7374584652f2b07763ad, type: 3}
-  - rewardMultiple: 4
+  - level: 5
+    dividend: 150
     stockImage: {fileID: 21300058, guid: 8a4e3dbaa46507841bc6e330269dc172, type: 3}
-  - rewardMultiple: 5
+  - level: 6
+    dividend: 300
     stockImage: {fileID: 21300016, guid: de5ca313ef088854c83874e135690df8, type: 3}
 --- !u!1001 &2062777974
 PrefabInstance:

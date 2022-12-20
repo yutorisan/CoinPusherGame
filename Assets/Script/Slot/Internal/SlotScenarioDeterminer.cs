@@ -50,13 +50,13 @@ namespace MedalPusher.Slot.Internal
             generatorSelector = new SlotScenarioGeneratorSelector(this);
         }
 
-        public UniTask<SlotResult> StartAsync()
+        public UniTask<ISlotResult> StartAsync()
         {
             //シナリオを決定
             var scenario = generatorSelector.Select().GenerateScenario();
             //シナリオに沿った演出の決定を依頼
             return m_productionDeterminer.DetermineProduction(scenario)
-                                         .ContinueWith(() => scenario.Result);
+                                         .ContinueWith(() => (ISlotResult)new SlotResult(scenario.ResultRoleSet));
         }
 
         /// <summary>

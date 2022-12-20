@@ -8,7 +8,8 @@ namespace MedalPusher.Slot.Internal.Stock
     [Serializable]
     public struct StockLevelInfo
     {
-        public float rewardMultiple;
+        public int level;
+        public int dividend;
         public Sprite stockImage;
     }
 }

@@ -7,6 +7,6 @@ namespace MedalPusher.Slot.Internal
     /// </summary>
     public interface ISlotResultSubmitter
     {
-        IObservable<SlotResult> ObservableSlotResult { get; }
+        IObservable<IReadOnlySlotResult> ObservableSlotResult { get; }
     }
 }

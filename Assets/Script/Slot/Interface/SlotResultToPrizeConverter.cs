@@ -6,6 +6,7 @@ using Sirenix.OdinInspector;
 using MedalPusher.Item.Checker;
 using Zenject;
 using MedalPusher.Slot.Internal;
+using MedalPusher.Slot.Internal.Stock;
 using MedalPusher.Item.Payout;
 using MedalPusher.Item;
 
@@ -23,17 +24,12 @@ namespace MedalPusher.Slot.Interface
         [Inject]
         private IFieldItemPayoutOperation fieldItemPayoutOperation;
 
-        /// <summary>
-        /// 当たったときに払い出すメダル数
-        /// </summary>
-        private static readonly int winMedals = 30;
-
         private void Start()
         {
             //当たったら30枚の払い出し要求
             resultSubmitter.ObservableSlotResult
                            .Where(result => result.IsWin)
-                           .Subscribe(_ => medalPayoutOperation.PayoutRequest(winMedals));
+                           .Subscribe(result => medalPayoutOperation.PayoutRequest(result.StockLevelInfo.dividend));
             //7で当たったらJPChanceボールを払い出す
             resultSubmitter.ObservableSlotResult
                            .Where(result => result.WinRole == RoleValue.Role7)

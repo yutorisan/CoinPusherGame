@@ -114,8 +114,8 @@ namespace MedalPusher.Slot
         /// </summary>
         public RoleSet Finally { get; }
 
-        public SlotResult Result =>
-            new SlotResult(new RoleSet(Left.Finally, Middle.Finally, Right.Finally));
+        public RoleSet ResultRoleSet =>
+            new RoleSet(Left.Finally, Middle.Finally, Right.Finally);
         public bool IsReachScenario => First.IsReach;
         public bool IsWinScenario => Finally.IsBingo;
     }
